@@ -11,11 +11,22 @@
         <a target="_blank" href="http://nodejs.org/api/https.html#https_https_request_options_callback">Node.js HTTPS
         <% } %>
         documentation</a> for a list of available options</span>
+     
     </div>
+<!-- update start -->
+    <label class="control-label">Request Data</label>
+    <div class="controls"> 
+      <textarea name="check[request_data]" class="span8" rows="3" placeholder='Use JSON format data, e.g {"name": "Test"}'/><%= check.getPollerParam('request_data') || '' %></textarea>
+      
+    </div>
+<!-- update end -->
   </div>
 </fieldset>
 <script type="text/javascript">
 jQuery(function($) {
   $('#check_form textarea[name="check[http_options]"]').autoResize();
+// update start
+  $('#check_form textarea[name="check[request_data]"]').autoResize();
+// update end
 });
 </script>

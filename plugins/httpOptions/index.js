@@ -38,24 +38,36 @@ exports.initWebApp = function(options) {
 
   var dashboard = options.dashboard;
 
-	dashboard.on('populateFromDirtyCheck', function(checkDocument, dirtyCheck, type) {
-		if (type !== 'http' && type !== 'https') return;
+  dashboard.on('populateFromDirtyCheck', function(checkDocument, dirtyCheck, type) {
+    if (type !== 'http' && type !== 'https') return;
     if (!dirtyCheck.http_options) return;
     var http_options = dirtyCheck.http_options;
+    console.log("this is how options is "+ dirtyCheck.http_options);
     try {
       var options = yaml.safeLoad(dirtyCheck.http_options);
       checkDocument.setPollerParam('http_options', options);
+      
     } catch (e) {
-      if (e instanceof YAMLException) {
-        throw new Error('Malformed YAML configuration ' + dirtyCheck.http_options);
-      } else throw e;
+     throw e;
     }
-	});
+  // update start
+    try{
+       var chk = JSON.parse(dirtyCheck.request_data);
+       checkDocument.setPollerParam('request_data', dirtyCheck.request_data);
+    } catch(ex){
+      
+      throw(ex)
+    }
+  // update end	
+  });
 
   dashboard.on('checkEdit', function(type, check, partial) {
     if (type !== 'http' && type !== 'https') return;
     check.http_options = '';
     var options = check.getPollerParam('http_options');
+// update start
+    var req_data = check.getPollerParam('request_data');
+// update end
     if (options) {
       try {
         options = yaml.safeDump(options);
@@ -65,6 +77,9 @@ exports.initWebApp = function(options) {
         } else throw e;
       }
       check.setPollerParam('http_options', options);
+// update start
+      check.setPollerParam('request_data', req_data);
+// update end
     }
     partial.push(ejs.render(template, { locals: { check: check } }));
   });
@@ -78,6 +93,7 @@ exports.initMonitor = function(options) {
   options.monitor.on('pollerCreated', function(poller, check, details) {
     if (check.type !== 'http' && check.type !== 'https') return;
     var options = check.pollerParams && check.pollerParams.http_options;
+   
     if (!options) return;
     // add the custom options to the poller target
     for (var key in options) {

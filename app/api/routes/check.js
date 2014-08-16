@@ -123,6 +123,25 @@ module.exports = function(app) {
      if(saveError) return next({status:500, error: saveError});
      res.json(check);
    });
+// update start
+     if (req.body.type=='http' || req.body.type=='https'){
+        var defaultOptions = { "method": "GET" }; 
+        var defaultReqData = {};
+        try{
+        	check.setPollerParam('http_options', JSON.parse(req.body.options) || defaultOptions );
+	}catch(Exception)
+	{
+		console.log('Invalid values/format for options. Values will be ignored; Exception: ' + Exception );
+	}
+        try{
+        	check.setPollerParam('request_data', JSON.parse(req.body.data) || defaultReqData );
+	}catch(Exception1)
+	{
+		console.log('Invalid values/format for request data. Values will be ignored; Exception: ' + Exception1 );
+	}
+  	
+      }
+// update end 
  });
 
  app.delete('/checks/:id', loadCheck, function (req, res, next) {
@@ -138,6 +157,7 @@ module.exports = function(app) {
      if (!check) return next({status:404, error: 'failed to load check ' + req.params.id})
 
      try {
+
        check.populateFromDirtyCheck(req.body, app.get('pollerCollection'));
        app.emit('populateFromDirtyCheck', check, req.body, check.type);
      } catch (checkException) {
@@ -147,6 +167,25 @@ module.exports = function(app) {
        if(saveError) return next({status:500, error: saveError});
        res.json(check);
      });
+    // update start
+     if (req.body.type=='http' || req.body.type=='https'){
+        var defaultOptions = { "method": "GET" }; 
+        var defaultReqData = {};
+        try{
+        	check.setPollerParam('http_options', JSON.parse(req.body.options) || defaultOptions );
+	}catch(Exception)
+	{
+		console.log('Invalid values/format for options. Values will be ignored; Exception: ' + Exception );
+	}
+        try{
+        	check.setPollerParam('request_data', JSON.parse(req.body.data) || defaultReqData );
+	}catch(Exception1)
+	{
+		console.log('Invalid values/format for request data. Values will be ignored; Exception: ' + Exception1 );
+	}
+  	
+      }
+    // update end 
    });
  });
 };

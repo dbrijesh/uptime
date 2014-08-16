@@ -36,7 +36,7 @@ Uptime 3.2 requires Node.js 0.10 and MongoDB 2.1. Older versions provide compati
 To install from GitHub, clone the repository and install dependencies using `npm`:
 
 ```sh
-$ git clone git://github.com/fzaninotto/uptime.git
+$ git clone git://github.com/dbrijesh/uptime.git
 $ cd uptime
 $ npm install
 ```
@@ -338,6 +338,8 @@ Parameters :
 * `alertTreshold` : (optional) set the threshold of failed pings that will create an alert
 * `tags` : (optional) list of tags (comma-separated values)
 * `type` : (optional) type of check - values : `auto`|`http`|`https`|`udp`
+* `options` : (optional) http headers
+* `data` : (optional) payload data
 
 Ex: `http://localhost:8082/api/checks/527a25bdc9de6e0000000004`
 
@@ -443,6 +445,12 @@ Support and Discussion
 ----------------------
 
 Join the [node-uptime](https://groups.google.com/d/forum/node-uptime) Google Group to discuss features, bugs and use cases related to Uptime.
+
+New Capability Added 
+----------------------
+
+Includes support for sending JSON payload as part of polling for POST and PUT method
+Create Check API (PUT) updated to include http_options and request payload
 
 License
 -------
