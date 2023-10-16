@@ -1,279 +1,340 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Entry</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <title>Your Page Title</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.0/css/jquery.dataTables.min.css">
     <style>
-    /* Add your custom CSS styles here */
-    /* Smaller chart size */
-    #codeCoverage {
-        width: 600px;
-        height: 400px;
-    }
+        /* Style for tab buttons */
+        /* Updated CSS for tab buttons */
+/* Updated CSS for tab buttons with line separator and active tab color */
+.tab-button-container {
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #007bff; /* Add a 2px blue line below the tabs */
+}
+
+.tab-button {
+    background-color: #f2f2f2;
+    border: none;
+    color: #333;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    text-decoration: none;
+    position: relative;
+}
+
+.tab-button.active {
+            background-color: #ddd; /* Gray color for active tab */
+            color: #333;
+        }
+
+.tab-separator {
+    border-left: 1px solid #ccc;
+    height: 100%;
+    margin: 0 10px;
+}
+
+.tab-button:hover {
+    background-color: #ddd;
+}
+
+.tab-content {
+    display: none;
+    padding: 20px;
+    background-color: #fff;
+}
+/* Style for the title in the navbar */
+.navbar-title {
+            color: #fff; /* White color for the title */
+            font-weight: bold; /* Bold font for the title */
+        }
     </style>
-
 </head>
-
 <body>
-    <!-- Tabs for Metrics -->
-    <ul class="nav nav-tabs" id="metricsTabs" role="tablist">
-        <!-- Data Tab -->
-        <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="data-tab" data-bs-toggle="tab" data-bs-target="#data" type="button" role="tab" aria-controls="data" aria-selected="true">Data</button>
-        </li>
-        <!-- Code Coverage Tab -->
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="codeCoverage-tab" data-bs-toggle="tab" data-bs-target="#codeCoverage" type="button" role="tab" aria-controls="codeCoverage" aria-selected="false">Code Coverage</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="exceedTimeline-tab" data-bs-toggle="tab" data-bs-target="#exceedTimeline" type="button" role="tab" aria-controls="exceedTimeline" aria-selected="false">Exceed Timeline</button>
-        </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="defects-tab" data-bs-toggle="tab" data-bs-target="#defects" type="button" role="tab" aria-controls="defects" aria-selected="false">Defects</button>
-        </li>
-    </ul>
-
-    <div class="tab-content" id="metricsTabContent">
-        <!-- Data Tab Content -->
-        <div class="tab-pane fade show active" id="data" role="tabpanel" aria-labelledby="data-tab">
-            <!-- Data Table -->
-            <form method="POST" action="/add" class="mt-4">
-                <table class="table">
-                    <!-- Use the table class -->
-                    <thead>
-                        <tr>
-                            <th>Project</th>
-                            <th>Role</th>
-                            <th>Resource Name</th>
-                            <th>API Name</th>
-                            <th>API Endpoint</th>
-                            <th>Planned SIT Date</th>
-                            <th>Actual SIT Date</th>
-                            <th>Planned PAT Date</th>
-                            <th>Actual PAT Date</th>
-                            <th>Number of Defects</th>
-                            <th>Code Coverage %</th>
-                            <th>Number of Promotion Failures</th>
-                            <th>Number of Code Review Comments</th>
-                        </tr>
-                    </thead>
+    <nav class="navbar navbar-expand-lg navbar-light bg-success"> <!-- Use bg-success for green color -->
+        <div class="container">
+            <a class="navbar-brand navbar-title" href="#">BMW API Usage Dashboard</a>
+        </div>
+    </nav>
+   <div class="container mt-4">
+    <!-- Nav tabs -->
+    <div class="tab-button-container">
+        <button class="btn btn-link tab-button active" onclick="openTab('tab1')">Client and Business Function Volume Graph</button>
+        <div class="tab-separator"></div>
+        <button class="btn btn-link tab-button" onclick="openTab('tab2')">Client and Business Function Table</button>
+        <div class="tab-separator"></div>
+        <button class="btn btn-link tab-button" onclick="openTab('tab3')">Client Volume Graph</button>
+    </div>
 
 
-                    <tbody>
-                        <!-- Add a form row for data entry (initially hidden) -->
-                        <tr id="data-entry-form-row" style="display: none;">
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="project" required>
-                                </div>
-                            </td>
-                            <!-- Repeat similar input fields for other data points -->
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="role" required>
-                                </div>
-                            </td>
-                            <!-- Repeat for other data points -->
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="resource_name" required>
-                                </div>
-                            </td>
-                            <!-- Repeat for other data points -->
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="api_name" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="api_endpoint" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="date" class="form-control" name="planned_sit_date" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="date" class="form-control" name="actual_sit_date" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="date" class="form-control" name="planned_pat_date" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="date" class="form-control" name="actual_pat_date" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="defects" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="code_coverage" required>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="promotion_failures" required>
-                                </div>
-
-                            </td>
-                            <td>
-                                <div class="input-group">
-
-                                    <input type="text" class="form-control" name="code_review_comments" required>
-                                </div>
-                            </td>
-                            <td>
-                                <button id="submit-btn" type="submit" class="btn btn-primary">Submit</button>
-                            </td>
-                        </tr>
-
-
-                        <!-- Existing data rows here -->
-                        {% for row in data %}
-                        <tr>
-                            <td>{{ row['project'] }}</td>
-                            <td>{{ row['role'] }}</td>
-                            <td>{{ row['resource_name'] }}</td>
-                            <td>{{ row['api_name'] }}</td>
-                            <td>{{ row['api_endpoint'] }}</td>
-                            <td>{{ row['planned_sit_date'] }}</td>
-                            <td>{{ row['actual_sit_date'] }}</td>
-                            <td>{{ row['planned_pat_date'] }}</td>
-                            <td>{{ row['actual_pat_date'] }}</td>
-                            <td>{{ row['defects'] }}</td>
-                            <td>{{ row['code_coverage'] }}</td>
-                            <td>{{ row['promotion_failures'] }}</td>
-                            <td>{{ row['code_review_comments'] }}</td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                <!-- Add button to toggle the form's visibility -->
-                <button id="toggle-form-btn" class="btn btn-success mt-3">Add</button>
-
+    <!-- Tab content -->
+  
+        <!-- Tab 1: Forms and Graph -->
+        <div id="tab1" class="tab-content active"  style="display: block;">
+            <form id="filter-form">
+                <div class="row">
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="start_month">Start Month:</label>
+                            <select class="form-control form-control-sm" id="start_month" name="start_month">
+                                {% for month in months %}
+                                    <option value="{{ month[0] }}">{{ month[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="start_year">Start Year:</label>
+                            <select class="form-control form-control-sm" id="start_year" name="start_year">
+                                {% for year in years %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="end_month">End Month:</label>
+                            <select class="form-control form-control-sm" id="end_month" name="end_month">
+                                {% for month in months %}
+                                    <option value="{{ month[0] }}">{{ month[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <div class="form-group">
+                            <label for="end_year">End Year:</label>
+                            <select class="form-control form-control-sm" id="end_year" name="end_year">
+                                {% for year in years %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="client_name">Client Name:</label>
+                            <select class="form-control form-control-sm" id="client_name" name="client_name" multiple size=3>
+                                {% for name in client_names %}
+                        <option value="{{ name }}">{{ name }}</option>
+                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group">
+                            <label for="business_function">Business Function:</label>
+                            <select class="form-control form-control-sm" id="business_function" name="business_function" multiple size=3>
+                                {% for func in business_functions %}
+                        <option value="{{ func }}">{{ func }}</option>
+                    {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
             </form>
-       
+            <div id="plot-div"></div>
+        </div>
 
 
-        <!-- Add JavaScript to toggle the form's visibility -->
-        <script>
-        document.getElementById('toggle-form-btn').addEventListener('click', function() {
-            var formRow = document.getElementById('data-entry-form-row');
-            if (formRow.style.display === 'none' || formRow.style.display === '') {
-                formRow.style.display = 'table-row';
-            } else {
-                formRow.style.display = 'none';
-            }
-        });
-        </script>
-    </div>
-    <!-- Tab Content -->
+        <!-- Tab 2: File Upload -->
+        <div id="tab2" class="tab-content">
+            <h3>Tab 2: Transactions</h3>
+            <table id="transactions-table" class="table table-bordered table-hover" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Client Name</th>
+                        <th>Business Function</th>
+                        <th>Count</th>
+                        <!-- Add other columns as needed -->
+                    </tr>
+                </thead>
+            </table>
+        
+           
+        </div>
 
-    <!-- Tab for Exceed Timeline -->
-    <div class="tab-pane fade" id="exceedTimeline" role="tabpanel" aria-labelledby="exceedTimeline-tab">
-        <canvas id="exceededTimelineChart"></canvas>
-        <script>
-        // Get the data for the Exceeded Timeline chart from Flask's template context
-        var exceededTimelineCount = {{ exceeded_timeline_count }};
+        <!-- Tab 3: Additional Tab (You can add content as needed) -->
+        <div id="tab3" class="tab-content">
+            <h3>Tab 3: File Upload and Data Processing</h3>
 
-        // Create the Exceeded Timeline chart
-        var ctx = document.getElementById('exceededTimelineChart').getContext('2d');
-        var exceededTimelineChart = new Chart(ctx, {
-            type: 'bar', // You can use other chart types like 'bar', 'line', etc.
-            data: {
-                labels: ['Exceeded Timeline'],
-                datasets: [{
-                    label: 'Number of Rows',
-                    data: [exceededTimelineCount],
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)', // Adjust color as needed
-                    borderColor: 'rgba(75, 192, 192, 1)', // Adjust color as needed
-                    borderWidth: 1
-                }]
+            <!-- File upload form -->
+            <form id="file-upload-form">
+                <div class="form-group">
+                    <label for="csv-file">Upload CSV File:</label>
+                    <input type="file" class="form-control-file" id="csv-file" accept=".csv" />
+                </div>
+                <button type="submit" class="btn btn-primary">Upload and Process</button>
+            </form>
+        
+            <!-- Result display area -->
+            <div id="upload-result" style="display: none; margin-top: 20px;">
+                <h4>Upload Result:</h4>
+                <div id="upload-message"></div>
+            </div>
+        </div>
+    
+</div>
+    <!-- Include Bootstrap JavaScript separately -->
+<!-- Include Bootstrap JavaScript and jQuery at the bottom of the page -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Include Bootstrap JavaScript separately -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.0/js/jquery.dataTables.min.js"></script>
+<!-- Include other scripts here -->
+
+
+<!-- Include Plotly JS library -->
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>
+    // Handle file upload and processing
+    $('#file-upload-form').on('submit', function (e) {
+        e.preventDefault();
+        var formData = new FormData(this);
+
+        $.ajax({
+            type: 'POST',
+            url: '/upload_csv',
+            data: formData,
+            cache: false,
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                $('#upload-result').show();
+                $('#upload-message').text(data);
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
+            error: function (error) {
+                $('#upload-result').show();
+                $('#upload-message').text('Error: ' + error.responseText);
             }
         });
-        </script>
-    </div>
+    });
+</script>
+<script>
+   function openTab(tabName) {
+        var i;
+        var x = document.getElementsByClassName("tab-content");
+        var buttons = document.getElementsByClassName("tab-button");
 
-    <!-- Tab for Defects -->
-    <div class="tab-pane fade" id="defects" role="tabpanel" aria-labelledby="defects-tab">
-        <canvas id="defectsChart"></canvas>
-    </div>
+        for (i = 0; i < x.length; i++) {
+            x[i].style.display = "none";
+            buttons[i].classList.remove("active");
+        }
+        document.getElementById(tabName).style.display = "block";
+        document.querySelector(`[onclick="openTab('${tabName}')"]`).classList.add("active");
+    }
 
-    <!-- Tab for Code Coverage -->
-    <div class="tab-pane fade" id="codeCoverage" role="tabpanel" aria-labelledby="codeCoverage-tab">
-        <canvas id="codeCoverageChart"></canvas>
-        <!-- JavaScript to Create Charts -->
-        <script>
-        // Get the data for the Code Coverage chart from Flask's template context
-        var avgCodeCoverageData = {{ avg_code_coverage | tojson }};
+    // Initialize to show the first tab by default
+    openTab('tab1');
+</script>
+<script>
+$(document).ready(function() {
+    $('#filter-form').on('submit', function(e) {
+        e.preventDefault();
+        $.ajax({
+            type: 'POST',
+            url: '/get_data',
+            data: $('#filter-form').serialize(),
+            success: function(data) {
+                var plotData = JSON.parse(data);
+                var data = [];
+                var uniqueTraces = {};
 
-        // Prepare data for the chart
-        var resourceNames = Object.keys(avgCodeCoverageData);
-        var averageCodeCoverageValues = Object.values(avgCodeCoverageData);
+                // Create a map to hold data for each trace
+                var traceData = {};
 
-        // Create the Code Coverage chart
-        var ctx = document.getElementById('codeCoverageChart').getContext('2d');
+                for (var i = 0; i < plotData.data.length; i++) {
+                    var date = plotData.data[i][0];
+                    var count = plotData.data[i][1];
+                    var clientName = plotData.data[i][2];
+                    var businessFunction = plotData.data[i][3];
+                    var clientFuncName = clientName + ' - ' + businessFunction;
 
-        var codeCoverageChart = new Chart(ctx, {
-            type: 'bar', // You can use other chart types like 'bar', 'line', etc.
-            data: {
-                labels: resourceNames,
-                datasets: [{
-                    label: 'Average Code Coverage',
-                    data: averageCodeCoverageValues,
-                    backgroundColor: 'rgba(75, 192, 192, 0.2)', // Adjust color as needed
-                    borderColor: 'rgba(75, 192, 192, 1)', // Adjust color as needed
-                    borderWidth: 1
-                }]
+                    if (!uniqueTraces[clientFuncName]) {
+                        uniqueTraces[clientFuncName] = true;
+                        traceData[clientFuncName] = { x: [], y: [] };
+                    }
+
+                    // Push the date and count to the corresponding trace's data
+                    traceData[clientFuncName].x.push(date);
+                    traceData[clientFuncName].y.push(count);
+                }
+
+                // Sort the dates chronologically within each trace
+                for (var traceName in traceData) {
+                    traceData[traceName].x = sortDatesChronologically(traceData[traceName].x);
+                    data.push({
+                        x: traceData[traceName].x,
+                        y: traceData[traceName].y,
+                        name: traceName,
+                        type: 'line',
+                        mode: 'lines+markers',
+                        marker: { color: getRandomColor() }
+                    });
+                }
+
+                var layout = {
+                    title: 'Count of Transactions',
+                    xaxis: { title: 'Date' },
+                    yaxis: { title: 'Count' },
+                };
+                Plotly.newPlot('plot-div', data, layout);
+            }
+        });
+    });
+});
+
+// Function to generate random colors for the legend
+function getRandomColor() {
+    var letters = '0123456789ABCDEF';
+    var color = '#';
+    for (var i = 0; i < 6; i++) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
+
+// Function to sort dates chronologically
+function sortDatesChronologically(dates) {
+    return dates.sort(function(a, b) {
+        return new Date(a) - new Date(b);
+    });
+}
+
+
+</script>
+<script>
+    $(document).ready(function () {
+        var table = $('#transactions-table').DataTable({
+            ajax: {
+                url: '/get_transactions',
+                type: 'POST',
+                data: function (d) {
+                    d.client_name = $('#search-client-name').val();
+                    d.business_function = $('#search-business-function').val();
+                    d.date = $('#search-date').val();  // Include date in the request
+                },
+                dataSrc: 'data'
             },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true,
-                        max: 100 // Adjust the maximum value as needed
-                    }
-                }
-            }
+            columns: [
+                { data: 'date' },  // Include the date column
+                { data: 'client_name' },
+                { data: 'business_function' },
+                { data: 'count' }
+                // Add other columns as needed
+            ],
+            // Configure DataTable options for searching and more
         });
-        </script>
-    </div>
-
- </div>
+        
+        // ... (rest of the code remains the same)
+    });
+</script>
 
 </body>
-
 </html>
