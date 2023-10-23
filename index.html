@@ -285,7 +285,17 @@
 
     // Function to update the table with the response data
     function updateTable(data) {
-        var table = $('#transactions-table').DataTable({
+          var table;
+
+    // Check if the table is already a DataTable
+    if ($.fn.DataTable.isDataTable('#transactions-table')) {
+        // The table is already a DataTable, so destroy it
+        table = $('#transactions-table').DataTable();
+        table.destroy();
+    }
+
+    // Initialize DataTable with no initial sorting
+    table = $('#transactions-table').DataTable({
         "order": [],  // Disable initial sorting
         "columnDefs": [
             { "targets": 'no-sort', "orderable": false }  // Disable sorting for columns with the class 'no-sort'
