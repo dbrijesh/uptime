@@ -143,22 +143,87 @@
 
 
         <!-- Tab 2: File Upload -->
-        <div id="tab2" class="tab-content">
-            <h3>Tab 2: Transactions</h3>
-            <table id="transactions-table" class="table table-bordered table-hover" style="width:100%">
-                <thead>
-                    <tr>
-                        <th>Date</th>
-                        <th>Client Name</th>
-                        <th>Business Function</th>
-                        <th>Count</th>
-                        <!-- Add other columns as needed -->
-                    </tr>
-                </thead>
-            </table>
-        
-           
+        <!-- Tab 2: Client and Business Function Table -->
+<div id="tab2" class="tab-content">
+    <h3>Tab 2: Client and Business Function Table</h3>
+    <form id="filter-form-table">
+        <div class="row">
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="start_month">Start Month:</label>
+                    <select class="form-control form-control-sm" id="start_month" name="start_month">
+                        {% for month in months %}
+                            <option value="{{ month[0] }}">{{ month[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="start_year">Start Year:</label>
+                    <select class="form-control form-control-sm" id="start_year" name="start_year">
+                        {% for year in years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="end_month">End Month:</label>
+                    <select class="form-control form-control-sm" id="end_month" name="end_month">
+                        {% for month in months %}
+                            <option value="{{ month[0] }}">{{ month[1] }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-2">
+                <div class="form-group">
+                    <label for="end_year">End Year:</label>
+                    <select class="form-control form-control-sm" id="end_year" name="end_year">
+                        {% for year in years %}
+                            <option value="{{ year }}">{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="form-group">
+                    <label for="client_name">Client Name:</label>
+                    <select class="form-control form-control-sm" id="client_name" name="client_name" multiple size=3>
+                        {% for name in client_names %}
+                <option value="{{ name }}">{{ name }}</option>
+            {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="col-md-5">
+                <div class="form-group">
+                    <label for="business_function">Business Function:</label>
+                    <select class="form-control form-control-sm" id="business_function" name="business_function" multiple size=3>
+                        {% for func in business_functions %}
+                <option value="{{ func }}">{{ func }}</option>
+            {% endfor %}
+                    </select>
+                </div>
+            </div>
         </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+    <table id="transactions-table" class="table table-bordered table-hover" style="width:100%">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Client Name</th>
+                <th>Business Function</th>
+                <th>Count</th>
+                <!-- Add other columns as needed -->
+            </tr>
+        </thead>
+    </table>
+</div>
+
 
         <!-- Tab 3: Additional Tab (You can add content as needed) -->
         <div id="tab3" class="tab-content">
@@ -192,6 +257,55 @@
 
 <!-- Include Plotly JS library -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<!-- Include jQuery library (if not already included) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+    // Function to handle form submission for tab 2
+    $('#filter-form-table').on('submit', function (e) {
+        e.preventDefault();
+        // Serialize the form data to send to the server
+        var formData = $(this).serialize();
+
+        // Make an AJAX POST request to the /get_table_data route
+        $.ajax({
+            type: 'POST',
+            url: '/get_data',
+            data: formData,
+            success: function (data) {
+                // Handle the response data and update the table
+                updateTable(data);
+            },
+            error: function (error) {
+                // Handle any errors, if necessary
+                console.error('Error:', error);
+            }
+        });
+    });
+
+    // Function to update the table with the response data
+    function updateTable(data) {
+        var table = $('#transactions-table').DataTable({
+        "order": [],  // Disable initial sorting
+        "columnDefs": [
+            { "targets": 'no-sort', "orderable": false }  // Disable sorting for columns with the class 'no-sort'
+        ]
+    });
+        table.clear().draw();
+        var plotData = JSON.parse(data);
+        console.log(JSON.stringify(plotData))
+        for(var i = 0; i < plotData.data.length; i++) {
+            //var row = data[i];
+            table.row.add([
+                plotData.data[i][0],
+                plotData.data[i][2],
+                plotData.data[i][3],
+                plotData.data[i][1]
+                // Add other columns as needed
+            ]).draw(false);
+        }
+    }
+</script>
 <script>
     // Handle file upload and processing
     $('#file-upload-form').on('submit', function (e) {
@@ -309,31 +423,9 @@ function sortDatesChronologically(dates) {
 
 
 </script>
+<script src="https://cdn.datatables.net/1.11.0/js/jquery.dataTables.min.js"></script>
 <script>
-    $(document).ready(function () {
-        var table = $('#transactions-table').DataTable({
-            ajax: {
-                url: '/get_transactions',
-                type: 'POST',
-                data: function (d) {
-                    d.client_name = $('#search-client-name').val();
-                    d.business_function = $('#search-business-function').val();
-                    d.date = $('#search-date').val();  // Include date in the request
-                },
-                dataSrc: 'data'
-            },
-            columns: [
-                { data: 'date' },  // Include the date column
-                { data: 'client_name' },
-                { data: 'business_function' },
-                { data: 'count' }
-                // Add other columns as needed
-            ],
-            // Configure DataTable options for searching and more
-        });
-        
-        // ... (rest of the code remains the same)
-    });
+  
 </script>
 
 </body>
