@@ -1,0 +1,146 @@
+import sqlite3
+
+# Connect to the SQLite database
+conn = sqlite3.connect('your_database.db')
+cursor = conn.cursor()
+
+# Execute the SQL query
+query = """
+-- The entire SQL query mentioned above
+"""
+cursor.execute(query)
+
+# Fetch the results
+results = cursor.fetchall()
+
+# Print or process the results as needed
+for row in results:
+    print(row)
+
+# Close the database connection
+conn.close()
+
+-- Latest month and year
+WITH LatestMonth AS (
+    SELECT
+        MAX(year) AS latest_year,
+        MAX(month) AS latest_month
+    FROM
+        transactions
+)
+
+-- Previous month and year
+, PreviousMonth AS (
+    SELECT
+        CASE
+            WHEN latest_month = 1 THEN latest_year - 1
+            ELSE latest_year
+        END AS previous_year,
+        CASE
+            WHEN latest_month = 1 THEN 12
+            ELSE latest_month - 1
+        END AS previous_month
+    FROM
+        LatestMonth
+)
+
+-- Channels added in the latest month
+, AddedChannels AS (
+    SELECT DISTINCT
+        t.client_name
+    FROM
+        transactions t
+    WHERE
+        t.year = (SELECT latest_year FROM LatestMonth)
+        AND t.month = (SELECT latest_month FROM LatestMonth)
+        AND NOT EXISTS (
+            SELECT 1
+            FROM
+                transactions t_prev
+            WHERE
+                t_prev.client_name = t.client_name
+                AND t_prev.year = (SELECT previous_year FROM PreviousMonth)
+                AND t_prev.month = (SELECT previous_month FROM PreviousMonth)
+        )
+)
+
+-- Channels that stopped consuming mal_code in the latest month
+, StoppedChannels AS (
+    SELECT DISTINCT
+        t.client_name,
+        t.mal_code
+    FROM
+        transactions t
+    WHERE
+        t.year = (SELECT latest_year FROM LatestMonth)
+        AND t.month = (SELECT latest_month FROM LatestMonth)
+        AND NOT EXISTS (
+            SELECT 1
+            FROM
+                transactions t_prev
+            WHERE
+                t_prev.client_name = t.client_name
+                AND t_prev.mal_code = t.mal_code
+                AND t_prev.year = (SELECT previous_year FROM PreviousMonth)
+                AND t_prev.month = (SELECT previous_month FROM PreviousMonth)
+        )
+)
+
+-- Final result
+SELECT
+    'Added' AS change_type,
+    client_name
+FROM
+    AddedChannels
+
+UNION ALL
+
+SELECT
+    'Stopped' AS change_type,
+    client_name
+FROM
+    StoppedChannels;
+---------
+
+<!-- Add this content within the <script> tags -->
+<script>
+    function loadTab4Content() {
+        // Logic to load content for tab4
+        $.ajax({
+            type: 'GET',
+            url: '/get_tab4_data',
+            success: function (data) {
+                // Check if data is valid
+                if (data && data.added_clients && data.stopped_clients) {
+                    // Update the content of the #tab4 div
+                    var tab4Content = '<h3>Newly Added Clients:</h3>';
+                    tab4Content += '<ul>';
+                    data.added_clients.forEach(function (client) {
+                        tab4Content += '<li>' + client + '</li>';
+                    });
+                    tab4Content += '</ul>';
+
+                    tab4Content += '<h3>Clients that Stopped Consuming Mal_code:</h3>';
+                    tab4Content += '<ul>';
+                    data.stopped_clients.forEach(function (client) {
+                        tab4Content += '<li>' + client + '</li>';
+                    });
+                    tab4Content += '</ul>';
+
+                    // Update the content of the #tab4 div
+                    $('#tab4').html(tab4Content);
+                } else {
+                    console.error('Invalid data format:', data);
+                }
+            },
+            error: function (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+</script>
+
+<!-- Tab 4: New Clients and Non-consumers -->
+<div id="tab4" class="tab-content">
+    <!-- Content for New Clients and Non-consumers goes here -->
+</div>
