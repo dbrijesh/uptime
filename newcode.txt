@@ -198,3 +198,87 @@ FROM
         });
     }
 </script>
+---
+
+<script>
+    // ... (previous code remains the same)
+
+    // Function to load content for tab5 (Total Count Graph)
+    function loadTab5Content() {
+        // Logic to load content for tab5
+        // You can make AJAX calls or perform any calculations here
+        // Update the content of the #tab5 div accordingly
+
+        // Example AJAX call to get total count for all months and years
+        $.ajax({
+            type: 'POST',
+            url: '/get_total_count_data',
+            success: function (data) {
+                // Assuming the response contains data for the total count per month and year
+                var monthsYears = data.monthsYears;
+                var totalCounts = data.totalCounts;
+
+                // Create data for the plot
+                var dataForGraph = [{
+                    x: monthsYears,
+                    y: totalCounts,
+                    type: 'bar',
+                    marker: { color: 'skyblue' }
+                }];
+
+                var layout = {
+                    title: 'Total Count Per Month and Year',
+                    xaxis: { title: 'Month and Year' },
+                    yaxis: { title: 'Total Count' }
+                };
+
+                // Create or update the graph
+                if (Plotly.get('tab5-graph') !== undefined) {
+                    Plotly.update('tab5-graph', dataForGraph, layout);
+                } else {
+                    Plotly.newPlot('tab5-graph', dataForGraph, layout);
+                }
+            },
+            error: function (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+</script>
+
+<!-- Include other scripts here -->
+
+<!-- Tab 5: Total Count Graph -->
+<div id="tab5" class="tab-content">
+    <h3>Total Count Graph</h3>
+    <button type="button" class="btn btn-primary" onclick="loadTab5Content()">Load Total Count Graph</button>
+    <div id="tab5-graph"></div>
+</div>
+
+
+--------------
+
+def get_total_count_data():
+    conn = sqlite3.connect('your_database.db')
+    cursor = conn.cursor()
+
+    # Example query to get total count per month and year
+    query = """
+        SELECT year, month, SUM(count) as total_count
+        FROM transactions
+        GROUP BY year, month
+        ORDER BY year, month
+    """
+
+    cursor.execute(query)
+    rows = cursor.fetchall()
+    conn.close()
+
+    # Separate months and years, and total counts for plotting
+    months_years = [f"{row[1]}-{row[0]}" for row in rows]  # Assuming month is the first column and year is the second
+    total_counts = [row[2] for row in rows]
+
+    return {'monthsYears': months_years, 'totalCounts': total_counts}
+
+# Route to handle the AJAX request for total count data
+@app.route('/get_total_count_data', methods=['POST'])
