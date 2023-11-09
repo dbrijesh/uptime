@@ -144,3 +144,57 @@ FROM
 <div id="tab4" class="tab-content">
     <!-- Content for New Clients and Non-consumers goes here -->
 </div>
+<script>
+    function loadTab4Content() {
+        // Logic to load content for tab4
+        // You can make AJAX calls or perform any calculations here
+        // Update the content of the #tab4 div accordingly
+
+        // Example AJAX call to get stopped and added clients
+        $.ajax({
+            type: 'POST',
+            url: '/get_tab4_data',
+            success: function (data) {
+                // Assuming the response contains an array of tuples [('Stopped', 'abc'), ('Added', 'xyz')]
+                var stoppedAndAdded = data;
+
+                // Separate stopped and added clients
+                var stoppedClients = [];
+                var addedClients = [];
+
+                for (var i = 0; i < stoppedAndAdded.length; i++) {
+                    var action = stoppedAndAdded[i][0];
+                    var clientName = stoppedAndAdded[i][1];
+
+                    if (action === 'Stopped') {
+                        stoppedClients.push(clientName);
+                    } else if (action === 'Added') {
+                        addedClients.push(clientName);
+                    }
+                }
+
+                // Display stopped clients
+                var stoppedClientsHtml = '<h4>Stopped Clients:</h4>';
+                stoppedClientsHtml += '<ul>';
+                for (var j = 0; j < stoppedClients.length; j++) {
+                    stoppedClientsHtml += '<li>' + stoppedClients[j] + '</li>';
+                }
+                stoppedClientsHtml += '</ul>';
+
+                // Display added clients
+                var addedClientsHtml = '<h4>Added Clients:</h4>';
+                addedClientsHtml += '<ul>';
+                for (var k = 0; k < addedClients.length; k++) {
+                    addedClientsHtml += '<li>' + addedClients[k] + '</li>';
+                }
+                addedClientsHtml += '</ul>';
+
+                // Update the content of the #tab4 div
+                $('#tab4').html(stoppedClientsHtml + addedClientsHtml);
+            },
+            error: function (error) {
+                console.error('Error:', error);
+            }
+        });
+    }
+</script>
