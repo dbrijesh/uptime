@@ -282,3 +282,81 @@ def get_total_count_data():
 
 # Route to handle the AJAX request for total count data
 @app.route('/get_total_count_data', methods=['POST'])
+
+------------------
+
+ # Latest month and year
+    cursor.execute("""
+        SELECT
+            MAX(year) AS latest_year,
+            MAX(month) AS latest_month
+        FROM
+            transactions
+    """)
+    latest_month_result = cursor.fetchone()
+    latest_year, latest_month = latest_month_result[0], latest_month_result[1]
+
+    # Previous month and year
+    cursor.execute("""
+        SELECT
+            CASE
+                WHEN ? = 1 THEN ? - 1
+                ELSE ?
+            END AS previous_year,
+            CASE
+                WHEN ? = 1 THEN 12
+                ELSE ? - 1
+            END AS previous_month
+        """, (latest_month, latest_year, latest_year, latest_month, latest_month))
+    previous_month_result = cursor.fetchone()
+    previous_year, previous_month = previous_month_result[0], previous_month_result[1]
+
+    # Channels added in the latest month
+    cursor.execute("""
+        SELECT DISTINCT
+            'Added' AS change_type,
+            client_name
+        FROM
+            transactions
+        WHERE
+            year = ?
+            AND month = ?
+            AND NOT EXISTS (
+                SELECT 1
+                FROM
+                    transactions t_prev
+                WHERE
+                    t_prev.client_name = transactions.client_name
+                    AND t_prev.year = ?
+                    AND t_prev.month = ?
+            )
+    """, (latest_year, latest_month, previous_year, previous_month))
+    added_channels = cursor.fetchall()
+
+    # Channels that stopped consuming mal_code in the latest month
+    cursor.execute("""
+        SELECT DISTINCT
+            'Stopped' AS change_type,
+            client_name
+        FROM
+            transactions t
+        WHERE
+            year = ?
+            AND month = ?
+            AND NOT EXISTS (
+                SELECT 1
+                FROM
+                    transactions t_prev
+                WHERE
+                    t_prev.client_name = t.client_name
+                    AND t_prev.year = ?
+                    AND t_prev.month = ?
+            )
+    """, (latest_year, latest_month, previous_year, previous_month))
+    stopped_channels = cursor.fetchall()
+
+    connection.close()
+
+    result = added_channels + stopped_channels
+
+    return result
