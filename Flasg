@@ -64,6 +64,59 @@ if __name__ == "__main__":
     app.run(debug=True)
 
 
+
+from flask import Flask, render_template, request
+from pathlib import Path
+import json
+from specvalidator import validate_spec
+from swagger_ui import get_swagger_ui
+
+# Define directory containing API specs
+spec_dir = Path("api_specs")
+
+# Initialize Flask app
+app = Flask(__name__)
+
+# Helper function to load and validate spec file
+def load_spec(filename):
+    spec_path = spec_dir / filename
+    if not spec_path.exists():
+        return f"Spec file '{filename}' not found!", 404
+    try:
+        if filename.endswith(".json"):
+            with open(spec_path, "r") as f:
+                spec_data = json.load(f)
+        else:
+            with open(spec_path, "r") as f:
+                spec_data = f.read()
+        errors = validate_spec(spec_data)
+        if errors:
+            raise ValueError(f"Validation errors: {errors}")
+        return spec_data
+    except (FileNotFoundError, json.JSONDecodeError) as e:
+        return f"Error loading spec: {e}", 400
+
+# Route to list all specs
+@app.route("/")
+def list_specs():
+    specs = [f.name for f in spec_dir.glob("*.yaml") if f.is_file()] + [f.name for f in spec_dir.glob("*.json") if f.is_file()]
+    return render_template("list_specs.html", specs=specs)
+
+# Route to display individual spec using Swagger UI
+@app.route("/spec/<spec_name>")
+def view_spec(spec_name):
+    try:
+        spec_data = load_spec(spec_name)
+    except ValueError as e:
+        return f"Spec validation error: {e}", 400
+    ui = get_swagger_ui(spec_data, spec_url=f"/spec/{spec_name}")
+    return render_template("view_spec.html", ui=ui)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+
     <script src="{{ url_for('static', filename='swagger-ui-bundle.js') }}"></script>
     <script>
         const ui = new SwaggerUI({
