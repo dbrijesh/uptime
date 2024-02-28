@@ -80,3 +80,43 @@ if __name__ == '__main__':
 </html>
 
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spec List</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            padding: 20px;
+        }
+        .spec-list {
+            list-style: none;
+            padding-left: 0;
+        }
+        .spec-list li {
+            margin-bottom: 10px;
+        }
+        .spec-list li a {
+            color: #007bff;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+        .spec-list li a:hover {
+            color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mt-5">Available Specs</h1>
+        <ul class="spec-list">
+            {% for spec_key in spec_keys %}
+                <li><a href="/apidocs/{{ spec_key }}">{{ spec_key }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+</body>
+</html>
+
+
