@@ -1,59 +1,76 @@
-from flask import Flask, jsonify, send_from_directory
-from flasgger import Swagger
-import os
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Specs</title>
+</head>
+<body>
+    <h1>Available API Specs</h1>
+    <ul>
+        {% for spec in specs %}
+        <li><a href="{{ url_for('view_spec', spec_name=spec) }}">{{ spec }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>API Spec - {{ spec_name }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='swagger-ui.css') }}">
+</head>
+<body>
+    <h1>API Spec: {{ spec_name }}</h1>
+    <div from flask import Flask, render_template, request
+from pathlib import Path
+from specvalidator import validate_spec
+from swagger_ui import get_swagger_ui
+
+# Define directory containing API specs
+spec_dir = Path("api_specs")
+
+# Initialize Flask app
 app = Flask(__name__)
-swagger = Swagger(app)
 
-# Directory containing OpenAPI 3.0 specs
-OAS3_SPECS_DIR = "oas3_specs"
+# Helper function to load and validate spec file
+def load_spec(filename):
+    with open(spec_dir / filename, "r") as f:
+        spec_data = f.read()
+        errors = validate_spec(spec_data)
+        if errors:
+            raise ValueError(f"Validation errors: {errors}")
+        return spec_data
 
-
-@app.route('/')
-def index():
-    """
-    Home endpoint
-    ---
-    responses:
-      200:
-        description: Welcome to the Swagger UI
-    """
-    return jsonify(message="Welcome to the Swagger UI")
-
-
-@app.route('/specs')
+# Route to list all specs
+@app.route("/")
 def list_specs():
-    """
-    List available OpenAPI 3.0 specs
-    ---
-    responses:
-      200:
-        description: List of available OpenAPI 3.0 specs
-    """
-    specs = []
-    for file_name in os.listdir(OAS3_SPECS_DIR):
-        if file_name.endswith(".yaml") or file_name.endswith(".json"):
-            specs.append(file_name)
-    return jsonify(specs)
+    specs = [f.name for f in spec_dir.glob("*.yaml") if f.is_file()]
+    return render_template("list_specs.html", specs=specs)
 
+# Route to display individual spec using Swagger UI
+@app.route("/spec/<spec_name>")
+def view_spec(spec_name):
+    spec_path = spec_dir / spec_name
+    if not spec_path.exists():
+        return "Spec not found!", 404
+    try:
+        spec_data = load_spec(spec_name)
+    except ValueError as e:
+        return f"Spec validation error: {e}", 400
+    ui = get_swagger_ui(spec_data, spec_url=f"/spec/{spec_name}")
+    return render_template("view_spec.html", ui=ui)
 
-@app.route('/spec/<path:spec_file>')
-def spec(spec_file):
-    """
-    Get a specific OpenAPI 3.0 spec
-    ---
-    parameters:
-      - name: spec_file
-        in: path
-        type: string
-        required: true
-        description: Name of the OpenAPI 3.0 spec file
-    responses:
-      200:
-        description: The OpenAPI 3.0 spec
-    """
-    return send_from_directory(OAS3_SPECS_DIR, spec_file)
-
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     app.run(debug=True)
+
+
+    <script src="{{ url_for('static', filename='swagger-ui-bundle.js') }}"></script>
+    <script>
+        const ui = new SwaggerUI({
+            spec: {{ ui|tojson }},
+            domNode: '#swagger-ui'
+        });
+    </script>
+</body>
+</html>
+
