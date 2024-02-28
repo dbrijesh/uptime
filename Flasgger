@@ -1,0 +1,59 @@
+from flask import Flask, jsonify, send_from_directory
+from flasgger import Swagger
+import os
+
+app = Flask(__name__)
+swagger = Swagger(app)
+
+# Directory containing OpenAPI 3.0 specs
+OAS3_SPECS_DIR = "oas3_specs"
+
+
+@app.route('/')
+def index():
+    """
+    Home endpoint
+    ---
+    responses:
+      200:
+        description: Welcome to the Swagger UI
+    """
+    return jsonify(message="Welcome to the Swagger UI")
+
+
+@app.route('/specs')
+def list_specs():
+    """
+    List available OpenAPI 3.0 specs
+    ---
+    responses:
+      200:
+        description: List of available OpenAPI 3.0 specs
+    """
+    specs = []
+    for file_name in os.listdir(OAS3_SPECS_DIR):
+        if file_name.endswith(".yaml") or file_name.endswith(".json"):
+            specs.append(file_name)
+    return jsonify(specs)
+
+
+@app.route('/spec/<path:spec_file>')
+def spec(spec_file):
+    """
+    Get a specific OpenAPI 3.0 spec
+    ---
+    parameters:
+      - name: spec_file
+        in: path
+        type: string
+        required: true
+        description: Name of the OpenAPI 3.0 spec file
+    responses:
+      200:
+        description: The OpenAPI 3.0 spec
+    """
+    return send_from_directory(OAS3_SPECS_DIR, spec_file)
+
+
+if __name__ == '__main__':
+    app.run(debug=True)
