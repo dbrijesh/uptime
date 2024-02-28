@@ -1,0 +1,77 @@
+import os
+from flask import Flask, render_template
+from flasgger import Swagger, swag_from
+
+app = Flask(__name__)
+
+# Specify the directory containing OAS3 specs
+spec_directory = "specs"
+
+# Load all specs from the directory
+specs = []
+for filename in os.listdir(spec_directory):
+    if filename.endswith(".yaml"):
+        filepath = os.path.join(spec_directory, filename)
+        with open(filepath, "r") as f:
+            spec = f.read()
+            specs.append({
+                "endpoint": f"/specs/{filename}",
+                "description": os.path.splitext(filename)[0],  # Get description from filename
+                "type": "openApi"
+            })
+
+# Configure Swagger
+app.config["SWAGGER"] = {
+    "title": "API Documentation",
+    "specs": specs,
+    "swagger_ui_params": {}
+}
+
+swagger = Swagger(app)
+
+
+@app.route("/")
+def index():
+    """
+    Lists available API specs.
+
+    ---
+    responses:
+        200:
+            description: The Swagger UI listing page.
+            content:
+                text/html:
+                    schema:
+                        type: string
+    """
+    return render_template("index.html", specs=specs)
+
+
+# Dynamically serve specs based on filename
+@app.route("/specs/<filename>")
+def serve_spec(filename):
+    with open(os.path.join(spec_directory, filename), "r") as f:
+        spec = f.read()
+        return spec
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Documentation</title>
+</head>
+<body>
+  <h1>Available API Specifications</h1>
+  <ul>
+    {% for spec in specs %}
+      <li>
+        <a href="{{ spec.endpoint }}">{{ spec.description }}</a>
+      </li>
+    {% endfor %}
+  </ul>
+</body>
+</html>
