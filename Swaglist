@@ -1,0 +1,82 @@
+from flask import Flask, render_template, redirect, url_for
+from flasgger import Swagger
+
+app = Flask(__name__)
+swagger = Swagger(app)
+
+# Define your Swagger specs
+specs = {
+    "spec1": {
+        "swagger": "2.0",
+        "info": {
+            "title": "Spec 1",
+            "description": "This is the Swagger spec for Spec 1",
+            "version": "1.0",
+        },
+        "paths": {
+            "/endpoint1": {
+                "get": {
+                    "summary": "Endpoint 1",
+                    "description": "Description of Endpoint 1",
+                    "responses": {"200": {"description": "Successful operation"}},
+                }
+            }
+        },
+    },
+    "spec2": {
+        "swagger": "2.0",
+        "info": {
+            "title": "Spec 2",
+            "description": "This is the Swagger spec for Spec 2",
+            "version": "1.0",
+        },
+        "paths": {
+            "/endpoint2": {
+                "get": {
+                    "summary": "Endpoint 2",
+                    "description": "Description of Endpoint 2",
+                    "responses": {"200": {"description": "Successful operation"}},
+                }
+            }
+        },
+    }
+}
+
+# Endpoint to serve Swagger spec
+@app.route('/specs/<spec_name>')
+def serve_spec(spec_name):
+    if spec_name in specs:
+        return jsonify(specs[spec_name])
+    else:
+        return "Spec not found", 404
+
+# Endpoint to render a page listing all spec keys
+@app.route('/')
+def list_specs():
+    return render_template("spec_list.html", spec_keys=specs.keys())
+
+# Redirect to the corresponding apidocs page for the selected spec key
+@app.route('/apidocs/<spec_key>')
+def spec_key_redirect(spec_key):
+    return redirect(url_for('serve_spec', spec_name=spec_key))
+
+if __name__ == '__main__':
+    app.run(debug=True)
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Spec List</title>
+</head>
+<body>
+    <h1>Available Specs</h1>
+    <ul>
+        {% for spec_key in spec_keys %}
+            <li><a href="{{ url_for('spec_key_redirect', spec_key=spec_key) }}">{{ spec_key }}</a></li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+
+
