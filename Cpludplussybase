@@ -1,0 +1,385 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <ctpublic.h>  // Sybase CT-Lib header
+
+// Structure to hold query results
+struct AnalysisResult {
+    int id;
+    std::string name;
+    double value;
+};
+
+class SybaseConnector {
+private:
+    CS_CONTEXT* context;
+    CS_CONNECTION* connection;
+    CS_COMMAND* command;
+    bool isConnected;
+    
+    // Connection parameters
+    std::string server;
+    std::string username;
+    std::string password;
+    std::string database;
+    
+public:
+    SybaseConnector(const std::string& server, 
+                   const std::string& username,
+                   const std::string& password,
+                   const std::string& database) 
+        : server(server), username(username), password(password), database(database), isConnected(false) {
+        
+        context = nullptr;
+        connection = nullptr;
+        command = nullptr;
+    }
+    
+    ~SybaseConnector() {
+        disconnect();
+    }
+    
+    bool connect() {
+        CS_RETCODE retcode;
+        
+        // Initialize CT-Lib
+        if ((retcode = cs_ctx_alloc(CS_VERSION_100, &context)) != CS_SUCCEED) {
+            std::cerr << "Failed to allocate CS_CONTEXT" << std::endl;
+            return false;
+        }
+        
+        if ((retcode = ct_init(context, CS_VERSION_100)) != CS_SUCCEED) {
+            std::cerr << "Failed to initialize Client-Library" << std::endl;
+            cs_ctx_drop(context);
+            return false;
+        }
+        
+        // Get connection
+        if ((retcode = ct_con_alloc(context, &connection)) != CS_SUCCEED) {
+            std::cerr << "Failed to allocate connection" << std::endl;
+            ct_exit(context, CS_UNUSED);
+            cs_ctx_drop(context);
+            return false;
+        }
+        
+        // Set connection properties
+        if ((retcode = ct_con_props(connection, CS_SET, CS_USERNAME, 
+                         (CS_VOID*)username.c_str(), CS_NULLTERM, nullptr)) != CS_SUCCEED) {
+            std::cerr << "Failed to set username" << std::endl;
+            ct_con_drop(connection);
+            ct_exit(context, CS_UNUSED);
+            cs_ctx_drop(context);
+            return false;
+        }
+        
+        if ((retcode = ct_con_props(connection, CS_SET, CS_PASSWORD, 
+                         (CS_VOID*)password.c_str(), CS_NULLTERM, nullptr)) != CS_SUCCEED) {
+            std::cerr << "Failed to set password" << std::endl;
+            ct_con_drop(connection);
+            ct_exit(context, CS_UNUSED);
+            cs_ctx_drop(context);
+            return false;
+        }
+        
+        // Connect to server
+        if ((retcode = ct_connect(connection, server.c_str(), CS_NULLTERM)) != CS_SUCCEED) {
+            std::cerr << "Failed to connect to server" << std::endl;
+            ct_con_drop(connection);
+            ct_exit(context, CS_UNUSED);
+            cs_ctx_drop(context);
+            return false;
+        }
+        
+        // Use the specified database
+        std::string useDbCmd = "USE " + database;
+        executeNonQuery(useDbCmd);
+        
+        isConnected = true;
+        return true;
+    }
+    
+    void disconnect() {
+        if (command != nullptr) {
+            ct_cmd_drop(command);
+            command = nullptr;
+        }
+        
+        if (connection != nullptr) {
+            ct_close(connection, CS_UNUSED);
+            ct_con_drop(connection);
+            connection = nullptr;
+        }
+        
+        if (context != nullptr) {
+            ct_exit(context, CS_UNUSED);
+            cs_ctx_drop(context);
+            context = nullptr;
+        }
+        
+        isConnected = false;
+    }
+    
+    bool executeNonQuery(const std::string& sql) {
+        if (!isConnected) {
+            std::cerr << "Not connected to database" << std::endl;
+            return false;
+        }
+        
+        CS_RETCODE retcode;
+        
+        // Allocate command structure
+        if ((retcode = ct_cmd_alloc(connection, &command)) != CS_SUCCEED) {
+            std::cerr << "Failed to allocate command structure" << std::endl;
+            return false;
+        }
+        
+        // Set command text
+        if ((retcode = ct_command(command, CS_LANG_CMD, 
+                       (CS_CHAR*)sql.c_str(), CS_NULLTERM, CS_UNUSED)) != CS_SUCCEED) {
+            std::cerr << "Failed to set command text" << std::endl;
+            ct_cmd_drop(command);
+            command = nullptr;
+            return false;
+        }
+        
+        // Send command
+        if ((retcode = ct_send(command)) != CS_SUCCEED) {
+            std::cerr << "Failed to send command" << std::endl;
+            ct_cmd_drop(command);
+            command = nullptr;
+            return false;
+        }
+        
+        // Process results
+        while ((retcode = ct_results(command, &retcode)) == CS_SUCCEED) {
+            if (retcode == CS_END_RESULTS) {
+                break;
+            }
+        }
+        
+        ct_cmd_drop(command);
+        command = nullptr;
+        
+        return true;
+    }
+    
+    std::vector<AnalysisResult> executeQuery(const std::string& sql) {
+        std::vector<AnalysisResult> results;
+        
+        if (!isConnected) {
+            std::cerr << "Not connected to database" << std::endl;
+            return results;
+        }
+        
+        CS_RETCODE retcode;
+        CS_INT result_type;
+        
+        // Allocate command structure
+        if ((retcode = ct_cmd_alloc(connection, &command)) != CS_SUCCEED) {
+            std::cerr << "Failed to allocate command structure" << std::endl;
+            return results;
+        }
+        
+        // Set command text
+        if ((retcode = ct_command(command, CS_LANG_CMD, 
+                       (CS_CHAR*)sql.c_str(), CS_NULLTERM, CS_UNUSED)) != CS_SUCCEED) {
+            std::cerr << "Failed to set command text" << std::endl;
+            ct_cmd_drop(command);
+            command = nullptr;
+            return results;
+        }
+        
+        // Send command
+        if ((retcode = ct_send(command)) != CS_SUCCEED) {
+            std::cerr << "Failed to send command" << std::endl;
+            ct_cmd_drop(command);
+            command = nullptr;
+            return results;
+        }
+        
+        // Process results
+        while ((retcode = ct_results(command, &result_type)) == CS_SUCCEED) {
+            if (result_type == CS_ROW_RESULT) {
+                CS_DATAFMT id_fmt, name_fmt, value_fmt;
+                CS_INT id;
+                CS_CHAR name[128];
+                CS_FLOAT value;
+                CS_INT name_len;
+                CS_SMALLINT indicator;
+                
+                // Bind result columns
+                ct_describe(command, 1, &id_fmt);
+                id_fmt.datatype = CS_INT_TYPE;
+                id_fmt.format = CS_FMT_UNUSED;
+                ct_bind(command, 1, &id_fmt, &id, NULL, &indicator);
+                
+                ct_describe(command, 2, &name_fmt);
+                name_fmt.datatype = CS_CHAR_TYPE;
+                name_fmt.format = CS_FMT_NULLTERM;
+                ct_bind(command, 2, &name_fmt, name, sizeof(name), &name_len);
+                
+                ct_describe(command, 3, &value_fmt);
+                value_fmt.datatype = CS_FLOAT_TYPE;
+                value_fmt.format = CS_FMT_UNUSED;
+                ct_bind(command, 3, &value_fmt, &value, NULL, &indicator);
+                
+                // Fetch rows
+                while ((retcode = ct_fetch(command, CS_UNUSED, CS_UNUSED, CS_UNUSED, NULL)) == CS_SUCCEED) {
+                    AnalysisResult result;
+                    result.id = id;
+                    result.name = std::string(name);
+                    result.value = value;
+                    
+                    results.push_back(result);
+                }
+            } else if (result_type == CS_CMD_SUCCEED || result_type == CS_CMD_DONE) {
+                // Command completed successfully, no rows returned
+                continue;
+            } else if (result_type == CS_CMD_FAIL) {
+                std::cerr << "Command failed" << std::endl;
+                break;
+            }
+        }
+        
+        ct_cmd_drop(command);
+        command = nullptr;
+        
+        return results;
+    }
+    
+    bool executeStoredProcedure(const std::string& procName, 
+                               const std::vector<std::pair<std::string, std::string>>& parameters,
+                               std::vector<AnalysisResult>& results) {
+        if (!isConnected) {
+            std::cerr << "Not connected to database" << std::endl;
+            return false;
+        }
+        
+        CS_RETCODE retcode;
+        CS_INT result_type;
+        
+        // Allocate command structure
+        if ((retcode = ct_cmd_alloc(connection, &command)) != CS_SUCCEED) {
+            std::cerr << "Failed to allocate command structure" << std::endl;
+            return false;
+        }
+        
+        // Build stored procedure call
+        std::string procCall = "EXEC " + procName + " ";
+        for (size_t i = 0; i < parameters.size(); i++) {
+            if (i > 0) {
+                procCall += ", ";
+            }
+            procCall += "@" + parameters[i].first + "='" + parameters[i].second + "'";
+        }
+        
+        // Set command text
+        if ((retcode = ct_command(command, CS_LANG_CMD, 
+                       (CS_CHAR*)procCall.c_str(), CS_NULLTERM, CS_UNUSED)) != CS_SUCCEED) {
+            std::cerr << "Failed to set command text" << std::endl;
+            ct_cmd_drop(command);
+            command = nullptr;
+            return false;
+        }
+        
+        // Send command
+        if ((retcode = ct_send(command)) != CS_SUCCEED) {
+            std::cerr << "Failed to send command" << std::endl;
+            ct_cmd_drop(command);
+            command = nullptr;
+            return false;
+        }
+        
+        // Process results (similar to executeQuery)
+        results.clear();
+        while ((retcode = ct_results(command, &result_type)) == CS_SUCCEED) {
+            if (result_type == CS_ROW_RESULT) {
+                CS_DATAFMT id_fmt, name_fmt, value_fmt;
+                CS_INT id;
+                CS_CHAR name[128];
+                CS_FLOAT value;
+                CS_INT name_len;
+                CS_SMALLINT indicator;
+                
+                // Bind result columns
+                ct_describe(command, 1, &id_fmt);
+                id_fmt.datatype = CS_INT_TYPE;
+                id_fmt.format = CS_FMT_UNUSED;
+                ct_bind(command, 1, &id_fmt, &id, NULL, &indicator);
+                
+                ct_describe(command, 2, &name_fmt);
+                name_fmt.datatype = CS_CHAR_TYPE;
+                name_fmt.format = CS_FMT_NULLTERM;
+                ct_bind(command, 2, &name_fmt, name, sizeof(name), &name_len);
+                
+                ct_describe(command, 3, &value_fmt);
+                value_fmt.datatype = CS_FLOAT_TYPE;
+                value_fmt.format = CS_FMT_UNUSED;
+                ct_bind(command, 3, &value_fmt, &value, NULL, &indicator);
+                
+                // Fetch rows
+                while ((retcode = ct_fetch(command, CS_UNUSED, CS_UNUSED, CS_UNUSED, NULL)) == CS_SUCCEED) {
+                    AnalysisResult result;
+                    result.id = id;
+                    result.name = std::string(name);
+                    result.value = value;
+                    
+                    results.push_back(result);
+                }
+            }
+        }
+        
+        ct_cmd_drop(command);
+        command = nullptr;
+        
+        return true;
+    }
+};
+
+// Usage example
+int main() {
+    // Connection string parameters for Sybase
+    std::string server = "SYBASESERVER";
+    std::string username = "sybase_user";
+    std::string password = "password123";
+    std::string database = "analysis_db";
+    
+    // Create connector and connect
+    SybaseConnector connector(server, username, password, database);
+    if (!connector.connect()) {
+        std::cerr << "Failed to connect to database" << std::endl;
+        return 1;
+    }
+    
+    std::cout << "Connected to Sybase database successfully" << std::endl;
+    
+    // Execute a simple query
+    std::string query = "SELECT id, name, value FROM analysis_table WHERE value > 100";
+    std::vector<AnalysisResult> queryResults = connector.executeQuery(query);
+    
+    std::cout << "Query results:" << std::endl;
+    for (const auto& result : queryResults) {
+        std::cout << "ID: " << result.id << ", Name: " << result.name 
+                  << ", Value: " << result.value << std::endl;
+    }
+    
+    // Execute a stored procedure
+    std::vector<std::pair<std::string, std::string>> params;
+    params.push_back(std::make_pair("startDate", "2025-01-01"));
+    params.push_back(std::make_pair("endDate", "2025-03-01"));
+    
+    std::vector<AnalysisResult> spResults;
+    connector.executeStoredProcedure("sp_get_analysis_data", params, spResults);
+    
+    std::cout << "\nStored procedure results:" << std::endl;
+    for (const auto& result : spResults) {
+        std::cout << "ID: " << result.id << ", Name: " << result.name 
+                  << ", Value: " << result.value << std::endl;
+    }
+    
+    // Disconnect from database
+    connector.disconnect();
+    std::cout << "Disconnected from database" << std::endl;
+    
+    return 0;
+}
