@@ -1,0 +1,224 @@
+const AWS = require('aws-sdk');
+
+exports.handler = async (event) => {
+    console.log('Received event:', JSON.stringify(event, null, 2));
+    
+    try {
+        // Extract query parameters from the callback
+        const queryParams = event.queryStringParameters || {};
+        
+        // Common Cognito callback parameters
+        const {
+            code,
+            state,
+            error,
+            error_description,
+            access_token,
+            id_token,
+            token_type,
+            expires_in
+        } = queryParams;
+        
+        // Check if there's an error in the callback
+        if (error) {
+            return {
+                statusCode: 400,
+                headers: {
+                    'Content-Type': 'text/html',
+                },
+                body: `
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>Cognito Callback - Error</title>
+                        <style>
+                            body { font-family: Arial, sans-serif; margin: 40px; }
+                            .error { color: red; background: #ffe6e6; padding: 20px; border-radius: 5px; }
+                            .param { margin: 10px 0; }
+                            .label { font-weight: bold; }
+                        </style>
+                    </head>
+                    <body>
+                        <h1>Cognito Callback - Error</h1>
+                        <div class="error">
+                            <div class="param">
+                                <span class="label">Error:</span> ${error}
+                            </div>
+                            <div class="param">
+                                <span class="label">Description:</span> ${error_description || 'No description provided'}
+                            </div>
+                        </div>
+                        <h3>All Parameters:</h3>
+                        <pre>${JSON.stringify(queryParams, null, 2)}</pre>
+                    </body>
+                    </html>
+                `
+            };
+        }
+        
+        // Success response - display the received tokens/code
+        let responseBody = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Cognito Callback - Success</title>
+                <style>
+                    body { font-family: Arial, sans-serif; margin: 40px; }
+                    .success { color: green; background: #e6ffe6; padding: 20px; border-radius: 5px; }
+                    .param { margin: 10px 0; }
+                    .label { font-weight: bold; }
+                    .token { 
+                        background: #f5f5f5; 
+                        padding: 10px; 
+                        border-radius: 3px; 
+                        word-break: break-all;
+                        font-family: monospace;
+                        font-size: 12px;
+                    }
+                    .copy-btn { 
+                        margin-left: 10px; 
+                        padding: 5px 10px; 
+                        background: #007bff; 
+                        color: white; 
+                        border: none; 
+                        border-radius: 3px; 
+                        cursor: pointer;
+                    }
+                </style>
+            </head>
+            <body>
+                <h1>Cognito Callback - Success</h1>
+                <div class="success">
+                    <p>✅ Authentication successful! Received callback from Cognito.</p>
+                </div>
+                
+                <h3>Received Parameters:</h3>
+        `;
+        
+        // Display authorization code if present (Authorization Code flow)
+        if (code) {
+            responseBody += `
+                <div class="param">
+                    <span class="label">Authorization Code:</span>
+                    <button class="copy-btn" onclick="copyToClipboard('${code}')">Copy</button>
+                    <div class="token">${code}</div>
+                </div>
+            `;
+        }
+        
+        // Display tokens if present (Implicit flow)
+        if (access_token) {
+            responseBody += `
+                <div class="param">
+                    <span class="label">Access Token:</span>
+                    <button class="copy-btn" onclick="copyToClipboard('${access_token}')">Copy</button>
+                    <div class="token">${access_token}</div>
+                </div>
+            `;
+        }
+        
+        if (id_token) {
+            responseBody += `
+                <div class="param">
+                    <span class="label">ID Token:</span>
+                    <button class="copy-btn" onclick="copyToClipboard('${id_token}')">Copy</button>
+                    <div class="token">${id_token}</div>
+                </div>
+            `;
+        }
+        
+        if (token_type) {
+            responseBody += `
+                <div class="param">
+                    <span class="label">Token Type:</span> ${token_type}
+                </div>
+            `;
+        }
+        
+        if (expires_in) {
+            responseBody += `
+                <div class="param">
+                    <span class="label">Expires In:</span> ${expires_in} seconds
+                </div>
+            `;
+        }
+        
+        if (state) {
+            responseBody += `
+                <div class="param">
+                    <span class="label">State:</span> ${state}
+                </div>
+            `;
+        }
+        
+        responseBody += `
+                <h3>All Parameters (Raw):</h3>
+                <pre>${JSON.stringify(queryParams, null, 2)}</pre>
+                
+                <h3>Next Steps:</h3>
+                <ul>
+                    <li>If you received an authorization code, exchange it for tokens using your token endpoint</li>
+                    <li>If you received tokens directly, you can use them to access protected resources</li>
+                    <li>Validate the ID token if present to get user information</li>
+                </ul>
+                
+                <script>
+                    function copyToClipboard(text) {
+                        navigator.clipboard.writeText(text).then(function() {
+                            alert('Copied to clipboard!');
+                        }, function(err) {
+                            console.error('Could not copy text: ', err);
+                        });
+                    }
+                </script>
+            </body>
+            </html>
+        `;
+        
+        // Log the callback data for debugging
+        console.log('Cognito callback received:', {
+            code: code ? 'Present' : 'Not present',
+            access_token: access_token ? 'Present' : 'Not present',
+            id_token: id_token ? 'Present' : 'Not present',
+            state,
+            timestamp: new Date().toISOString()
+        });
+        
+        return {
+            statusCode: 200,
+            headers: {
+                'Content-Type': 'text/html',
+            },
+            body: responseBody
+        };
+        
+    } catch (error) {
+        console.error('Error processing callback:', error);
+        
+        return {
+            statusCode: 500,
+            headers: {
+                'Content-Type': 'text/html',
+            },
+            body: `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cognito Callback - Server Error</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 40px; }
+                        .error { color: red; background: #ffe6e6; padding: 20px; border-radius: 5px; }
+                    </style>
+                </head>
+                <body>
+                    <h1>Cognito Callback - Server Error</h1>
+                    <div class="error">
+                        <p>An error occurred while processing the callback.</p>
+                        <p>Error: ${error.message}</p>
+                    </div>
+                </body>
+                </html>
+            `
+        };
+    }
+};
