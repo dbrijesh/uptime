@@ -1,7 +1,7 @@
-// ES Modules version (if needed)
-import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
+// AWS SDK v3 is now the default in Lambda runtime
+// No need to import AWS SDK for basic Lambda operations
 
-export const handler = async (event) => {
+exports.handler = async (event) => {
     console.log('Received event:', JSON.stringify(event, null, 2));
     
     try {
@@ -188,7 +188,10 @@ export const handler = async (event) => {
         return {
             statusCode: 200,
             headers: {
-                'Content-Type': 'text/html',
+                'Content-Type': 'text/html; charset=utf-8',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
             },
             body: responseBody
         };
@@ -199,7 +202,10 @@ export const handler = async (event) => {
         return {
             statusCode: 500,
             headers: {
-                'Content-Type': 'text/html',
+                'Content-Type': 'text/html; charset=utf-8',
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
             },
             body: `
                 <!DOCTYPE html>
