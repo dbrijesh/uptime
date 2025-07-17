@@ -1,6 +1,7 @@
-const AWS = require('aws-sdk');
+// ES Modules version (if needed)
+import { CognitoIdentityProviderClient } from "@aws-sdk/client-cognito-identity-provider";
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
     console.log('Received event:', JSON.stringify(event, null, 2));
     
     try {
