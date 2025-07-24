@@ -1,0 +1,247 @@
+<svg viewBox="0 0 1600 1400" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="navyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8F4FD;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B3D9F2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FEF2F2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FECACA;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="purpleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#F0E6FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#D4B5FF;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="tealGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E6F9F5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B3F0E1;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FFF4E6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FFE0B3;stop-opacity:1" />
+    </linearGradient>
+    
+    <!-- Arrow markers -->
+    <defs>
+      <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#6B46C1" />
+      </marker>
+      <marker id="dashedArrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#059669" />
+      </marker>
+      <marker id="returnArrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#DC2626" />
+      </marker>
+      <marker id="collabArrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+        <polygon points="0 0, 8 3, 0 6" fill="#8B5CF6" />
+      </marker>
+      <marker id="securityArrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+        <polygon points="0 0, 10 3.5, 0 7" fill="#EF4444" />
+      </marker>
+    </defs>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1600" height="1400" fill="#FAFBFC"/>
+  
+  <!-- Layer 1: User Interface Layer -->
+  <rect x="50" y="50" width="1500" height="200" rx="15" fill="url(#navyGradient)" stroke="#2563EB" stroke-width="2"/>
+  <text x="70" y="80" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#1E40AF">Layer 1: User Interface - Salesforce Agent Force</text>
+  
+  <!-- Main Salesforce Interface -->
+  <rect x="80" y="100" width="650" height="120" rx="10" fill="#FFFFFF" stroke="#3B82F6" stroke-width="2"/>
+  
+  <!-- User Profile Section -->
+  <circle cx="110" cy="130" r="20" fill="#10B981"/>
+  <text x="110" y="136" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="white" text-anchor="middle">SV</text>
+  <text x="140" y="125" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1F2937">Sarah VP Sales</text>
+  <text x="140" y="140" font-family="Arial, sans-serif" font-size="11" fill="#6B7280">Enterprise Sales Division</text>
+  <text x="140" y="155" font-family="Arial, sans-serif" font-size="11" fill="#6B7280">Last login: 10:30 AM EST</text>
+  
+  <!-- Query Input Section -->
+  <rect x="280" y="110" width="380" height="40" rx="8" fill="#F3F4F6" stroke="#D1D5DB" stroke-width="1"/>
+  <text x="290" y="125" font-family="Arial, sans-serif" font-size="10" fill="#6B7280">Query Input:</text>
+  <text x="290" y="140" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#1F2937">"Analyze Q1 revenue forecast and identify payment risks"</text>
+  
+  <!-- Action Buttons -->
+  <rect x="290" y="160" width="80" height="25" rx="5" fill="#3B82F6"/>
+  <text x="330" y="177" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">🔍 Analyze</text>
+  <rect x="380" y="160" width="80" height="25" rx="5" fill="#10B981"/>
+  <text x="420" y="177" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">📊 Dashboard</text>
+  <rect x="470" y="160" width="80" height="25" rx="5" fill="#F59E0B"/>
+  <text x="510" y="177" font-family="Arial, sans-serif" font-size="11" fill="white" text-anchor="middle">⚠️ Alerts</text>
+  
+  <!-- Context Panel -->
+  <rect x="670" y="110" width="50" height="50" rx="8" fill="#EEF2FF" stroke="#6366F1" stroke-width="1"/>
+  <text x="695" y="130" font-family="Arial, sans-serif" font-size="10" fill="#4338CA" text-anchor="middle">Q1</text>
+  <text x="695" y="142" font-family="Arial, sans-serif" font-size="10" fill="#4338CA" text-anchor="middle">2025</text>
+  <text x="695" y="154" font-family="Arial, sans-serif" font-size="10" fill="#4338CA" text-anchor="middle">Focus</text>
+
+  <!-- Results Dashboard Preview -->
+  <rect x="780" y="100" width="420" height="120" rx="10" fill="#FFFFFF" stroke="#DC2626" stroke-width="2"/>
+  <text x="800" y="120" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#DC2626">Real-time Results Dashboard</text>
+  
+  <!-- Mini Charts -->
+  <rect x="800" y="130" width="80" height="40" rx="4" fill="#FEF2F2" stroke="#EF4444" stroke-width="1"/>
+  <text x="840" y="145" font-family="Arial, sans-serif" font-size="9" fill="#DC2626" text-anchor="middle">Revenue Forecast</text>
+  <text x="840" y="157" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#DC2626" text-anchor="middle">$2.3M</text>
+  <text x="840" y="167" font-family="Arial, sans-serif" font-size="8" fill="#DC2626" text-anchor="middle">±15%</text>
+  
+  <rect x="900" y="130" width="80" height="40" rx="4" fill="#FEF2F2" stroke="#EF4444" stroke-width="1"/>
+  <text x="940" y="145" font-family="Arial, sans-serif" font-size="9" fill="#DC2626" text-anchor="middle">Risk Score</text>
+  <text x="940" y="157" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#DC2626" text-anchor="middle">7.2/10</text>
+  <text x="940" y="167" font-family="Arial, sans-serif" font-size="8" fill="#DC2626" text-anchor="middle">High Risk</text>
+  
+  <rect x="1000" y="130" width="80" height="40" rx="4" fill="#FEF2F2" stroke="#EF4444" stroke-width="1"/>
+  <text x="1040" y="145" font-family="Arial, sans-serif" font-size="9" fill="#DC2626" text-anchor="middle">DSO Trend</text>
+  <text x="1040" y="157" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#DC2626" text-anchor="middle">42 days</text>
+  <text x="1040" y="167" font-family="Arial, sans-serif" font-size="8" fill="#DC2626" text-anchor="middle">↑ 8% MoM</text>
+  
+  <!-- Action Items -->
+  <rect x="800" y="180" width="180" height="30" rx="4" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1"/>
+  <text x="810" y="195" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#92400E">Priority Actions:</text>
+  <text x="810" y="205" font-family="Arial, sans-serif" font-size="8" fill="#92400E">• Review Acme Corp ($180K overdue)</text>
+  
+  <!-- Performance Metrics -->
+  <rect x="1250" y="100" width="120" height="120" rx="10" fill="#ECFDF5" stroke="#10B981" stroke-width="2"/>
+  <text x="1310" y="120" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#065F46" text-anchor="middle">Performance</text>
+  <circle cx="1310" cy="150" r="25" fill="#FFFFFF" stroke="#10B981" stroke-width="2"/>
+  <text x="1310" y="145" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#065F46" text-anchor="middle">8.2s</text>
+  <text x="1310" y="158" font-family="Arial, sans-serif" font-size="10" fill="#065F46" text-anchor="middle">total</text>
+  <text x="1310" y="180" font-family="Arial, sans-serif" font-size="10" fill="#065F46" text-anchor="middle">Query Processing</text>
+  <text x="1310" y="195" font-family="Arial, sans-serif" font-size="10" fill="#065F46" text-anchor="middle">95% confidence</text>
+  <text x="1310" y="210" font-family="Arial, sans-serif" font-size="10" fill="#065F46" text-anchor="middle">Real-time sync</text>
+
+  <!-- Layer 2: API Management, Security & Content Filter Layer -->
+  <rect x="50" y="300" width="1500" height="220" rx="15" fill="url(#redGradient)" stroke="#EF4444" stroke-width="2"/>
+  <text x="70" y="330" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#991B1B">Layer 2: API Management, Azure Entra & Content Filter Security</text>
+  
+  <!-- Azure Entra ID Authentication -->
+  <rect x="80" y="350" width="280" height="140" rx="12" fill="#FFFFFF" stroke="#EF4444" stroke-width="3"/>
+  <text x="220" y="375" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#991B1B" text-anchor="middle">🔐 Azure Entra ID</text>
+  <text x="220" y="390" font-family="Arial, sans-serif" font-size="12" fill="#991B1B" text-anchor="middle">Identity & Access Management</text>
+  
+  <text x="90" y="410" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#991B1B">Authentication Process:</text>
+  <text x="90" y="425" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• OAuth 2.0 token validation</text>
+  <text x="90" y="440" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Role-based access control (RBAC)</text>
+  <text x="90" y="455" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Sales VP permissions verification</text>
+  <text x="90" y="470" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Financial data access approval</text>
+  
+  <!-- API Management Gateway -->
+  <rect x="400" y="350" width="280" height="140" rx="12" fill="#FFFFFF" stroke="#EF4444" stroke-width="3"/>
+  <text x="540" y="375" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#991B1B" text-anchor="middle">🌐 API Management Gateway</text>
+  <text x="540" y="390" font-family="Arial, sans-serif" font-size="12" fill="#991B1B" text-anchor="middle">Request/Response Processing</text>
+  
+  <text x="410" y="410" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#991B1B">Gateway Functions:</text>
+  <text x="410" y="425" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Rate limiting (100 req/min for VP)</text>
+  <text x="410" y="440" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Request transformation & validation</text>
+  <text x="410" y="455" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Load balancing to agent clusters</text>
+  <text x="410" y="470" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Circuit breaker pattern implementation</text>
+  
+  <!-- Content Filter & Security -->
+  <rect x="720" y="350" width="280" height="140" rx="12" fill="#FFFFFF" stroke="#EF4444" stroke-width="3"/>
+  <text x="860" y="375" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#991B1B" text-anchor="middle">🛡️ Content Filter & Security</text>
+  <text x="860" y="390" font-family="Arial, sans-serif" font-size="12" fill="#991B1B" text-anchor="middle">Data Loss Prevention</text>
+  
+  <text x="730" y="410" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#991B1B">Security Controls:</text>
+  <text x="730" y="425" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• PII/PHI data masking</text>
+  <text x="730" y="440" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Sensitive financial data filtering</text>
+  <text x="730" y="455" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• GDPR/SOX compliance validation</text>
+  <text x="730" y="470" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Real-time threat detection</text>
+
+  <!-- Audit & Compliance Logging -->
+  <rect x="1040" y="350" width="280" height="140" rx="12" fill="#FFFFFF" stroke="#EF4444" stroke-width="3"/>
+  <text x="1180" y="375" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#991B1B" text-anchor="middle">📋 Audit & Compliance</text>
+  <text x="1180" y="390" font-family="Arial, sans-serif" font-size="12" fill="#991B1B" text-anchor="middle">Regulatory Logging</text>
+  
+  <text x="1050" y="410" font-family="Arial, sans-serif" font-size="10" font-weight="bold" fill="#991B1B">Compliance Tracking:</text>
+  <text x="1050" y="425" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• All API calls logged with timestamps</text>
+  <text x="1050" y="440" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• User activity audit trails</text>
+  <text x="1050" y="455" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Data access pattern monitoring</text>
+  <text x="1050" y="470" font-family="Arial, sans-serif" font-size="9" fill="#991B1B">• Regulatory reporting automation</text>
+
+  <!-- Security Status Indicators -->
+  <rect x="1350" y="350" width="120" height="140" rx="10" fill="#FEF2F2" stroke="#EF4444" stroke-width="2"/>
+  <text x="1410" y="375" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#991B1B" text-anchor="middle">Security Status</text>
+  
+  <circle cx="1410" cy="400" r="15" fill="#10B981"/>
+  <text x="1410" y="406" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">✓</text>
+  <text x="1410" y="420" font-family="Arial, sans-serif" font-size="9" fill="#991B1B" text-anchor="middle">Auth Validated</text>
+  
+  <circle cx="1410" cy="440" r="15" fill="#10B981"/>
+  <text x="1410" y="446" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">✓</text>
+  <text x="1410" y="460" font-family="Arial, sans-serif" font-size="9" fill="#991B1B" text-anchor="middle">Content Clean</text>
+  
+  <circle cx="1410" cy="480" r="15" fill="#F59E0B"/>
+  <text x="1410" y="486" font-family="Arial, sans-serif" font-size="10" fill="white" text-anchor="middle">!</text>
+  <text x="1410" y="500" font-family="Arial, sans-serif" font-size="9" fill="#991B1B" text-anchor="middle">Rate Monitored</text>
+
+  <!-- Layer 3: Agent Orchestration Layer -->
+  <rect x="50" y="570" width="1500" height="220" rx="15" fill="url(#purpleGradient)" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="70" y="600" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#6B46C1">Layer 3: Agent Orchestration - Intelligent Processing</text>
+  
+  <!-- Analytics Agent (Enhanced) -->
+  <polygon points="120,630 280,630 300,680 280,730 120,730 100,680" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="3"/>
+  <text x="200" y="650" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#6B46C1" text-anchor="middle">📊 Analytics Agent</text>
+  <text x="200" y="665" font-family="Arial, sans-serif" font-size="11" fill="#6B46C1" text-anchor="middle">Financial Data Processing & Forecasting</text>
+  
+  <!-- Analytics Agent Details -->
+  <rect x="110" y="740" width="180" height="40" rx="6" fill="#F3E8FF" stroke="#8B5CF6" stroke-width="1"/>
+  <text x="120" y="755" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#6B46C1">Processing:</text>
+  <text x="120" y="765" font-family="Arial, sans-serif" font-size="8" fill="#6B46C1">• Revenue trend analysis (3yr history)</text>
+  <text x="120" y="775" font-family="Arial, sans-serif" font-size="8" fill="#6B46C1">• Seasonal pattern detection</text>
+  
+  <!-- Risk Agent (Enhanced) -->
+  <polygon points="500,630 660,630 680,680 660,730 500,730 480,680" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="3"/>
+  <text x="580" y="650" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#6B46C1" text-anchor="middle">⚠️ Risk Agent</text>
+  <text x="580" y="665" font-family="Arial, sans-serif" font-size="11" fill="#6B46C1" text-anchor="middle">Client Risk Assessment & Payment Analysis</text>
+  
+  <!-- Risk Agent Details -->
+  <rect x="490" y="740" width="180" height="40" rx="6" fill="#F3E8FF" stroke="#8B5CF6" stroke-width="1"/>
+  <text x="500" y="755" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#6B46C1">Processing:</text>
+  <text x="500" y="765" font-family="Arial, sans-serif" font-size="8" fill="#6B46C1">• Credit score correlation analysis</text>
+  <text x="500" y="775" font-family="Arial, sans-serif" font-size="8" fill="#6B46C1">• Payment behavior prediction</text>
+  
+  <!-- Synthesis Agent (Enhanced) -->
+  <polygon points="880,630 1040,630 1060,680 1040,730 880,730 860,680" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="3"/>
+  <text x="960" y="650" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#6B46C1" text-anchor="middle">🎯 Synthesis Agent</text>
+  <text x="960" y="665" font-family="Arial, sans-serif" font-size="11" fill="#6B46C1" text-anchor="middle">Executive Summary & Dashboard Creation</text>
+  
+  <!-- Synthesis Agent Details -->
+  <rect x="870" y="740" width="180" height="40" rx="6" fill="#F3E8FF" stroke="#8B5CF6" stroke-width="1"/>
+  <text x="880" y="755" font-family="Arial, sans-serif" font-size="9" font-weight="bold" fill="#6B46C1">Processing:</text>
+  <text x="880" y="765" font-family="Arial, sans-serif" font-size="8" fill="#6B46C1">• Multi-source data correlation</text>
+  <text x="880" y="775" font-family="Arial, sans-serif" font-size="8" fill="#6B46C1">• Executive insight generation</text>
+
+  <!-- Agent Coordination Hub -->
+  <rect x="1200" y="630" width="280" height="100" rx="10" fill="#FFFFFF" stroke="#8B5CF6" stroke-width="2"/>
+  <text x="1340" y="650" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="#6B46C1" text-anchor="middle">🎛️ Agent Coordination Hub</text>
+  <text x="1220" y="670" font-family="Arial, sans-serif" font-size="10" fill="#6B46C1">• Task decomposition & routing</text>
+  <text x="1220" y="685" font-family="Arial, sans-serif" font-size="10" fill="#6B46C1">• Cross-agent data sharing</text>
+  <text x="1220" y="700" font-family="Arial, sans-serif" font-size="10" fill="#6B46C1">• Result synthesis coordination</text>
+  <text x="1220" y="715" font-family="Arial, sans-serif" font-size="10" fill="#6B46C1">• Quality assurance & validation</text>
+
+  <!-- Agent Collaboration Arrows -->
+  <path d="M 300 680 Q 390 660 480 680" stroke="#8B5CF6" stroke-width="3" fill="none" marker-end="url(#collabArrow)"/>
+  <path d="M 480 680 Q 390 700 300 680" stroke="#8B5CF6" stroke-width="2" fill="none" marker-end="url(#collabArrow)"/>
+  <path d="M 680 680 Q 770 660 860 680" stroke="#8B5CF6" stroke-width="3" fill="none" marker-end="url(#collabArrow)"/>
+  <path d="M 860 680 Q 770 700 680 680" stroke="#8B5CF6" stroke-width="2" fill="none" marker-end="url(#collabArrow)"/>
+  <path d="M 1060 680 Q 1130 680 1200 680" stroke="#8B5CF6" stroke-width="3" fill="none" marker-end="url(#collabArrow)"/>
+
+  <!-- Layer 4: Data Integration Layer -->
+  <rect x="50" y="840" width="1500" height="240" rx="15" fill="url(#tealGradient)" stroke="#10B981" stroke-width="2"/>
+  <text x="70" y="870" font-family="Arial, sans-serif" font-size="20" font-weight="bold" fill="#065F46">Layer 4: Data Integration - MCP Protocol Hub</text>
+  
+  <!-- Central Snowflake Cortex MCP Server -->
+  <circle cx="400" cy="960" r="80" fill="#FFFFFF" stroke="#10B981" stroke-width="4"/>
+  <text x="400" y="945" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#065F46" text-anchor="middle">❄️ Snowflake Cortex</text>
+  <text x="400" y="960" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#065F46" text-anchor="middle">MCP Server</text>
+  <text x="400" y="975" font-family="Arial, sans-serif" font-size="11" fill="#065F46" text-anchor="middle">(Central Data Hub)</text>
+  
+  <!-- MCP Server Details -->
+  <rect x="320" y="1050" width="160" height="20" rx="4" fill="#D1FAE5" stroke="#10B981" stroke-width="1"/>
+  <text x="400" y="1065" font-family="Arial, sans-serif" font-size="9" fill="#065F46" text-anchor="middle">Real-time data orchestration</text>
+  
+  <!-- Azure AI Search Connector -->
+  <rect x="600" y="890" width="150" height="80" rx="10" fill="#FFFFFF" stroke="#10B981" stroke-width="2"/
