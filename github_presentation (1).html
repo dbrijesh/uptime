@@ -1,0 +1,2183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Actions & Workflows - Comprehensive Guide</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+            overflow: hidden;
+        }
+
+        .presentation-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide {
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px 60px;
+            display: none;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .slide.active {
+            display: block;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            color: #2d3748;
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        h2 {
+            font-size: 2.2rem;
+            color: #2d3748;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: #4a5568;
+            margin: 20px 0 12px 0;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+
+        h4 {
+            font-size: 1.2rem;
+            color: #2d3748;
+            margin: 15px 0 8px 0;
+            font-weight: 600;
+        }
+
+        p, li {
+            font-size: 1rem;
+            line-height: 1.6;
+            margin-bottom: 12px;
+            color: #2d3748;
+        }
+
+        ul {
+            margin-left: 25px;
+            margin-bottom: 15px;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            font-size: 0.9rem;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid #e2e8f0;
+            padding: 12px;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .comparison-table th {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+
+        .code-block {
+            background: #1a202c;
+            color: #e2e8f0;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            border-left: 4px solid #667eea;
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+
+        .info-box {
+            background: linear-gradient(135deg, #84fab0, #8fd3f4);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #38a169;
+        }
+
+        .warning-box {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border-left: 4px solid #ed8936;
+        }
+
+        .navigation {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 1000;
+        }
+
+        .nav-btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .slide-counter {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #667eea;
+            font-size: 0.9rem;
+        }
+
+        .workflow-diagram {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+
+        .step {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 8px 16px;
+            margin: 5px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .arrow {
+            font-size: 1.2rem;
+            color: #667eea;
+            margin: 0 8px;
+        }
+
+        .pro-con {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 15px 0;
+        }
+
+        .pro, .con {
+            padding: 15px;
+            border-radius: 10px;
+        }
+
+        .pro {
+            background: linear-gradient(135deg, #84fab0, #8fd3f4);
+            border-left: 4px solid #38a169;
+        }
+
+        .con {
+            background: linear-gradient(135deg, #ffecd2, #fcb69f);
+            border-left: 4px solid #ed8936;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin: 20px 0;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature-card {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+
+        .architecture-diagram {
+            background: #f7fafc;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            border: 2px dashed #667eea;
+        }
+
+        .command-example {
+            background: #2d3748;
+            color: #68d391;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            margin: 10px 0;
+            font-size: 0.9rem;
+        }
+
+        .emoji {
+            font-size: 1.2rem;
+            margin-right: 8px;
+        }
+
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(to right, #667eea, #764ba2);
+            margin: 25px 0;
+            border-radius: 1px;
+        }
+    </style>
+</head>
+<body>
+    <div class="presentation-container">
+        <!-- Slide 1: Title -->
+        <div class="slide active">
+            <div class="slide-counter">1 / 7</div>
+            <h1><span class="emoji">🚀</span>GitHub Actions & Workflows</h1>
+            <div style="text-align: center; margin-top: 30px;">
+                <h3 style="margin-bottom: 30px; border: none; padding: 0;">Complete CI/CD Guide for Modern Development Teams</h3>
+                <div class="feature-grid">
+                    <div class="feature-card">
+                        <h4><span class="emoji">🏃‍♂️</span>Runner Management</h4>
+                        <p>Master the differences between public and private GitHub runners, performance optimization, and cost considerations</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="emoji">🌐</span>Network Configuration</h4>
+                        <p>Enterprise proxy setup, corporate firewall navigation, and secure connectivity solutions</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="emoji">⚙️</span>Workflow Architecture</h4>
+                        <p>Complete understanding of GitHub Actions, workflows, jobs, steps, and repository organization</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="emoji">🔐</span>Security & Secrets</h4>
+                        <p>Advanced secret management, PAT tokens, and enterprise-grade security practices</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="emoji">🐳</span>Containerization</h4>
+                        <p>Production-ready .NET applications with Docker, multi-stage builds, and container registries</p>
+                    </div>
+                    <div class="feature-card">
+                        <h4><span class="emoji">🎯</span>Trigger Strategies</h4>
+                        <p>Automated vs manual triggers, advanced scheduling, and conditional workflow execution</p>
+                    </div>
+                </div>
+                <div class="highlight" style="margin-top: 30px;">
+                    <strong>What You'll Master:</strong> From basic concepts to enterprise-grade CI/CD pipelines that scale with your organization's needs
+                </div>
+            </div>
+        </div>
+
+        <!-- Slide 2: Private vs Public Runners -->
+        <div class="slide">
+            <div class="slide-counter">2 / 7</div>
+            <h2><span class="emoji">🏃‍♂️</span>Private vs Public GitHub Runners</h2>
+            
+            <h3>Understanding Runner Types</h3>
+            <p>GitHub runners are the compute environments that execute your workflows. Choosing the right type impacts security, performance, cost, and capabilities.</p>
+            
+            <table class="comparison-table">
+                <tr>
+                    <th>Feature</th>
+                    <th>Public Runners (GitHub-Hosted)</th>
+                    <th>Private Runners (Self-Hosted)</th>
+                </tr>
+                <tr>
+                    <td><strong>Cost Model</strong></td>
+                    <td>
+                        • Free for public repositories<br>
+                        • 2,000 minutes/month free for private repos<br>
+                        • $0.008/minute for Linux after limits<br>
+                        • $0.016/minute for Windows<br>
+                        • $0.064/minute for macOS
+                    </td>
+                    <td>
+                        • Infrastructure costs (AWS, Azure, on-premises)<br>
+                        • Maintenance overhead<br>
+                        • Potential cost savings at scale<br>
+                        • Predictable monthly expenses
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Security & Isolation</strong></td>
+                    <td>
+                        • Fresh VM for each job<br>
+                        • No persistent data between runs<br>
+                        • Internet-only access<br>
+                        • GitHub-managed security updates<br>
+                        • No access to internal networks
+                    </td>
+                    <td>
+                        • Access to internal resources<br>
+                        • VPN/private network connectivity<br>
+                        • Persistent storage capabilities<br>
+                        • Custom security configurations<br>
+                        • You manage security updates
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Performance</strong></td>
+                    <td>
+                        • Standard: 2-core CPU, 7GB RAM<br>
+                        • Larger runners available (paid)<br>
+                        • SSD storage<br>
+                        • Fixed performance specs<br>
+                        • No customization
+                    </td>
+                    <td>
+                        • Fully customizable hardware<br>
+                        • GPU support available<br>
+                        • High-memory configurations<br>
+                        • Dedicated resources<br>
+                        • Optimized for specific workloads
+                    </td>
+                </tr>
+                <tr>
+                    <td><strong>Software & Environment</strong></td>
+                    <td>
+                        • Pre-installed software stack<br>
+                        • Regular image updates<br>
+                        • Limited customization<br>
+                        • Ubuntu, Windows, macOS available<br>
+                        • Common development tools included
+                    </td>
+                    <td>
+                        • Complete control over software<br>
+                        • Custom tools and dependencies<br>
+                        • Legacy software support<br>
+                        • Specific OS versions<br>
+                        • Proprietary tool installation
+                    </td>
+                </tr>
+            </table>
+
+            <div class="section-divider"></div>
+
+            <div class="pro-con">
+                <div class="pro">
+                    <h3><span class="emoji">✅</span>When to Use Public Runners</h3>
+                    <ul>
+                        <li><strong>Open Source Projects:</strong> Free and feature-rich for public repositories</li>
+                        <li><strong>Standard Development:</strong> Common languages and frameworks supported</li>
+                        <li><strong>Quick Prototyping:</strong> Zero setup time, immediate availability</li>
+                        <li><strong>Small Teams:</strong> Cost-effective for limited usage patterns</li>
+                        <li><strong>Simple CI/CD:</strong> Build, test, deploy to cloud services</li>
+                        <li><strong>Learning/Education:</strong> Perfect for understanding GitHub Actions</li>
+                    </ul>
+                    <div class="info-box">
+                        <strong>Best Practice:</strong> Start with public runners and migrate to private only when specific needs arise
+                    </div>
+                </div>
+                <div class="con">
+                    <h3><span class="emoji">🏢</span>When to Use Private Runners</h3>
+                    <ul>
+                        <li><strong>Enterprise Security:</strong> Compliance requirements (SOC2, HIPAA, PCI)</li>
+                        <li><strong>Internal Resources:</strong> Database access, internal APIs, on-premises systems</li>
+                        <li><strong>High Performance:</strong> Machine learning, large builds, intensive testing</li>
+                        <li><strong>Custom Environment:</strong> Proprietary tools, specific OS versions</li>
+                        <li><strong>Cost Optimization:</strong> Heavy usage patterns (>10,000 minutes/month)</li>
+                        <li><strong>Air-Gapped Networks:</strong> Completely isolated environments</li>
+                    </ul>
+                    <div class="warning-box">
+                        <strong>Consideration:</strong> Private runners require ongoing maintenance, security patching, and infrastructure management
+                    </div>
+                </div>
+            </div>
+
+            <h3>Runner Configuration Examples</h3>
+            <div class="two-column">
+                <div>
+                    <h4>Public Runner Usage</h4>
+                    <div class="code-block">
+jobs:
+  build:
+    runs-on: ubuntu-latest  # or windows-latest, macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build application
+        run: npm install && npm run build
+                    </div>
+                </div>
+                <div>
+                    <h4>Private Runner Usage</h4>
+                    <div class="code-block">
+jobs:
+  build:
+    runs-on: [self-hosted, linux, x64, gpu]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Custom build with internal tools
+        run: ./internal-build-script.sh
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <span class="emoji">💡</span><strong>Enterprise Strategy:</strong> Use public runners for open source and development environments, private runners for production deployments and sensitive workloads
+            </div>
+        </div>
+
+        <!-- Slide 3: Proxy Setup -->
+        <div class="slide">
+            <div class="slide-counter">3 / 7</div>
+            <h2><span class="emoji">🌐</span>Setup Proxy for GitHub Access</h2>
+            
+            <h3>Corporate Network Challenges</h3>
+            <p>Enterprise environments typically implement network security through proxy servers, firewalls, and content filtering. GitHub Actions runners must be properly configured to work within these constraints while maintaining security and functionality.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4><span class="emoji">🔒</span>Security Requirements</h4>
+                    <p>SSL inspection, certificate validation, and traffic monitoring compliance</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">📡</span>Network Topology</h4>
+                    <p>Multiple proxy tiers, load balancing, and failover configurations</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">🚫</span>Access Control</h4>
+                    <p>Domain whitelisting, port restrictions, and protocol filtering</p>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">📊</span>Monitoring</h4>
+                    <p>Traffic analysis, usage reporting, and performance optimization</p>
+                </div>
+            </div>
+
+            <h3>Comprehensive Proxy Configuration</h3>
+
+            <div class="two-column">
+                <div>
+                    <h4>Environment Variables Setup</h4>
+                    <div class="code-block">
+# System-wide proxy configuration
+export HTTP_PROXY=http://proxy.company.com:8080
+export HTTPS_PROXY=http://proxy.company.com:8080
+export NO_PROXY=localhost,127.0.0.1,*.company.com,*.internal,10.0.0.0/8
+
+# Case-sensitive alternatives
+export http_proxy=$HTTP_PROXY
+export https_proxy=$HTTPS_PROXY
+export no_proxy=$NO_PROXY
+
+# Authenticated proxy (if required)
+export HTTP_PROXY=http://username:password@proxy.company.com:8080
+export HTTPS_PROXY=http://username:password@proxy.company.com:8080
+                    </div>
+
+                    <h4>Git Proxy Configuration</h4>
+                    <div class="code-block">
+# Global Git proxy settings
+git config --global http.proxy $HTTP_PROXY
+git config --global https.proxy $HTTPS_PROXY
+
+# SSL verification (corporate certificates)
+git config --global http.sslverify true
+git config --global http.sslcainfo /path/to/corporate-ca.crt
+
+# Per-domain proxy settings
+git config --global http.https://github.com.proxy $HTTPS_PROXY
+git config --global http.https://internal.company.com.proxy ""
+
+# Timeout configurations
+git config --global http.lowSpeedLimit 1000
+git config --global http.lowSpeedTime 300
+                    </div>
+                </div>
+                <div>
+                    <h4>Docker Proxy Configuration</h4>
+                    <div class="code-block">
+# ~/.docker/config.json
+{
+  "proxies": {
+    "default": {
+      "httpProxy": "http://proxy.company.com:8080",
+      "httpsProxy": "http://proxy.company.com:8080",
+      "noProxy": "localhost,127.0.0.1,*.company.com,*.internal"
+    }
+  },
+  "experimental": true
+}
+
+# Dockerfile proxy arguments
+ARG HTTP_PROXY
+ARG HTTPS_PROXY
+ARG NO_PROXY
+
+# Docker daemon configuration (/etc/docker/daemon.json)
+{
+  "proxies": {
+    "http-proxy": "http://proxy.company.com:8080",
+    "https-proxy": "http://proxy.company.com:8080",
+    "no-proxy": "localhost,127.0.0.1,*.company.com"
+  }
+}
+                    </div>
+
+                    <h4>Runner Service Configuration</h4>
+                    <div class="code-block">
+# systemd service override
+# /etc/systemd/system/actions.runner.service.d/proxy.conf
+[Service]
+Environment="HTTP_PROXY=http://proxy.company.com:8080"
+Environment="HTTPS_PROXY=http://proxy.company.com:8080"
+Environment="NO_PROXY=localhost,127.0.0.1,*.company.com"
+
+# Reload and restart
+sudo systemctl daemon-reload
+sudo systemctl restart actions.runner
+
+# Windows service configuration
+sc config "GitHub Actions Runner" depend=winhttp
+netsh winhttp set proxy proxy-server="proxy.company.com:8080"
+                    </div>
+                </div>
+            </div>
+
+            <h3>Advanced Proxy Scenarios</h3>
+
+            <div class="code-block">
+# SSL/TLS proxy with custom certificates
+export SSL_CERT_FILE=/etc/ssl/certs/corporate-bundle.crt
+export REQUESTS_CA_BUNDLE=/etc/ssl/certs/corporate-bundle.crt
+export CURL_CA_BUNDLE=/etc/ssl/certs/corporate-bundle.crt
+
+# Node.js applications
+export NODE_EXTRA_CA_CERTS=/etc/ssl/certs/corporate-bundle.crt
+
+# Python applications
+export PYTHONHTTPSVERIFY=1
+export SSL_CERT_DIR=/etc/ssl/certs
+
+# Java applications
+export JAVA_OPTS="-Dhttps.proxyHost=proxy.company.com -Dhttps.proxyPort=8080 -Djavax.net.ssl.trustStore=/path/to/truststore.jks"
+            </div>
+
+            <h3>Testing and Troubleshooting</h3>
+            <div class="two-column">
+                <div>
+                    <h4>Connectivity Tests</h4>
+                    <div class="command-example">
+# Test basic connectivity
+curl -I https://github.com
+curl -I https://api.github.com
+
+# Test with explicit proxy
+curl --proxy $HTTPS_PROXY -I https://github.com
+
+# Test Git operations
+git ls-remote https://github.com/user/repo.git
+
+# Test Docker operations
+docker pull hello-world
+                    </div>
+                </div>
+                <div>
+                    <h4>Common Issues & Solutions</h4>
+                    <div class="warning-box">
+                        <strong>SSL Certificate Issues:</strong>
+                        <ul>
+                            <li>Corporate CA not trusted</li>
+                            <li>Self-signed certificates</li>
+                            <li>Certificate chain problems</li>
+                        </ul>
+                    </div>
+                    <div class="info-box">
+                        <strong>Resolution Steps:</strong>
+                        <ul>
+                            <li>Install corporate root CA</li>
+                            <li>Configure application-specific trust stores</li>
+                            <li>Use environment-specific certificate bundles</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <span class="emoji">🔧</span><strong>Pro Tip:</strong> Create a comprehensive test script that validates all proxy configurations before deploying runners to production environments
+            </div>
+        </div>
+
+        <!-- Slide 4: GitHub Actions Intro -->
+        <div class="slide">
+            <div class="slide-counter">4 / 7</div>
+            <h2><span class="emoji">⚙️</span>GitHub Actions & Workflows Deep Dive</h2>
+            
+            <h3>Understanding the GitHub Actions Ecosystem</h3>
+            <p>GitHub Actions is a comprehensive CI/CD and automation platform that transforms your repository into a powerful development and deployment environment. It enables event-driven workflows that can respond to virtually any activity in your repository or external systems.</p>
+
+            <div class="architecture-diagram">
+                <h4>Workflow Execution Architecture</h4>
+                <div class="workflow-diagram">
+                    <div class="step">Event Trigger</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Workflow Selection</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Job Queue</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Runner Assignment</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Step Execution</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Results & Artifacts</div>
+                </div>
+            </div>
+
+            <h3>Core Components Explained</h3>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4><span class="emoji">📋</span>Workflows</h4>
+                    <p><strong>Definition:</strong> YAML files defining automated processes</p>
+                    <ul>
+                        <li>Stored in <code>.github/workflows/</code></li>
+                        <li>Event-driven execution</li>
+                        <li>Configurable triggers and conditions</li>
+                        <li>Support for complex logic and dependencies</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">⚡</span>Jobs</h4>
+                    <p><strong>Definition:</strong> Groups of steps executed on the same runner</p>
+                    <ul>
+                        <li>Run in parallel by default</li>
+                        <li>Can specify dependencies</li>
+                        <li>Fresh environment per job</li>
+                        <li>Configurable runner requirements</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">🔄</span>Steps</h4>
+                    <p><strong>Definition:</strong> Individual tasks within a job</p>
+                    <ul>
+                        <li>Execute sequentially</li>
+                        <li>Can run shell commands or actions</li>
+                        <li>Share environment and filesystem</li>
+                        <li>Support conditional execution</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">🧩</span>Actions</h4>
+                    <p><strong>Definition:</strong> Reusable units of code</p>
+                    <ul>
+                        <li>JavaScript, Docker, or composite actions</li>
+                        <li>Available from GitHub Marketplace</li>
+                        <li>Version-controlled and parameterizable</li>
+                        <li>Custom actions for specific needs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Enterprise Repository Structure</h3>
+            <div class="two-column">
+                <div>
+                    <div class="code-block">
+enterprise-app/
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                    # Continuous Integration
+│   │   ├── cd.yml                    # Continuous Deployment
+│   │   ├── release.yml               # Release Automation
+│   │   ├── security-scan.yml         # Security Scanning
+│   │   ├── dependency-update.yml     # Dependency Management
+│   │   ├── performance-test.yml      # Performance Testing
+│   │   └── cleanup.yml               # Maintenance Tasks
+│   ├── actions/                      # Custom Actions
+│   │   ├── setup-environment/
+│   │   ├── deploy-application/
+│   │   └── notify-teams/
+│   ├── ISSUE_TEMPLATE/
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── CODEOWNERS
+├── src/
+│   ├── MyApp.Api/
+│   ├── MyApp.Core/
+│   ├── MyApp.Infrastructure/
+│   └── MyApp.Web/
+├── tests/
+│   ├── unit/
+│   ├── integration/
+│   ├── e2e/
+│   └── performance/
+├── docker/
+│   ├── Dockerfile.api
+│   ├── Dockerfile.web
+│   ├── docker-compose.yml
+│   └── docker-compose.override.yml
+├── kubernetes/
+│   ├── base/
+│   ├── overlays/
+│   └── helm/
+├── scripts/
+│   ├── build.sh
+│   ├── test.sh
+│   ├── deploy.sh
+│   └── migrate.sh
+├── docs/
+│   ├── api/
+│   ├── architecture/
+│   └── deployment/
+└── tools/
+    ├── analyzers/
+    └── generators/
+                    </div>
+                </div>
+                <div>
+                    <h4>Workflow Organization Strategy</h4>
+                    <div class="info-box">
+                        <strong>Best Practices:</strong>
+                        <ul>
+                            <li><strong>Separation of Concerns:</strong> Different workflows for different purposes</li>
+                            <li><strong>Reusable Components:</strong> Custom actions for common tasks</li>
+                            <li><strong>Environment Promotion:</strong> Dev → Staging → Production pipelines</li>
+                            <li><strong>Security Integration:</strong> Automated scanning and compliance checks</li>
+                        </ul>
+                    </div>
+
+                    <h4>Workflow Naming Conventions</h4>
+                    <div class="code-block">
+# Descriptive, purpose-driven names
+ci-pull-request.yml
+cd-production.yml
+security-dependency-scan.yml
+performance-load-test.yml
+maintenance-cleanup.yml
+
+# Environment-specific workflows
+deploy-staging.yml
+deploy-production.yml
+test-integration.yml
+                    </div>
+
+                    <h4>Custom Actions Structure</h4>
+                    <div class="code-block">
+.github/actions/deploy-application/
+├── action.yml              # Action definition
+├── Dockerfile             # Container action
+├── entrypoint.sh          # Execution script
+├── README.md              # Documentation
+└── __tests__/             # Action tests
+                    </div>
+                </div>
+            </div>
+
+            <h3>Advanced Workflow Example</h3>
+            <div class="code-block">
+name: Enterprise CI/CD Pipeline
+on:
+  push:
+    branches: [main, develop, 'feature/*', 'hotfix/*']
+    paths-ignore: ['docs/**', '*.md']
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '0 2 * * *'  # Nightly builds
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        type: choice
+        options: [development, staging, production]
+        default: development
+
+env:
+  NODE_VERSION: '18.x'
+  DOTNET_VERSION: '8.0.x'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  # Job dependencies and conditional execution
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      api: ${{ steps.changes.outputs.api }}
+      web: ${{ steps.changes.outputs.web }}
+      docs: ${{ steps.changes.outputs.docs }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            api:
+              - 'src/MyApp.Api/**'
+              - 'tests/**'
+            web:
+              - 'src/MyApp.Web/**'
+              - 'web-tests/**'
+            docs:
+              - 'docs/**'
+              - '*.md'
+
+  # Matrix strategy for multiple configurations
+  test:
+    needs: changes
+    if: needs.changes.outputs.api == 'true' || needs.changes.outputs.web == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        dotnet-version: ['6.0.x', '8.0.x']
+        exclude:
+          - os: windows-latest
+            dotnet-version: '6.0.x'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup .NET ${{ matrix.dotnet-version }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ matrix.dotnet-version }}
+      - name: Run tests
+        run: dotnet test --configuration Release --logger trx
+            </div>
+
+            <div class="highlight">
+                <span class="emoji">🏗️</span><strong>Architecture Principle:</strong> Design workflows as composable, reusable components that can be easily maintained and scaled across multiple projects and teams
+            </div>
+        </div>
+
+        <!-- Slide 5: GitHub Secrets -->
+        <div class="slide">
+            <div class="slide-counter">5 / 7</div>
+            <h2><span class="emoji">🔐</span>GitHub Secrets & PAT Token Management</h2>
+            
+            <h3>Enterprise Secret Management Strategy</h3>
+            <p>Security in CI/CD pipelines extends beyond basic credential storage. Enterprise environments require comprehensive secret management that includes encryption, rotation, auditing, and compliance with regulatory requirements.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4><span class="emoji">🔒</span>Secret Types & Scope</h4>
+                    <ul>
+                        <li><strong>Repository Secrets:</strong> Single repository access</li>
+                        <li><strong>Environment Secrets:</strong> Environment-specific credentials</li>
+                        <li><strong>Organization Secrets:</strong> Shared across repositories</li>
+                        <li><strong>Dependabot Secrets:</strong> Dependency update credentials</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">🔄</span>Rotation & Lifecycle</h4>
+                    <ul>
+                        <li><strong>Automated Rotation:</strong> Scheduled credential updates</li>
+                        <li><strong>Expiration Tracking:</strong> Monitor credential lifecycle</li>
+                        <li><strong>Emergency Revocation:</strong> Immediate secret invalidation</li>
+                        <li><strong>Audit Trails:</strong> Complete usage history</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">📊</span>Compliance & Governance</h4>
+                    <ul>
+                        <li><strong>Access Control:</strong> Role-based secret permissions</li>
+                        <li><strong>Approval Workflows:</strong> Multi-stage secret deployment</li>
+                        <li><strong>Compliance Reporting:</strong> Regulatory requirement tracking</li>
+                        <li><strong>Integration:</strong> External secret management systems</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">🛡️</span>Security Controls</h4>
+                    <ul>
+                        <li><strong>Encryption at Rest:</strong> AES-256 encryption</li>
+                        <li><strong>Encryption in Transit:</strong> TLS 1.2+ protocols</li>
+                        <li><strong>Access Logging:</strong> Comprehensive audit logs</li>
+                        <li><strong>Principle of Least Privilege:</strong> Minimal access rights</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Personal Access Token (PAT) Advanced Configuration</h3>
+
+            <div class="two-column">
+                <div>
+                    <h4>Fine-Grained PAT Configuration</h4>
+                    <div class="code-block">
+# Token Scopes for CI/CD Operations
+Repository Permissions:
+✓ Actions: Read/Write
+✓ Contents: Read/Write
+✓ Metadata: Read
+✓ Pull requests: Read/Write
+✓ Issues: Read/Write
+✓ Packages: Read/Write
+✓ Security events: Read
+
+Account Permissions:
+✓ Git SSH keys: Read
+✓ GPG keys: Read
+✓ Plan: Read
+✓ Profile: Read
+
+Organization Permissions:
+✓ Members: Read
+✓ Administration: Read (if needed)
+                    </div>
+
+                    <h4>Token Security Best Practices</h4>
+                    <div class="info-box">
+                        <strong>Security Guidelines:</strong>
+                        <ul>
+                            <li><strong>Expiration:</strong> Maximum 90 days</li>
+                            <li><strong>Scope:</strong> Minimum required permissions</li>
+                            <li><strong>Network:</strong> IP address restrictions when possible</li>
+                            <li><strong>Monitoring:</strong> Regular usage audits</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <h4>Enterprise Token Management</h4>
+                    <div class="code-block">
+# Automated token rotation workflow
+name: Rotate PAT Tokens
+on:
+  schedule:
+    - cron: '0 0 1 */2 *'  # Every 2 months
+  workflow_dispatch:
+
+jobs:
+  rotate-tokens:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate new PAT
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.ADMIN_TOKEN }}
+          script: |
+            // Create new token via GitHub API
+            // Update secrets with new token
+            // Revoke old token
+            // Notify security team
+                    </div>
+
+                    <h4>Token Validation Script</h4>
+                    <div class="code-block">
+#!/bin/bash
+# validate-token.sh
+TOKEN=$1
+SCOPES=$(curl -s -H "Authorization: token $TOKEN" \
+  https://api.github.com/user | jq -r '.login')
+
+if [ "$SCOPES" != "null" ]; then
+  echo "✅ Token is valid for user: $SCOPES"
+  # Check rate limits
+  curl -s -H "Authorization: token $TOKEN" \
+    https://api.github.com/rate_limit
+else
+  echo "❌ Token is invalid or expired"
+  exit 1
+fi
+                    </div>
+                </div>
+            </div>
+
+            <h3>Advanced Secret Usage Patterns</h3>
+
+            <div class="code-block">
+name: Multi-Environment Deployment with Advanced Secret Management
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options: [development, staging, production]
+        required: true
+
+jobs:
+  validate-secrets:
+    runs-on: ubuntu-latest
+    outputs:
+      secrets-valid: ${{ steps.validate.outputs.valid }}
+    steps:
+      - name: Validate required secrets
+        id: validate
+        run: |
+          REQUIRED_SECRETS=(
+            "DATABASE_URL"
+            "API_KEY"
+            "SSL_CERT"
+            "PRIVATE_KEY"
+          )
+          
+          MISSING_SECRETS=()
+          for secret in "${REQUIRED_SECRETS[@]}"; do
+            if [[ -z "${!secret}" ]]; then
+              MISSING_SECRETS+=($secret)
+            fi
+          done
+          
+          if [[ ${#MISSING_SECRETS[@]} -eq 0 ]]; then
+            echo "valid=true" >> $GITHUB_OUTPUT
+          else
+            echo "❌ Missing secrets: ${MISSING_SECRETS[*]}"
+            echo "valid=false" >> $GITHUB_OUTPUT
+            exit 1
+          fi
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+          SSL_CERT: ${{ secrets.SSL_CERT }}
+          PRIVATE_KEY: ${{ secrets.PRIVATE_KEY }}
+
+  deploy:
+    needs: validate-secrets
+    if: needs.validate-secrets.outputs.secrets-valid == 'true'
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - name: Configure environment-specific secrets
+        run: |
+          # Use environment-specific secret values
+          echo "Deploying to ${{ inputs.environment }}"
+          echo "Database: ${DATABASE_URL%/*}"  # Log without credentials
+          echo "API endpoint configured"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+          
+      - name: Deploy with secret injection
+        run: |
+          # Create temporary config file with secrets
+          cat > config.json << EOF
+          {
+            "database": {
+              "url": "$DATABASE_URL",
+              "ssl": true
+            },
+            "api": {
+              "key": "$API_KEY",
+              "endpoint": "https://api.${{ inputs.environment }}.company.com"
+            }
+          }
+          EOF
+          
+          # Deploy application
+          ./deploy.sh --config config.json --environment ${{ inputs.environment }}
+          
+          # Clean up secrets
+          rm -f config.json
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+            </div>
+
+            <h3>External Secret Management Integration</h3>
+
+            <div class="two-column">
+                <div>
+                    <h4>Azure Key Vault Integration</h4>
+                    <div class="code-block">
+- name: Login to Azure
+  uses: azure/login@v1
+  with:
+    creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+- name: Get secrets from Key Vault
+  uses: azure/get-keyvault-secrets@v1
+  with:
+    keyvault: 'myapp-keyvault'
+    secrets: 'database-password, api-key, ssl-certificate'
+  id: keyvault
+
+- name: Use retrieved secrets
+  run: |
+    echo "Database configured"
+    echo "API key length: ${#API_KEY}"
+  env:
+    DATABASE_PASSWORD: ${{ steps.keyvault.outputs.database-password }}
+    API_KEY: ${{ steps.keyvault.outputs.api-key }}
+                    </div>
+                </div>
+                <div>
+                    <h4>HashiCorp Vault Integration</h4>
+                    <div class="code-block">
+- name: Import secrets from Vault
+  uses: hashicorp/vault-action@v2
+  with:
+    url: https://vault.company.com
+    token: ${{ secrets.VAULT_TOKEN }}
+    secrets: |
+      secret/data/myapp database_url | DATABASE_URL ;
+      secret/data/myapp api_key | API_KEY ;
+      secret/data/certificates ssl_cert | SSL_CERT
+
+- name: Validate secret retrieval
+  run: |
+    if [[ -z "$DATABASE_URL" ]]; then
+      echo "❌ Failed to retrieve database URL"
+      exit 1
+    fi
+    echo "✅ Secrets successfully retrieved from Vault"
+                    </div>
+                </div>
+            </div>
+
+            <div class="warning-box">
+                <span class="emoji">⚠️</span><strong>Security Warning:</strong> Never log secret values or include them in error messages. Use secret masking and implement proper cleanup procedures for temporary files containing sensitive data.
+            </div>
+
+            <div class="highlight">
+                <span class="emoji">🔐</span><strong>Enterprise Standard:</strong> Implement a comprehensive secret lifecycle management strategy that includes automated rotation, compliance monitoring, and integration with enterprise identity management systems
+            </div>
+        </div>
+
+        <!-- Slide 6: .NET Workflow Example -->
+        <div class="slide">
+            <div class="slide-counter">6 / 7</div>
+            <h2><span class="emoji">🐳</span>Production-Ready .NET Docker Workflow</h2>
+            
+            <h3>Enterprise-Grade CI/CD Pipeline Architecture</h3>
+            <p>This comprehensive workflow demonstrates a production-ready pipeline for .NET applications with Docker containerization, including security scanning, multi-environment deployment, performance testing, and compliance validation.</p>
+
+            <div class="architecture-diagram">
+                <h4>Pipeline Flow</h4>
+                <div class="workflow-diagram" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center;">
+                    <div class="step">Code Push</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Build & Test</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Security Scan</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Docker Build</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Staging Deploy</div>
+                    <span class="arrow">→</span>
+                    <div class="step">Production Deploy</div>
+                </div>
+            </div>
+
+            <div class="code-block">
+name: Enterprise .NET Docker CI/CD Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'release/*', 'hotfix/*']
+    tags: ['v*']
+    paths-ignore: ['docs/**', '*.md', '.github/ISSUE_TEMPLATE/**']
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review]
+  schedule:
+    - cron: '0 2 * * *'  # Nightly security scans
+  workflow_dispatch:
+    inputs:
+      deploy_environment:
+        description: 'Target deployment environment'
+        type: choice
+        options: [none, staging, production]
+        default: none
+      skip_tests:
+        description: 'Skip test execution (emergency deployments only)'
+        type: boolean
+        default: false
+      performance_test:
+        description: 'Run performance tests'
+        type: boolean
+        default: true
+
+env:
+  DOTNET_VERSION: '8.0.x'
+  NODE_VERSION: '18.x'
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  BUILD_CONFIGURATION: Release
+  
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ========================================================================================
+  # 🔍 CODE ANALYSIS & VALIDATION
+  # ========================================================================================
+  code-quality:
+    name: Code Quality Analysis
+    runs-on: ubuntu-latest
+    outputs:
+      quality-gate: ${{ steps.sonar.outputs.quality-gate-status }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for better analysis
+          
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Cache NuGet packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj', '**/*.props') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget-
+            
+      - name: Restore dependencies
+        run: dotnet restore --verbosity minimal
+        
+      - name: Build for analysis
+        run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }} --verbosity minimal
+        
+      - name: Run static code analysis
+        run: |
+          dotnet format --verify-no-changes --verbosity diagnostic
+          dotnet tool install --global dotnet-outdated-tool
+          dotnet outdated --fail-on-updates
+          
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.organization=${{ github.repository_owner }}
+            -Dsonar.projectKey=${{ github.repository }}
+            -Dsonar.sources=src/
+            -Dsonar.tests=tests/
+            -Dsonar.cs.dotcover.reportsPaths=coverage.xml
+
+  # ========================================================================================
+  # 🧪 COMPREHENSIVE TESTING SUITE
+  # ========================================================================================
+  test-suite:
+    name: Test Suite (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    if: ${{ !inputs.skip_tests }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            artifact-name: linux-test-results
+          - os: windows-latest
+            artifact-name: windows-test-results
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+          
+      - name: Cache dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+          
+      - name: Restore dependencies
+        run: dotnet restore
+        
+      - name: Build application
+        run: dotnet build --no-restore --configuration ${{ env.BUILD_CONFIGURATION }}
+        
+      - name: Run unit tests
+        run: |
+          dotnet test tests/MyApp.UnitTests/ \
+            --no-build \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --logger trx \
+            --logger "console;verbosity=detailed" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./test-results/unit
+            
+      - name: Run integration tests
+        run: |
+          dotnet test tests/MyApp.IntegrationTests/ \
+            --no-build \
+            --configuration ${{ env.BUILD_CONFIGURATION }} \
+            --logger trx \
+            --logger "console;verbosity=detailed" \
+            --collect:"XPlat Code Coverage" \
+            --results-directory ./test-results/integration
+        env:
+          ConnectionStrings__DefaultConnection: "Server=(localdb)\\mssqllocaldb;Database=MyAppTestDb;Trusted_Connection=true;"
+          
+      - name: Generate coverage report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5
+        with:
+          reports: 'test-results/**/coverage.cobertura.xml'
+          targetdir: 'coverage-report'
+          reporttypes: 'Html;Cobertura;JsonSummary'
+          
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.artifact-name }}
+          path: |
+            test-results/
+            coverage-report/
+            
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage-report/Cobertura.xml
+          fail_ci_if_error: true
+          verbose: true
+
+  # ========================================================================================
+  # 🔒 SECURITY SCANNING & VULNERABILITY ASSESSMENT
+  # ========================================================================================
+  security-scan:
+    name: Security Analysis
+    runs-on: ubuntu-latest
+    needs: [code-quality]
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH,MEDIUM'
+          
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+          
+      - name: Dependency vulnerability scan
+        run: |
+          dotnet list package --vulnerable --include-transitive
+          dotnet list package --deprecated
+          
+      - name: OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'MyApp'
+          path: '.'
+          format: 'ALL'
+          out: 'dependency-check-report'
+          
+      - name: Upload OWASP results
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: dependency-check-report/
+
+  # ========================================================================================
+  # 🐳 DOCKER BUILD & REGISTRY OPERATIONS
+  # ========================================================================================
+  docker-build:
+    name: Docker Build & Push
+    runs-on: ubuntu-latest
+    needs: [test-suite, security-scan]
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tags: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          driver-opts: |
+            network=host
+            
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-,suffix=-{{date 'YYYYMMDD-HHmmss'}}
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=MyApp
+            org.opencontainers.image.description=Enterprise .NET Application
+            org.opencontainers.image.vendor=MyCompany
+            
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          build-args: |
+            DOTNET_VERSION=${{ env.DOTNET_VERSION }}
+            BUILD_CONFIGURATION=${{ env.BUILD_CONFIGURATION }}
+            BUILD_NUMBER=${{ github.run_number }}
+            GIT_COMMIT=${{ github.sha }}
+            
+      - name: Run Trivy vulnerability scanner on image
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          
+      - name: Upload image scan results
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-image-results.sarif'
+
+  # ========================================================================================
+  # 🚀 DEPLOYMENT ORCHESTRATION
+  # ========================================================================================
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.ref == 'refs/heads/develop' || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment != 'none')
+    environment: 
+      name: staging
+      url: https://staging.myapp.company.com
+    steps:
+      - name: Deploy to staging environment
+        run: |
+          echo "🚀 Deploying to staging environment..."
+          echo "Image: ${{ needs.docker-build.outputs.image-tags }}"
+          echo "Digest: ${{ needs.docker-build.outputs.image-digest }}"
+          
+          # Kubernetes deployment
+          kubectl set image deployment/myapp-staging myapp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.docker-build.outputs.image-digest }}
+          kubectl rollout status deployment/myapp-staging --timeout=300s
+          
+          # Health check
+          curl -f https://staging.myapp.company.com/health || exit 1
+          
+      - name: Run smoke tests
+        run: |
+          echo "🧪 Running smoke tests against staging..."
+          # Implement staging smoke tests
+          ./scripts/smoke-tests.sh staging
+          
+      - name: Performance tests
+        if: inputs.performance_test
+        run: |
+          echo "⚡ Running performance tests..."
+          # Implement performance testing
+          ./scripts/performance-tests.sh staging
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [docker-build, deploy-staging]
+    if: github.ref == 'refs/heads/main' || (github.event_name == 'workflow_dispatch' && inputs.deploy_environment == 'production')
+    environment: 
+      name: production
+      url: https://myapp.company.com
+    steps:
+      - name: Production deployment
+        run: |
+          echo "🏁 Deploying to production environment..."
+          echo "Image: ${{ needs.docker-build.outputs.image-tags }}"
+          
+          # Blue-green deployment strategy
+          kubectl apply -f k8s/production/
+          kubectl set image deployment/myapp-production myapp=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}@${{ needs.docker-build.outputs.image-digest }}
+          kubectl rollout status deployment/myapp-production --timeout=600s
+          
+          # Production health check
+          curl -f https://myapp.company.com/health || exit 1
+          
+      - name: Post-deployment validation
+        run: |
+          echo "✅ Validating production deployment..."
+          ./scripts/production-validation.sh
+          
+      - name: Notify stakeholders
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: "🎉 Production deployment successful for ${{ github.repository }}@${{ github.sha }}"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+            </div>
+
+            <h3>Supporting Docker Configuration</h3>
+            <div class="two-column">
+                <div>
+                    <h4>Multi-Stage Dockerfile</h4>
+                    <div class="code-block">
+# Multi-stage build for optimized production images
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Copy project files for dependency restoration
+COPY ["src/MyApp.Api/MyApp.Api.csproj", "src/MyApp.Api/"]
+COPY ["src/MyApp.Core/MyApp.Core.csproj", "src/MyApp.Core/"]
+COPY ["src/MyApp.Infrastructure/MyApp.Infrastructure.csproj", "src/MyApp.Infrastructure/"]
+COPY ["Directory.Build.props", "./"]
+
+# Restore dependencies
+RUN dotnet restore "src/MyApp.Api/MyApp.Api.csproj"
+
+# Copy source code and build
+COPY . .
+WORKDIR "/src/src/MyApp.Api"
+RUN dotnet build "MyApp.Api.csproj" -c Release -o /app/build --no-restore
+
+# Publish application
+FROM build AS publish
+RUN dotnet publish "MyApp.Api.csproj" -c Release -o /app/publish \
+    --no-restore --no-build /p:UseAppHost=false
+
+# Runtime stage
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+
+# Security: Create non-root user
+RUN adduser --disabled-password --gecos '' --uid 1000 appuser \
+    && chown -R appuser:appuser /app
+USER appuser
+
+# Copy published application
+COPY --from=publish --chown=appuser:appuser /app/publish .
+
+# Health check configuration
+HEALTHCHECK --interval=30s --timeout=3s --start-period=40s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+EXPOSE 8080
+ENTRYPOINT ["dotnet", "MyApp.Api.dll"]
+                    </div>
+                </div>
+                <div>
+                    <h4>Docker Compose for Development</h4>
+                    <div class="code-block">
+version: '3.8'
+
+services:
+  myapp-api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      target: final
+    ports:
+      - "8080:8080"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=MyAppDb;User Id=sa;Password=YourPassword123!;TrustServerCertificate=true;
+    depends_on:
+      - sqlserver
+      - redis
+    networks:
+      - myapp-network
+    volumes:
+      - myapp-logs:/app/logs
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      SA_PASSWORD: "YourPassword123!"
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    networks:
+      - myapp-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - myapp-network
+
+volumes:
+  sqlserver-data:
+  myapp-logs:
+
+networks:
+  myapp-network:
+    driver: bridge
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <span class="emoji">🏗️</span><strong>Production Excellence:</strong> This workflow implements enterprise best practices including security scanning, multi-environment deployment, performance testing, and comprehensive monitoring for reliable production deployments
+            </div>
+        </div>
+
+        <!-- Slide 7: Action Triggers -->
+        <div class="slide">
+            <div class="slide-counter">7 / 7</div>
+            <h2><span class="emoji">🎯</span>Advanced Trigger Strategies & Automation</h2>
+            
+            <h3>Trigger Strategy Framework</h3>
+            <p>Effective CI/CD requires sophisticated trigger strategies that balance automation with control, enabling rapid development while maintaining production stability and security.</p>
+
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4><span class="emoji">⚡</span>Event-Driven Automation</h4>
+                    <ul>
+                        <li>Repository events (push, PR, release)</li>
+                        <li>External webhooks and API calls</li>
+                        <li>Scheduled maintenance and monitoring</li>
+                        <li>Dependency and security updates</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">🎛️</span>Manual Control Points</h4>
+                    <ul>
+                        <li>Production deployments</li>
+                        <li>Emergency procedures</li>
+                        <li>Feature toggles and experiments</li>
+                        <li>Administrative tasks</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">🔄</span>Hybrid Approaches</h4>
+                    <ul>
+                        <li>Automated staging, manual production</li>
+                        <li>Conditional automation with approvals</li>
+                        <li>Time-based deployment windows</li>
+                        <li>Risk-based trigger selection</li>
+                    </ul>
+                </div>
+                <div class="feature-card">
+                    <h4><span class="emoji">📊</span>Monitoring & Analytics</h4>
+                    <ul>
+                        <li>Trigger performance metrics</li>
+                        <li>Deployment success rates</li>
+                        <li>Time-to-production analytics</li>
+                        <li>Error pattern analysis</li>
+                    </ul>
+                </div>
+            </div>
+
+            <h3>Comprehensive Trigger Configuration</h3>
+
+            <div class="two-column">
+                <div>
+                    <h4>Automated Triggers - Development Flow</h4>
+                    <div class="code-block">
+# Development and CI triggers
+name: Automated Development Pipeline
+on:
+  push:
+    branches: [main, develop, 'feature/*', 'bugfix/*', 'hotfix/*']
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      - 'docker/**'
+      - '.github/workflows/**'
+    paths-ignore:
+      - 'docs/**'
+      - '*.md'
+      - '.github/ISSUE_TEMPLATE/**'
+      
+  pull_request:
+    branches: [main, develop]
+    types: [opened, synchronize, reopened, ready_for_review]
+    paths:
+      - 'src/**'
+      - 'tests/**'
+      
+  # Automated dependency updates
+  schedule:
+    # Weekdays at 2 AM UTC for dependency scanning
+    - cron: '0 2 * * 1-5'
+    # Sunday at 3 AM UTC for comprehensive security scan
+    - cron: '0 3 * * 0'
+    # First day of month for compliance reporting
+    - cron: '0 4 1 * *'
+    
+  # External system integrations
+  repository_dispatch:
+    types: [trigger-ci, security-alert, dependency-update]
+
+jobs:
+  determine-scope:
+    runs-on: ubuntu-latest
+    outputs:
+      run-tests: ${{ steps.changes.outputs.tests }}
+      run-security: ${{ steps.changes.outputs.security }}
+      run-build: ${{ steps.changes.outputs.build }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v2
+        id: changes
+        with:
+          filters: |
+            tests:
+              - 'src/**'
+              - 'tests/**'
+            security:
+              - 'src/**'
+              - 'docker/**'
+              - 'package*.json'
+              - '*.csproj'
+            build:
+              - 'src/**'
+              - 'docker/**'
+              - '.github/workflows/**'
+                    </div>
+                </div>
+                <div>
+                    <h4>Manual Triggers - Production Control</h4>
+                    <div class="code-block">
+# Manual production deployment and maintenance
+name: Production Operations
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: 'Operation to perform'
+        type: choice
+        required: true
+        options:
+          - deploy
+          - rollback
+          - maintenance
+          - security-patch
+          - database-migration
+          
+      environment:
+        description: 'Target environment'
+        type: choice
+        required: true
+        options: [staging, production]
+        default: staging
+        
+      version:
+        description: 'Version/Tag to deploy'
+        type: string
+        required: false
+        default: 'latest'
+        
+      approval_required:
+        description: 'Require additional approval'
+        type: boolean
+        default: true
+        
+      maintenance_window:
+        description: 'Maintenance window (UTC)'
+        type: choice
+        options:
+          - 'immediate'
+          - '02:00-04:00'
+          - '06:00-08:00'
+          - 'weekend-only'
+        default: '02:00-04:00'
+        
+      rollback_strategy:
+        description: 'Rollback strategy if deployment fails'
+        type: choice
+        options:
+          - 'automatic'
+          - 'manual'
+          - 'blue-green-switch'
+        default: 'automatic'
+        
+      notification_level:
+        description: 'Notification level'
+        type: choice
+        options: [minimal, standard, verbose]
+        default: standard
+
+jobs:
+  validate-inputs:
+    runs-on: ubuntu-latest
+    outputs:
+      proceed: ${{ steps.validation.outputs.proceed }}
+      risk-level: ${{ steps.validation.outputs.risk-level }}
+    steps:
+      - name: Validate operation parameters
+        id: validation
+        run: |
+          # Validate maintenance window
+          CURRENT_HOUR=$(date -u +%H)
+          
+          case "${{ inputs.maintenance_window }}" in
+            "immediate")
+              echo "⚠️  Immediate deployment requested"
+              ;;
+            "02:00-04:00")
+              if [[ $CURRENT_HOUR -ge 2 && $CURRENT_HOUR -lt 4 ]]; then
+                echo "✅ Within maintenance window"
+              else
+                echo "❌ Outside maintenance window"
+                exit 1
+              fi
+              ;;
+            "weekend-only")
+              if [[ $(date +%u) -ge 6 ]]; then
+                echo "✅ Weekend deployment"
+              else
+                echo "❌ Weekday deployment not allowed"
+                exit 1
+              fi
+              ;;
+          esac
+          
+          # Risk assessment
+          if [[ "${{ inputs.environment }}" == "production" ]]; then
+            echo "risk-level=high" >> $GITHUB_OUTPUT
+          else
+            echo "risk-level=low" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "proceed=true" >> $GITHUB_OUTPUT
+                    </div>
+                </div>
+            </div>
+
+            <h3>Advanced Conditional Logic & Approval Workflows</h3>
+            <div class="code-block">
+name: Intelligent Deployment Pipeline
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force deployment (bypass checks)'
+        type: boolean
+        default: false
+
+jobs:
+  # Risk assessment based on changes
+  risk-assessment:
+    runs-on: ubuntu-latest
+    outputs:
+      risk-score: ${{ steps.assess.outputs.risk-score }}
+      requires-approval: ${{ steps.assess.outputs.requires-approval }}
+      deployment-strategy: ${{ steps.assess.outputs.deployment-strategy }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100  # Analyze recent history
+          
+      - name: Assess deployment risk
+        id: assess
+        run: |
+          RISK_SCORE=0
+          
+          # Check for database migrations
+          if git diff HEAD~1 --name-only | grep -q "migrations\|schema"; then
+            echo "📊 Database changes detected"
+            RISK_SCORE=$((RISK_SCORE + 30))
+          fi
+          
+          # Check for configuration changes
+          if git diff HEAD~1 --name-only | grep -q "appsettings\|config"; then
+            echo "⚙️  Configuration changes detected"
+            RISK_SCORE=$((RISK_SCORE + 20))
+          fi
+          
+          # Check for security-related changes
+          if git diff HEAD~1 --name-only | grep -q "auth\|security\|crypto"; then
+            echo "🔒 Security changes detected"
+            RISK_SCORE=$((RISK_SCORE + 40))
+          fi
+          
+          # Check commit frequency (rapid changes = higher risk)
+          COMMITS_LAST_HOUR=$(git log --since="1 hour ago" --oneline | wc -l)
+          if [[ $COMMITS_LAST_HOUR -gt 5 ]]; then
+            echo "⚡ High commit frequency detected"
+            RISK_SCORE=$((RISK_SCORE + 25))
+          fi
+          
+          # Determine approval requirements and strategy
+          if [[ $RISK_SCORE -gt 50 || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "requires-approval=true" >> $GITHUB_OUTPUT
+            echo "deployment-strategy=blue-green" >> $GITHUB_OUTPUT
+          else
+            echo "requires-approval=false" >> $GITHUB_OUTPUT
+            echo "deployment-strategy=rolling" >> $GITHUB_OUTPUT
+          fi
+          
+          echo "risk-score=$RISK_SCORE" >> $GITHUB_OUTPUT
+          echo "🎯 Risk Score: $RISK_SCORE"
+
+  # Conditional approval requirement
+  approval-gate:
+    runs-on: ubuntu-latest
+    needs: risk-assessment
+    if: needs.risk-assessment.outputs.requires-approval == 'true' && !inputs.force_deploy
+    environment: 
+      name: production-approval
+    steps:
+      - name: Require manual approval
+        run: |
+          echo "🛡️  Manual approval required for high-risk deployment"
+          echo "Risk Score: ${{ needs.risk-assessment.outputs.risk-score }}"
+          echo "Strategy: ${{ needs.risk-assessment.outputs.deployment-strategy }}"
+
+  # Intelligent deployment execution
+  deploy:
+    runs-on: ubuntu-latest
+    needs: [risk-assessment, approval-gate]
+    if: always() && (needs.approval-gate.result == 'success' || needs.approval-gate.result == 'skipped')
+    environment: production
+    steps:
+      - name: Execute deployment
+        run: |
+          echo "🚀 Executing ${{ needs.risk-assessment.outputs.deployment-strategy }} deployment"
+          echo "Risk Score: ${{ needs.risk-assessment.outputs.risk-score }}"
+          
+          case "${{ needs.risk-assessment.outputs.deployment-strategy }}" in
+            "blue-green")
+              echo "🔄 Blue-Green deployment initiated"
+              # Implement blue-green deployment logic
+              ;;
+            "rolling")
+              echo "📦 Rolling deployment initiated"
+              # Implement rolling deployment logic
+              ;;
+          esac
+          
+      - name: Post-deployment monitoring
+        run: |
+          echo "📊 Initiating enhanced monitoring for 30 minutes"
+          # Implement monitoring automation
+          
+      - name: Notification based on risk level
+        uses: 8398a7/action-slack@v3
+        with:
+          status: success
+          text: |
+            🎉 Deployment completed successfully
+            Risk Score: ${{ needs.risk-assessment.outputs.risk-score }}
+            Strategy: ${{ needs.risk-assessment.outputs.deployment-strategy }}
+            Commit: ${{ github.sha }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+            </div>
+
+            <h3>Enterprise Trigger Best Practices</h3>
+
+            <div class="pro-con">
+                <div class="pro">
+                    <h3><span class="emoji">✅</span>Automated Trigger Benefits</h3>
+                    <ul>
+                        <li><strong>Consistency:</strong> Eliminates human error in routine operations</li>
+                        <li><strong>Speed:</strong> Immediate response to code changes</li>
+                        <li><strong>Coverage:</strong> Comprehensive testing on every change</li>
+                        <li><strong>Feedback:</strong> Rapid developer feedback loops</li>
+                        <li><strong>Compliance:</strong> Consistent security and quality checks</li>
+                        <li><strong>Efficiency:</strong> Reduces manual overhead and context switching</li>
+                    </ul>
+                    <div class="info-box">
+                        <strong>Implementation Strategy:</strong> Start with comprehensive automation for development and staging environments, gradually extending to production with appropriate safeguards
+                    </div>
+                </div>
+                <div class="con">
+                    <h3><span class="emoji">🎛️</span>Manual Trigger Advantages</h3>
+                    <ul>
+                        <li><strong>Control:</strong> Human oversight for critical operations</li>
+                        <li><strong>Timing:</strong> Deployment during optimal windows</li>
+                        <li><strong>Context:</strong> Business context consideration</li>
+                        <li><strong>Risk Management:</strong> Additional validation for high-risk changes</li>
+                        <li><strong>Compliance:</strong> Regulatory approval requirements</li>
+                        <li><strong>Coordination:</strong> Cross-team communication and planning</li>
+                    </ul>
+                    <div class="warning-box">
+                        <strong>Balance Consideration:</strong> Manual processes should enhance rather than hinder delivery velocity. Implement intelligent automation with manual override capabilities
+                    </div>
+                </div>
+            </div>
+
+            <div class="highlight">
+                <span class="emoji">🎯</span><strong>Strategic Approach:</strong> Design trigger strategies that evolve with your organization's maturity, starting with safety-focused manual controls and progressively automating as confidence and monitoring capabilities improve
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="architecture-diagram">
+                <h4>🎉 Congratulations! You've Mastered GitHub Actions</h4>
+                <p style="font-size: 1.1rem; margin-top: 20px;">You now have comprehensive knowledge of enterprise-grade CI/CD with GitHub Actions, from basic concepts to advanced production deployment strategies. Apply these patterns to build robust, secure, and scalable automation for your development teams.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="navigation">
+        <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">← Previous</button>
+        <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">Next →</button>
+    </div>
+
+    <script>
+        let currentSlide = 0;
+        const slides = document.querySelectorAll('.slide');
+        const totalSlides = slides.length;
+
+        function showSlide(n) {
+            slides.forEach(slide => slide.classList.remove('active'));
+            slides[n].classList.add('active');
+            
+            // Update navigation buttons
+            document.getElementById('prevBtn').disabled = (n === 0);
+            document.getElementById('nextBtn').disabled = (n === totalSlides - 1);
+            
+            // Scroll to top of slide
+            slides[n].scrollTop = 0;
+        }
+
+        function changeSlide(direction) {
+            currentSlide += direction;
+            if (currentSlide < 0) currentSlide = 0;
+            if (currentSlide >= totalSlides) currentSlide = totalSlides - 1;
+            showSlide(currentSlide);
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowLeft' || e.key === 'PageUp') changeSlide(-1);
+            if (e.key === 'ArrowRight' || e.key === 'PageDown') changeSlide(1);
+            if (e.key === 'Home') { currentSlide = 0; showSlide(currentSlide); }
+            if (e.key === 'End') { currentSlide = totalSlides - 1; showSlide(currentSlide); }
+        });
+
+        // Touch/swipe support for mobile
+        let startX = 0;
+        let endX = 0;
+
+        document.addEventListener('touchstart', function(e) {
+            startX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', function(e) {
+            endX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = startX - endX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    changeSlide(1); // Swipe left - next slide
+                } else {
+                    changeSlide(-1); // Swipe right - previous slide
+                }
+            }
+        }
+
+        // Initialize
+        showSlide(0);
+        
+        // Add smooth scrolling for long slides
+        document.querySelectorAll('.slide').forEach(slide => {
+            slide.style.scrollBehavior = 'smooth';
+        });
+    </script>
+</body>
+</html>
