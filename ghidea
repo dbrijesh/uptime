@@ -1,0 +1,61 @@
+name: Scheduled Cert Update
+on:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  deploy-certs:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [production, staging, development, preview]  # Static list
+        include:
+          - branch: production
+            environment: prod
+            aws-role-arn: arn:aws:iam::123456789012:role/prod-role
+          - branch: staging
+            environment: staging
+            aws-role-arn: arn:aws:iam::123456789012:role/staging-role
+          - branch: development
+            environment: dev
+            aws-role-arn: arn:aws:iam::123456789012:role/dev-role
+    
+    steps:
+      - name: Call reusable workflow for ${{ matrix.branch }}
+        uses: ./.github/workflows/cert-generator.yml
+        with:
+          target-branch: ${{ matrix.branch }}
+          environment: ${{ matrix.environment }}
+          aws-role-arn: ${{ matrix.aws-role-arn }}
+        secrets:
+          GH_PAT: ${{ secrets.GH_PAT }}
+
+
+name: Cert Generator and Deployer
+on:
+  workflow_call:
+    inputs:
+      target-branch:
+        required: true
+        type: string
+      environment:
+        required: true
+        type: string
+      aws-role-arn:
+        required: true
+        type: string
+    secrets:
+      GH_PAT:
+        required: true
+
+jobs:
+  generate-and-deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    
+    steps:
+      - name: Checkout specific branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.target-branch }}
+          token: ${{ secrets.GH_PAT }}
