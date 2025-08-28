@@ -59,3 +59,19 @@ jobs:
         with:
           ref: ${{ inputs.target-branch }}
           token: ${{ secrets.GH_PAT }}
+
+
+
+name: Update Our Certs
+on:
+  schedule:
+    - cron: '0 3 * * *'
+
+jobs:
+  call-reusable:
+    uses: your-org/shared-workflows/.github/workflows/cert-generator.yml@main
+    with:
+      target-repo: repo-b
+      target-owner: your-org
+      target-branches: "main,prod"
+      environment: production
