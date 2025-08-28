@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Layered Banking Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            letter-spacing: 2px;
+        }
+
+        .architecture {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .layer {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            border-left: 6px solid;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .layer:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.15);
+        }
+
+        .layer-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .layer-icon {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .components {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+        }
+
+        .component {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .component::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.8), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .component:hover::before {
+            left: 100%;
+        }
+
+        .component:hover {
+            transform: scale(1.05);
+            border-color: #4a90e2;
+            box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
+        }
+
+        .component-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .component-desc {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        /* Layer-specific colors */
+        .consumer { border-left-color: #3498db; }
+        .consumer .layer-icon { background: #3498db; }
+        .consumer .component:hover { border-color: #3498db; box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3); }
+
+        .gateway { border-left-color: #9b59b6; }
+        .gateway .layer-icon { background: #9b59b6; }
+        .gateway .component:hover { border-color: #9b59b6; box-shadow: 0 8px 25px rgba(155, 89, 182, 0.3); }
+
+        .api { border-left-color: #e74c3c; }
+        .api .layer-icon { background: #e74c3c; }
+        .api .component:hover { border-color: #e74c3c; box-shadow: 0 8px 25px rgba(231, 76, 60, 0.3); }
+
+        .streaming { border-left-color: #f39c12; }
+        .streaming .layer-icon { background: #f39c12; }
+        .streaming .component:hover { border-color: #f39c12; box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3); }
+
+        .data { border-left-color: #27ae60; }
+        .data .layer-icon { background: #27ae60; }
+        .data .component:hover { border-color: #27ae60; box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3); }
+
+        .analytics { border-left-color: #16a085; }
+        .analytics .layer-icon { background: #16a085; }
+        .analytics .component:hover { border-color: #16a085; box-shadow: 0 8px 25px rgba(22, 160, 133, 0.3); }
+
+        .core { border-left-color: #8e44ad; }
+        .core .layer-icon { background: #8e44ad; }
+        .core .component:hover { border-color: #8e44ad; box-shadow: 0 8px 25px rgba(142, 68, 173, 0.3); }
+
+        .external { border-left-color: #e67e22; }
+        .external .layer-icon { background: #e67e22; }
+        .external .component:hover { border-color: #e67e22; box-shadow: 0 8px 25px rgba(230, 126, 34, 0.3); }
+
+        /* Connections */
+        .connection-arrow {
+            text-align: center;
+            font-size: 2rem;
+            color: #bdc3c7;
+            margin: 10px 0;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .components {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .layer {
+                padding: 20px;
+            }
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: #2c3e50;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+            max-width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .tooltip.show {
+            opacity: 1;
+        }
+
+        .data-flow {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(52, 152, 219, 0.1);
+            padding: 10px;
+            border-radius: 50%;
+            animation: dataFlow 3s infinite;
+        }
+
+        @keyframes dataFlow {
+            0%, 100% { opacity: 0.3; transform: translateY(-50%) scale(1); }
+            50% { opacity: 1; transform: translateY(-50%) scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Layered Banking Architecture</h1>
+            <p>Enterprise-grade banking system with microservices, event streaming, and analytics</p>
+        </div>
+        
+        <div class="architecture">
+            <!-- Consumer Layer -->
+            <div class="layer consumer">
+                <div class="layer-title">
+                    <div class="layer-icon">1</div>
+                    Consumer Layer
+                </div>
+                <div class="components">
+                    <div class="component" data-tooltip="Customer-facing web portal for online banking services">
+                        <div class="component-title">🌐 Web Portal</div>
+                        <div class="component-desc">Online banking interface with account management, transfers, and bill payments</div>
+                    </div>
+                    <div class="component" data-tooltip="Native mobile applications for iOS and Android platforms">
+                        <div class="component-title">📱 Mobile App</div>
+                        <div class="component-desc">Cross-platform mobile banking with biometric authentication</div>
+                    </div>
+                    <div class="component" data-tooltip="Automated Teller Machine network integration">
+                        <div class="component-title">🏧 ATM Network</div>
+                        <div class="component-desc">Self-service terminals for cash withdrawal and deposits</div>
+                    </div>
+                    <div class="component" data-tooltip="Branch management systems for tellers and customer service">
+                        <div class="component-title">🏛️ Branch Systems</div>
+                        <div class="component-desc">In-branch customer service and transaction processing</div>
+                    </div>
+                </div>
+                <div class="data-flow">💫</div>
+            </div>
+
+            <div class="connection-arrow">⬇️</div>
+
+            <!-- API Gateway Layer -->
+            <div class="layer gateway">
+                <div class="layer-title">
+                    <div class="layer-icon">2</div>
+                    API Gateway Layer
+                </div>
+                <div class="components">
+                    <div class="component" data-tooltip="Central entry point for all API requests with routing and load balancing">
+                        <div class="component-title">🚪 API Gateway</div>
+                        <div class="component-desc">Request routing, load balancing, and protocol translation</div>
+                    </div>
+                    <div class="component" data-tooltip="OAuth 2.0, JWT tokens, and multi-factor authentication">
+                        <div class="component-title">🔐 Authentication Service</div>
+                        <div class="component-desc">Identity verification and access token management</div>
+                    </div>
+                    <div class="component" data-tooltip="Request throttling and quota management per client">
+                        <div class="component-title">⚡ Rate Limiting</div>
+                        <div class="component-desc">API usage control and DDoS protection</div>
+                    </div>
+                </div>
+                <div class="data-flow">🔄</div>
+            </div>
+
+            <div class="connection-arrow">⬇️</div>
+
+            <!-- Platform APIs Layer -->
+            <div class="layer api">
+                <div class="layer-title">
+                    <div class="layer-icon">3</div>
+                    Platform APIs Layer
+                </div>
+                <div class="components">
+                    <div class="component" data-tooltip="RESTful APIs for account creation, management, and querying">
+                        <div class="component-title">💰 Account Management API</div>
+                        <div class="component-desc">Account CRUD operations, balance inquiries, and statements</div>
+                    </div>
+                    <div class="component" data-tooltip="Payment processing APIs with fraud detection">
+                        <div class="component-title">💳 Payment Processing API</div>
+                        <div class="component-desc">Fund transfers, bill payments, and transaction processing</div>
+                    </div>
+                    <div class="component" data-tooltip="Loan application, approval workflow, and management APIs">
+                        <div class="component-title">🏠 Loan Services API</div>
+                        <div class="component-desc">Credit applications, underwriting, and loan lifecycle management</div>
+                    </div>
+                    <div class="component" data-tooltip="Credit/debit card management and transaction processing">
+                        <div class="component-title">💳 Card Services API</div>
+                        <div class="component-desc">Card issuance, activation, and transaction authorization</div>
+                    </div>
+                    <div class="component" data-tooltip="Multi-channel notification delivery system">
+                        <div class="component-title">📢 Notification API</div>
+                        <div class="component-desc">SMS, email, and push notification services</div>
+                    </div>
+                </div>
+                <div class="data-flow">📡</div>
+            </div>
+
+            <div class="connection-arrow">⬇️</div>
+
+            <!-- Event Streaming Layer -->
+            <div class="layer streaming">
+                <div class="layer-title">
+                    <div class="layer-icon">4</div>
+                    Event Streaming Layer
+                </div>
+                <div class="components">
+                    <div class="component" data-tooltip="Distributed event streaming platform for real-time data processing">
+                        <div class="component-title">🌊 Apache Kafka</div>
+                        <div class="component-desc">High-throughput, fault-tolerant event streaming platform</div>
+                    </div>
+                    <div class="component" data-tooltip="Services that publish events to Kafka topics">
+                        <div class="component-title">📤 Event Producers</div>
+                        <div class="component-desc">Transaction events, user actions, and system notifications</div>
+                    </div>
+                    <div class="component" data-tooltip="Services that subscribe to and process Kafka events">
+                        <div class="component-title">📥 Event Consumers</div>
+                        <div class="component-desc">Real-time analytics, audit logging, and downstream processing</div>
+                    </div>
+                </div>
+                <div class="data-flow">🔄</div>
+            </div>
+
+            <div class="connection-arrow">⬇️</div>
+
+            <!-- Data Integration Layer -->
+            <div class="layer data">
+                <div class="layer-title">
+                    <div class="layer-icon">5</div>
+                    Data Integration & Storage Layer
+                </div>
+                <div class="components">
+                    <div class="component" data-tooltip="Extract, Transform, Load processes for data warehousing">
+                        <div class="component-title">🔄 ETL Processes</div>
+                        <div class="component-desc">Batch data processing and transformation pipelines</div>
+                    </div>
+                    <div class="component" data-tooltip="Real-time database change capture and replication">
+                        <div class="component-title">📊 Change Data Capture</div>
+                        <div class="component-desc">Real-time data synchronization and event sourcing</div>
+                    </div>
+                    <div class="component" data-tooltip="OLTP database optimized for transactional workloads">
+                        <div class="component-title">🗄️ ODS OLTP Database</div>
+                        <div class="component-desc">Operational data store for transaction processing</div>
+                    </div>
+                    <div class="component" data-tooltip="OLAP database optimized for analytical queries">
+                        <div class="component-title">📈 ODS OLAP Database</div>
+                        <div class="component-desc">Analytical data store for reporting and business intelligence</div>
+                    </div>
+                    <div class="component" data-tooltip="In-memory cache for high-performance data access">
+                        <div class="component-title">⚡ Redis Cache</div>
+                        <div class="component-desc">Session storage, API response caching, and real-time data</div>
+                    </div>
+                </div>
+                <div class="data-flow">💾</div>
+            </div>
+
+            <div class="connection-arrow">⬇️</div>
+
+            <!-- Analytics Layer -->
+            <div class="layer analytics">
+                <div class="layer-title">
+                    <div class="layer-icon">6</div>
+                    Analytics & Reporting Layer
+                </div>
+                <div class="components">
+                    <div class="component" data-tooltip="Business intelligence tools for data visualization and analysis">
+                        <div class="component-title">📊 Business Intelligence</div>
+                        <div class="component-desc">Data visualization, KPI tracking, and business insights</div>
+                    </div>
+                    <div class="component" data-tooltip="Real-time dashboards for monitoring and decision making">
+                        <div class="component-title">📈 Dashboards</div>
+                        <div class="component-desc">Executive dashboards and operational monitoring</div>
+                    </div>
+                    <div class="component" data-tooltip="Automated report generation and distribution">
+                        <div class="component-title">📄 Reporting Engine</div>
+                        <div class="component-desc">Regulatory reports, financial statements, and custom reports</div>
+                    </div>
+                    <div class="component" data-tooltip="Machine learning models for fraud detection and risk assessment">
+                        <div class="component-title">🤖 ML Models</div>
+                        <div class="component-desc">Fraud detection, credit scoring, and predictive analytics</div>
+                    </div>
+                </div>
+                <div class="data-flow">📊</div>
+            </div>
+
+            <div class="connection-arrow">⬇️</div>
+
+            <!-- Core Banking Layer -->
+            <div class="layer core">
+                <div class="layer-title">
+                    <div class="layer-icon">7</div>
+                    Core Banking Platforms
+                </div>
+                <div class="components">
+                    <div class="component" data-tooltip="Core account management system with general ledger">
+                        <div class="component-title">🏦 Account Management</div>
+                        <div class="component-desc">General ledger, account hierarchy, and balance management</div>
+                    </div>
+                    <div class="component" data-tooltip="Payment processing engine with settlement capabilities">
+                        <div class="component-title">💸 Payment Engine</div>
+                        <div class="component-desc">Transaction processing, settlement, and clearing operations</div>
+                    </div>
+                    <div class="component" data-tooltip="Loan origination, servicing, and collections platform">
+                        <div class="component-title">🏠 Loan Management</div>
+                        <div class="component-desc">Credit origination, servicing, and portfolio management</div>
+                    </div>
+                    <div class="component" data-tooltip="Risk assessment and compliance monitoring systems">
+                        <div class="component-title">⚠️ Risk Management</div>
+                        <div class="component-desc">Credit risk, operational risk, and regulatory compliance</div>
+                    </div>
+                    <div class="component" data-tooltip="Integration layer for legacy banking systems">
+                        <div class="component-title">🔗 Legacy Integration</div>
+                        <div class="component-desc">Mainframe connectivity and data synchronization</div>
+                    </div>
+                </div>
+                <div class="data-flow">⚙️</div>
+            </div>
+
+            <div class="connection-arrow">⬇️</div>
+
+            <!-- External Systems -->
+            <div class="layer external">
+                <div class="layer-title">
+                    <div class="layer-icon">8</div>
+                    External Systems
+                </div>
+                <div class="components">
+                    <div class="component" data-tooltip="SWIFT, ACH, Fedwire, and card network connections">
+                        <div class="component-title">🌐 Payment Networks</div>
+                        <div class="component-desc">SWIFT messaging, ACH processing, and card network integration</div>
+                    </div>
+                    <div class="component" data-tooltip="Regulatory reporting and compliance systems">
+                        <div class="component-title">🏛️ Regulatory Systems</div>
+                        <div class="component-desc">AML/KYC compliance, CFTC reporting, and audit trails</div>
+                    </div>
+                    <div class="component" data-tooltip="Credit bureau integration for credit checks and reporting">
+                        <div class="component-title">📊 Credit Bureaus</div>
+                        <div class="component-desc">Credit score queries, bureau reporting, and identity verification</div>
+                    </div>
+                    <div class="component" data-tooltip="Third-party service providers and fintech partnerships">
+                        <div class="component-title">🤝 Third Party Services</div>
+                        <div class="component-desc">Fintech integrations, vendor APIs, and partner services</div>
+                    </div>
+                </div>
+                <div class="data-flow">🔗</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <script>
+        // Tooltip functionality
+        const tooltip = document.getElementById('tooltip');
+        const components = document.querySelectorAll('.component');
+
+        components.forEach(component => {
+            component.addEventListener('mouseenter', (e) => {
+                const tooltipText = e.currentTarget.getAttribute('data-tooltip');
+                if (tooltipText) {
+                    tooltip.textContent = tooltipText;
+                    tooltip.classList.add('show');
+                    updateTooltipPosition(e);
+                }
+            });
+
+            component.addEventListener('mousemove', updateTooltipPosition);
+
+            component.addEventListener('mouseleave', () => {
+                tooltip.classList.remove('show');
+            });
+        });
+
+        function updateTooltipPosition(e) {
+            const rect = tooltip.getBoundingClientRect();
+            const x = e.clientX + 10;
+            const y = e.clientY - rect.height - 10;
+            
+            tooltip.style.left = Math.min(x, window.innerWidth - rect.width - 20) + 'px';
+            tooltip.style.top = Math.max(y, 10) + 'px';
+        }
+
+        // Add click interactions
+        components.forEach(component => {
+            component.addEventListener('click', (e) => {
+                const title = e.currentTarget.querySelector('.component-title').textContent;
+                console.log(`Clicked on: ${title}`);
+                
+                // Add a subtle click animation
+                e.currentTarget.style.transform = 'scale(0.95)';
+                setTimeout(() => {
+                    e.currentTarget.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // Add smooth scrolling for better UX
+        document.addEventListener('DOMContentLoaded', () => {
+            const layers = document.querySelectorAll('.layer');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, {
+                threshold: 0.1
+            });
+
+            layers.forEach(layer => {
+                layer.style.opacity = '0';
+                layer.style.transform = 'translateY(20px)';
+                layer.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                observer.observe(layer);
+            });
+        });
+    </script>
+</body>
+</html>
