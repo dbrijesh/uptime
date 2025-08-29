@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy for Parity, Build to Differentiate</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            overflow: hidden;
+        }
+        
+        .slide-container {
+            width: 95%;
+            max-width: 1400px;
+            height: 90vh;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            color: #333;
+            backdrop-filter: blur(10px);
+        }
+        
+        .content-section {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .title {
+            font-size: 2.8rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 30px;
+            text-align: center;
+            grid-column: 1 / -1;
+        }
+        
+        .venn-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .venn-diagram {
+            position: relative;
+            width: 500px;
+            height: 400px;
+        }
+        
+        .circle {
+            position: absolute;
+            width: 280px;
+            height: 280px;
+            border-radius: 50%;
+            opacity: 0.8;
+            border: 3px solid;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding-top: 60px;
+            font-weight: bold;
+            font-size: 1.4rem;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .circle:hover {
+            opacity: 1;
+            transform: scale(1.05);
+        }
+        
+        .buy-circle {
+            background: rgba(52, 152, 219, 0.3);
+            border-color: #3498db;
+            color: #2980b9;
+            left: 50px;
+            top: 50px;
+        }
+        
+        .build-circle {
+            background: rgba(231, 76, 60, 0.3);
+            border-color: #e74c3c;
+            color: #c0392b;
+            right: 50px;
+            top: 50px;
+        }
+        
+        .overlap-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(46, 204, 113, 0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 1.1rem;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            border: 2px solid #27ae60;
+            z-index: 10;
+        }
+        
+        .data-section {
+            flex: 1;
+            background: rgba(248, 249, 250, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #1e3c72;
+            margin-bottom: 25px;
+            border-bottom: 3px solid #3498db;
+            padding-bottom: 10px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-left: 5px solid #e74c3c;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card.primary {
+            border-left-color: #3498db;
+        }
+        
+        .stat-card.success {
+            border-left-color: #27ae60;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #1e3c72;
+            display: block;
+        }
+        
+        .stat-label {
+            font-size: 1.1rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .insight {
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+            font-style: italic;
+            color: #2c3e50;
+        }
+        
+        .footer-note {
+            grid-column: 1 / -1;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+            margin-top: 20px;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .slide-container > * {
+            animation: fadeInUp 0.8s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="slide-container">
+        <h1 class="title">Buy for Parity, Build to Differentiate</h1>
+        
+        <div class="content-section">
+            <div class="venn-container">
+                <div class="venn-diagram">
+                    <div class="circle buy-circle">
+                        BUY<br>
+                        <span style="font-size: 1rem; margin-top: 10px; display: block;">Standard Operations<br>Commodity Functions<br>Proven Solutions</span>
+                    </div>
+                    <div class="circle build-circle">
+                        BUILD<br>
+                        <span style="font-size: 1rem; margin-top: 10px; display: block;">Innovation Zones<br>Competitive Edge<br>Custom Solutions</span>
+                    </div>
+                    <div class="overlap-text">
+                        HYBRID<br>APPROACH<br>
+                        <span style="font-size: 0.9rem;">Strategic Integration</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="content-section">
+            <div class="data-section">
+                <h2 class="section-title">Market Intelligence & Impact</h2>
+                
+                <div class="stat-card primary">
+                    <span class="stat-number">35%</span>
+                    <div class="stat-label">Boost in differentiation capability through hybrid approach</div>
+                </div>
+                
+                <div class="stat-card success">
+                    <span class="stat-number">60%</span>
+                    <div class="stat-label">of finance organizations seeking composable solutions by 2024 (Gartner)</div>
+                </div>
+                
+                <div class="stat-card">
+                    <span class="stat-number">9.8%</span>
+                    <div class="stat-label">Growth in IT spending projected for 2025, emphasizing strategic investments</div>
+                </div>
+                
+                <div class="insight">
+                    <strong>Strategic Insight:</strong> Banking institutions implementing hybrid strategies report significant cost optimization while maintaining competitive differentiation. The key is identifying which capabilities to buy for operational parity and which to build for market advantage.
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-note">
+            Sources: Gartner Research, Deloitte Banking Outlook 2024, Industry Analysis | Prepared for Banking CIO Leadership
+        </div>
+    </div>
+</body>
+</html>
