@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Agentic AI with AWS Bedrock & AgentCore</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background: #f8fafc;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+      padding: 30px;
+      position: relative;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .header h1 {
+      font-size: 2.4rem;
+      font-weight: bold;
+      color: #232f3e;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      font-size: 1.1rem;
+      color: #545b64;
+    }
+
+    .aws-badge {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: #ff9900;
+      color: white;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+
+    .architecture {
+      display: grid;
+      grid-template-columns: 280px 1fr 280px;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .column-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      text-align: center;
+      color: #232f3e;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 8px;
+    }
+
+    .card {
+      background: #fff;
+      border: 1px solid #d1d5db;
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+      position: relative;
+    }
+
+    .card i {
+      font-size: 1.6rem;
+      color: #2563eb;
+      margin-bottom: 8px;
+    }
+
+    .card .title {
+      font-weight: bold;
+      font-size: 1rem;
+      color: #1f2937;
+      margin-bottom: 5px;
+    }
+
+    .card .subtitle {
+      font-size: 0.85rem;
+      color: #6b7280;
+      margin-bottom: 8px;
+    }
+
+    .card .desc {
+      font-size: 0.8rem;
+      color: #4b5563;
+      line-height: 1.4;
+    }
+
+    .central-app {
+      background: #f0f9ff;
+      border: 2px solid #3b82f6;
+      border-radius: 16px;
+      padding: 25px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .central-app h2 {
+      text-align: center;
+      font-size: 1.3rem;
+      font-weight: bold;
+      color: #1d4ed8;
+      margin-bottom: 20px;
+    }
+
+    .layer {
+      background: white;
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .layer h3 {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #1e40af;
+      margin-bottom: 10px;
+    }
+
+    .layer-content {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .component {
+      background: #f9fafb;
+      border: 1px solid #e5e7eb;
+      border-radius: 10px;
+      padding: 10px;
+      width: 110px;
+      text-align: center;
+    }
+
+    .component i {
+      font-size: 1.2rem;
+      color: #3b82f6;
+      margin-bottom: 6px;
+    }
+
+    .component span {
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: #374151;
+    }
+
+    .explanation {
+      background: #f8fafc;
+      border-left: 5px solid #3b82f6;
+      border-radius: 12px;
+      padding: 20px;
+    }
+
+    .explanation h2 {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #1e40af;
+      margin-bottom: 15px;
+    }
+
+    .explanation-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .explanation-item {
+      background: white;
+      padding: 15px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .explanation-item h4 {
+      font-size: 1rem;
+      color: #2563eb;
+      margin-bottom: 6px;
+    }
+
+    .explanation-item p {
+      font-size: 0.85rem;
+      color: #374151;
+      line-height: 1.4;
+    }
+
+    svg.flow-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .arrow-line {
+      stroke: #3b82f6;
+      stroke-width: 2;
+      fill: none;
+      marker-end: url(#arrowhead);
+    }
+
+    @media(max-width: 1000px) {
+      .architecture {
+        grid-template-columns: 1fr;
+      }
+      .explanation-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>🤖 Agentic AI with AgentCore & AWS Bedrock</h1>
+      <p>Static architecture illustration showing intelligent agent orchestration using AgentCore and Bedrock services in AWS</p>
+      <div class="aws-badge"><i class="fab fa-aws"></i> AWS Powered</div>
+    </div>
+
+    <div class="architecture">
+      <!-- Left Column -->
+      <div>
+        <div class="column-title">Specialized AI Agents</div>
+        <div class="card"><i class="fas fa-file-alt"></i><div class="title">Document Processing</div><div class="subtitle">OCR & Classification</div><div class="desc">Autonomously extracts text, tables, and key data from investment documents using AWS Textract & Comprehend.</div></div>
+        <div class="card"><i class="fas fa-balance-scale"></i><div class="title">Compliance Monitor</div><div class="subtitle">KYC/AML Screening</div><div class="desc">Continuously screens transactions and documents for regulatory violations using Bedrock models.</div></div>
+        <div class="card"><i class="fas fa-search"></i><div class="title">Investment Research</div><div class="subtitle">Market & Suitability</div><div class="desc">Analyzes market trends, suitability, and investment opportunities with Bedrock's LLMs.</div></div>
+        <div class="card"><i class="fas fa-chart-line"></i><div class="title">Portfolio Optimizer</div><div class="subtitle">Risk Assessment</div><div class="desc">Runs simulations and applies reinforcement learning to suggest optimized asset allocation.</div></div>
+        <div class="card"><i class="fas fa-comments"></i><div class="title">Communication</div><div class="subtitle">Personalized Messaging</div><div class="desc">Generates investor-ready personalized reports, summaries, and communications.</div></div>
+      </div>
+
+      <!-- Center Column -->
+      <div class="central-app">
+        <h2>Agentic Investment Platform</h2>
+
+        <div class="layer">
+          <h3>Agent Coordination Layer</h3>
+          <div class="layer-content">
+            <div class="component"><i class="fas fa-brain"></i><span>Task Coordinator</span></div>
+            <div class="component"><i class="fas fa-sync-alt"></i><span>State Manager</span></div>
+            <div class="component"><i class="fas fa-bullseye"></i><span>Goal Orchestrator</span></div>
+            <div class="component"><i class="fas fa-shield-alt"></i><span>Security Monitor</span></div>
+          </div>
+        </div>
+
+        <div class="layer">
+          <h3>AgentCore Framework</h3>
+          <div class="layer-content">
+            <div class="component"><i class="fas fa-code"></i><span>Agent Protocol</span></div>
+            <div class="component"><i class="fas fa-plug"></i><span>MCP Server</span></div>
+            <div class="component"><i class="fas fa-project-diagram"></i><span>Workflow Engine</span></div>
+          </div>
+        </div>
+
+        <div class="layer">
+          <h3>AWS Bedrock Foundation</h3>
+          <div class="layer-content">
+            <div class="component"><i class="fas fa-robot"></i><span>Anthropic Claude</span></div>
+            <div class="component"><i class="fas fa-robot"></i><span>AI21 Jurassic</span></div>
+            <div class="component"><i class="fas fa-robot"></i><span>Cohere Command</span></div>
+            <div class="component"><i class="fas fa-robot"></i><span>Stable Diffusion</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column -->
+      <div>
+        <div class="column-title">External Systems</div>
+        <div class="card"><i class="fas fa-chart-bar"></i><div class="title">Market Data</div><div class="subtitle">Bloomberg, Reuters</div><div class="desc">Provides real-time financial data and analytics feeds to research agents.</div></div>
+        <div class="card"><i class="fas fa-university"></i><div class="title">Banking Systems</div><div class="subtitle">SWIFT, ACH</div><div class="desc">Facilitates transaction execution, settlements, and fund transfers.</div></div>
+        <div class="card"><i class="fas fa-gavel"></i><div class="title">Regulatory Systems</div><div class="subtitle">SEC, FINRA</div><div class="desc">Delivers compliance rules and alerts for regulatory monitoring agents.</div></div>
+        <div class="card"><i class="fas fa-database"></i><div class="title">CRM & ERP</div><div class="subtitle">Salesforce, SAP</div><div class="desc">Manages client records, operational workflows, and enterprise data.</div></div>
+      </div>
+    </div>
+
+    <!-- Arrows -->
+    <svg class="flow-lines">
+      <defs>
+        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+          <polygon points="0 0, 10 3.5, 0 7" fill="#3b82f6" />
+        </marker>
+      </defs>
+
+      <!-- Left to Center -->
+      <line x1="280" y1="200" x2="420" y2="200" class="arrow-line" />
+      <line x1="280" y1="320" x2="420" y2="320" class="arrow-line" />
+      <line x1="280" y1="440" x2="420" y2="440" class="arrow-line" />
+
+      <!-- Center to Right -->
+      <line x1="980" y1="250" x2="1120" y2="250" class="arrow-line" />
+      <line x1="980" y1="380" x2="1120" y2="380" class="arrow-line" />
+    </svg>
+
+    <div class="explanation">
+      <h2>How It Works</h2>
+      <div class="explanation-grid">
+        <div class="explanation-item">
+          <h4>Orchestrated Workflows</h4>
+          <p>Agents act autonomously but coordinate through AgentCore. The Task Coordinator delegates work while the Workflow Engine manages execution.</p>
+        </div>
+        <div class="explanation-item">
+          <h4>AWS Bedrock Foundation</h4>
+          <p>Provides managed foundation models for NLP, reasoning, and generative AI with scalability and compliance built-in.</p>
+        </div>
+        <div class="explanation-item">
+          <h4>Security & Compliance</h4>
+          <p>IAM roles, encryption, and built-in governance ensure compliance with financial regulations across all agent interactions.</p>
+        </div>
+        <div class="explanation-item">
+          <h4>Scalable Infrastructure</h4>
+          <p>Serverless AWS services (Lambda, S3, RDS, OpenSearch) allow elastic scaling for real-time investment operations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
