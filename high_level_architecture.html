@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alternative Investment Platform - Architecture</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f2f5;
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .architecture-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background: white;
+        }
+        
+        .legend {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(255,255,255,0.95);
+            padding: 10px 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 100;
+            font-size: 0.85rem;
+        }
+        
+        .legend h4 {
+            margin-bottom: 8px;
+            color: #333;
+            font-size: 0.9rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin: 3px 0;
+        }
+        
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+            margin-right: 6px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.3rem;
+            font-weight: bold;
+        }
+        
+        .architecture-layers {
+            height: calc(100vh - 60px);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .layer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 2px solid #e1e8ed;
+        }
+        
+        .layer:last-child {
+            border-bottom: none;
+        }
+        
+        .layer-header {
+            padding: 8px 15px;
+            font-weight: bold;
+            font-size: 0.95rem;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+        }
+        
+        .layer-content {
+            flex: 1;
+            padding: 10px 15px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 8px;
+            align-items: start;
+        }
+        
+        /* Layer Colors */
+        .presentation-layer {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+        
+        .api-gateway-layer {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+        
+        .microservices-layer {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            color: #333;
+        }
+        
+        .ai-layer {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            color: #333;
+        }
+        
+        .data-layer {
+            background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);
+            color: #333;
+        }
+        
+        .infrastructure-layer {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .component-box {
+            background: rgba(255,255,255,0.15);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+            width: 100%;
+            max-width: 200px;
+            height: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .component-box:hover {
+            transform: translateY(-2px);
+            background: rgba(255,255,255,0.25);
+        }
+        
+        .microservices-layer .component-box,
+        .ai-layer .component-box,
+        .data-layer .component-box {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+        
+        .microservices-layer .component-box:hover,
+        .ai-layer .component-box:hover,
+        .data-layer .component-box:hover {
+            background: rgba(255,255,255,1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .component-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .component-subtitle {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        
+        .aws-badge {
+            background: #ff9500;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.6rem;
+            margin-left: 3px;
+        }
+        
+        .ai-badge {
+            background: #ff6b6b;
+            color: white;
+            padding: 1px 4px;
+            border-radius: 3px;
+            font-size: 0.6rem;
+            margin-left: 3px;
+        }
+        
+        /* Security Perimeter */
+        .security-perimeter {
+            position: absolute;
+            top: 70px;
+            left: 10px;
+            right: 10px;
+            bottom: 80px;
+            border: 3px dashed #ff6b6b;
+            border-radius: 10px;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+        .perimeter-label {
+            position: absolute;
+            top: -12px;
+            right: 15px;
+            background: #ff6b6b;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.8rem;
+        }
+        
+        /* External Systems */
+        .external-systems {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #2c3e50;
+            color: white;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            padding: 8px;
+        }
+        
+        .external-system {
+            background: rgba(255,255,255,0.1);
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        
+        .external-title {
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+        
+        .external-desc {
+            font-size: 0.7rem;
+            opacity: 0.8;
+        }
+        
+        /* Data Flow Arrows */
+        .flow-arrow {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255,255,255,0.7);
+            font-size: 1.5rem;
+            z-index: 10;
+        }
+        
+        .microservices-layer .flow-arrow,
+        .ai-layer .flow-arrow,
+        .data-layer .flow-arrow {
+            color: rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="architecture-container">
+        <div class="legend">
+            <h4>Legend</h4>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff9500;"></div>
+                AWS Services
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #667eea;"></div>
+                Platform Components
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #ff6b6b;"></div>
+                AI/ML Services
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #28a745;"></div>
+                Security Controls
+            </div>
+        </div>
+        
+        <div class="security-perimeter">
+            <div class="perimeter-label">AWS Security Perimeter</div>
+        </div>
+        
+        <div class="header">
+            🏦 Alternative Investment Platform - Enterprise Architecture
+        </div>
+        
+        <div class="architecture-layers">
+            
+            <!-- Layer 1: Presentation -->
+            <div class="layer presentation-layer">
+                <div class="layer-header">
+                    🌐 Presentation Layer - User Interfaces & Content Delivery
+                </div>
+                <div class="layer-content">
+                    <div class="component-box">
+                        <div class="component-title">📊 Investor Portal</div>
+                        <div class="component-subtitle">Portfolio Views & Reports</div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">💼 Fund Manager Portal</div>
+                        <div class="component-subtitle">Fund Operations & Analytics</div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">🏛️ Institution Portal</div>
+                        <div class="component-subtitle">Compliance & Administration</div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Web Application</div>
+                        <div class="component-subtitle">Next.js + React + TypeScript<span class="aws-badge">CloudFront</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Mobile Apps</div>
+                        <div class="component-subtitle">React Native + Expo<span class="aws-badge">S3</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Authentication UI</div>
+                        <div class="component-subtitle">Multi-factor Auth<span class="aws-badge">Cognito</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Global CDN</div>
+                        <div class="component-subtitle">Edge Locations<span class="aws-badge">CloudFront</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Admin Dashboard</div>
+                        <div class="component-subtitle">System Administration</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+            </div>
+            
+            <!-- Layer 2: API Gateway -->
+            <div class="layer api-gateway-layer">
+                <div class="layer-header">
+                    🚪 API Gateway & Security - Request Routing & Authentication
+                </div>
+                <div class="layer-content">
+                    <div class="component-box">
+                        <div class="component-title">GraphQL Gateway</div>
+                        <div class="component-subtitle">Apollo Federation<span class="aws-badge">API Gateway</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Web Firewall</div>
+                        <div class="component-subtitle">Attack Protection<span class="aws-badge">WAF</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Identity Management</div>
+                        <div class="component-subtitle">RBAC & JWT<span class="aws-badge">IAM</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Rate Limiting</div>
+                        <div class="component-subtitle">Throttling & Quotas</div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">WebSocket APIs</div>
+                        <div class="component-subtitle">Real-time Updates</div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+            </div>
+            
+            <!-- Layer 3: Microservices -->
+            <div class="layer microservices-layer">
+                <div class="layer-header">
+                    ⚙️ Microservices - Business Logic & Domain Services
+                </div>
+                <div class="layer-content">
+                    <div class="component-box">
+                        <div class="component-title">Fund Management</div>
+                        <div class="component-subtitle">Real Estate, Crypto, Hedge<span class="aws-badge">Lambda</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Investor Management</div>
+                        <div class="component-subtitle">KYC/AML & Onboarding<span class="aws-badge">Lambda</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Fund Accounting</div>
+                        <div class="component-subtitle">D4 Migration & GL<span class="aws-badge">Lambda</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Treasury Management</div>
+                        <div class="component-subtitle">Cash & Banking<span class="aws-badge">Lambda</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Compliance & Risk</div>
+                        <div class="component-subtitle">Regulatory Reporting<span class="aws-badge">Lambda</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Document Management</div>
+                        <div class="component-subtitle">Secure Storage & Workflow<span class="aws-badge">Lambda</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Valuation Engine</div>
+                        <div class="component-subtitle">NAV & Performance<span class="aws-badge">Lambda</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Notification Service</div>
+                        <div class="component-subtitle">Email & SMS<span class="aws-badge">SNS</span></div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+            </div>
+            
+            <!-- Layer 4: AI/ML -->
+            <div class="layer ai-layer">
+                <div class="layer-header">
+                    🤖 AI/ML Intelligence - Agentic AI & Machine Learning
+                </div>
+                <div class="layer-content">
+                    <div class="component-box">
+                        <div class="component-title">Investment Research Agent</div>
+                        <div class="component-subtitle">Market Analysis<span class="ai-badge">Bedrock</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Compliance Monitor Agent</div>
+                        <div class="component-subtitle">Risk Detection<span class="ai-badge">Bedrock</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Portfolio Optimizer Agent</div>
+                        <div class="component-subtitle">Asset Allocation<span class="ai-badge">SageMaker</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Document Processor Agent</div>
+                        <div class="component-subtitle">OCR & NLP<span class="ai-badge">Textract</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Communication Agent</div>
+                        <div class="component-subtitle">Report Generation<span class="ai-badge">Bedrock</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Vector Search</div>
+                        <div class="component-subtitle">Semantic Search<span class="aws-badge">OpenSearch</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Custom ML Models</div>
+                        <div class="component-subtitle">Risk & Valuation<span class="aws-badge">SageMaker</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Real-time Processing</div>
+                        <div class="component-subtitle">Stream Analytics<span class="aws-badge">Kinesis</span></div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+            </div>
+            
+            <!-- Layer 5: Data -->
+            <div class="layer data-layer">
+                <div class="layer-header">
+                    🗄️ Data Storage & Processing - OLTP, OLAP & Data Lake
+                </div>
+                <div class="layer-content">
+                    <div class="component-box">
+                        <div class="component-title">OLTP Database</div>
+                        <div class="component-subtitle">Transactional Data<span class="aws-badge">Aurora PostgreSQL</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">OLAP Warehouse</div>
+                        <div class="component-subtitle">Analytics & BI<span class="aws-badge">Redshift</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Data Lake</div>
+                        <div class="component-subtitle">Raw & Processed Data<span class="aws-badge">S3</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Cache Layer</div>
+                        <div class="component-subtitle">Session & Performance<span class="aws-badge">ElastiCache</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Document Store</div>
+                        <div class="component-subtitle">Contracts & Reports<span class="aws-badge">DocumentDB</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">NoSQL Database</div>
+                        <div class="component-subtitle">High-speed Access<span class="aws-badge">DynamoDB</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">ETL/ELT Pipelines</div>
+                        <div class="component-subtitle">Data Transformation<span class="aws-badge">Glue</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Business Intelligence</div>
+                        <div class="component-subtitle">Reports & Dashboards<span class="aws-badge">QuickSight</span></div>
+                    </div>
+                </div>
+                <div class="flow-arrow">↓</div>
+            </div>
+            
+            <!-- Layer 6: Infrastructure -->
+            <div class="layer infrastructure-layer">
+                <div class="layer-header">
+                    🏗️ Infrastructure & Operations - Networking, Security & DevOps
+                </div>
+                <div class="layer-content">
+                    <div class="component-box">
+                        <div class="component-title">Network Infrastructure</div>
+                        <div class="component-subtitle">Multi-AZ VPC<span class="aws-badge">VPC</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Monitoring & Logging</div>
+                        <div class="component-subtitle">Observability<span class="aws-badge">CloudWatch</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">CI/CD Pipeline</div>
+                        <div class="component-subtitle">Deployment Automation<span class="aws-badge">CodePipeline</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Security & Encryption</div>
+                        <div class="component-subtitle">Key Management<span class="aws-badge">KMS</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Backup & Recovery</div>
+                        <div class="component-subtitle">Cross-region DR<span class="aws-badge">Backup</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Infrastructure as Code</div>
+                        <div class="component-subtitle">Automated Provisioning<span class="aws-badge">CDK</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">Container Platform</div>
+                        <div class="component-subtitle">Serverless Containers<span class="aws-badge">Fargate</span></div>
+                    </div>
+                    <div class="component-box">
+                        <div class="component-title">DNS & Load Balancing</div>
+                        <div class="component-subtitle">Traffic Distribution<span class="aws-badge">Route 53</span></div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- External Systems -->
+        <div class="external-systems">
+            <div class="external-system">
+                <div class="external-title">📈 Market Data</div>
+                <div class="external-desc">Bloomberg, Reuters APIs</div>
+            </div>
+            <div class="external-system">
+                <div class="external-title">🏦 Banking Systems</div>
+                <div class="external-desc">SWIFT, ACH Integration</div>
+            </div>
+            <div class="external-system">
+                <div class="external-title">📊 Regulatory</div>
+                <div class="external-desc">SEC, FINRA Reporting</div>
+            </div>
+            <div class="external-system">
+                <div class="external-title">🔧 Third-party</div>
+                <div class="external-desc">DocuSign, Office 365</div>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>
