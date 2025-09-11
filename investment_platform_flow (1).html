@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Investment Platform - Multi-Layer Architecture</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f4f8 0%, #d6e7f0 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: rgb(0, 50, 100);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+        
+        .layer {
+            display: flex;
+            min-height: 180px;
+            border-bottom: 3px solid #e0e6ed;
+        }
+        
+        .layer:last-child {
+            border-bottom: none;
+        }
+        
+        .layer-label {
+            width: 200px;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            font-size: 1.1em;
+        }
+        
+        .layer-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .conversation-panel {
+            width: 350px;
+            background: rgb(230, 240, 250);
+            border-left: 3px solid rgb(0, 50, 100);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        /* Layer 1 - User Interface */
+        .layer-1 .layer-label {
+            background: rgb(135, 170, 200);
+        }
+        
+        .user-interface {
+            background: rgb(200, 220, 240);
+            border: 2px solid rgb(135, 170, 200);
+            border-radius: 8px;
+            padding: 15px;
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        .interface-title {
+            color: rgb(0, 50, 100);
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        .interface-features {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .feature-badge {
+            background: rgb(0, 50, 100);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8em;
+        }
+        
+        /* Layer 2 - Security & API Management */
+        .layer-2 .layer-label {
+            background: rgb(100, 140, 180);
+        }
+        
+        .security-component {
+            background: rgb(180, 200, 220);
+            border: 2px solid rgb(100, 140, 180);
+            border-radius: 8px;
+            padding: 12px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .component-title {
+            color: rgb(0, 50, 100);
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        
+        .component-features {
+            font-size: 0.8em;
+            color: rgb(30, 70, 110);
+            line-height: 1.4;
+        }
+        
+        /* Layer 3 - Agent Orchestration */
+        .layer-3 .layer-label {
+            background: rgb(70, 110, 150);
+        }
+        
+        .agent-box {
+            background: rgb(160, 180, 200);
+            border: 2px solid rgb(70, 110, 150);
+            border-radius: 8px;
+            padding: 12px;
+            flex: 1;
+            min-width: 180px;
+            position: relative;
+        }
+        
+        .agent-icon {
+            width: 40px;
+            height: 40px;
+            background: rgb(0, 50, 100);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            margin: 0 auto 10px;
+        }
+        
+        .agent-title {
+            color: rgb(0, 50, 100);
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        
+        .agent-description {
+            font-size: 0.75em;
+            color: rgb(30, 70, 110);
+            text-align: center;
+            line-height: 1.3;
+        }
+        
+        /* Layer 4 - Data Integration */
+        .layer-4 .layer-label {
+            background: rgb(40, 80, 120);
+        }
+        
+        .integration-component {
+            background: rgb(140, 160, 180);
+            border: 2px solid rgb(40, 80, 120);
+            border-radius: 8px;
+            padding: 12px;
+            flex: 1;
+            min-width: 160px;
+        }
+        
+        .mcp-hub {
+            background: rgb(120, 140, 160);
+            border: 3px solid rgb(0, 50, 100);
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin: 20px;
+            flex-shrink: 0;
+        }
+        
+        .mcp-title {
+            color: rgb(0, 50, 100);
+            font-weight: bold;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        
+        /* Layer 5 - Data Sources */
+        .layer-5 .layer-label {
+            background: rgb(10, 50, 90);
+        }
+        
+        .data-source {
+            background: rgb(120, 140, 160);
+            border: 2px solid rgb(10, 50, 90);
+            border-radius: 8px;
+            padding: 12px;
+            flex: 1;
+            min-width: 150px;
+        }
+        
+        .source-category {
+            background: rgb(100, 120, 140);
+            border-radius: 6px;
+            padding: 8px;
+            margin: 5px 0;
+        }
+        
+        .source-title {
+            color: rgb(0, 50, 100);
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-bottom: 5px;
+        }
+        
+        .source-items {
+            font-size: 0.7em;
+            color: rgb(30, 70, 110);
+            line-height: 1.3;
+        }
+        
+        /* Conversation Panel Styling */
+        .conversation-title {
+            color: rgb(0, 50, 100);
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+        }
+        
+        .chat-bubble {
+            background: white;
+            border: 1px solid rgb(135, 170, 200);
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            font-size: 0.85em;
+        }
+        
+        .user-message {
+            background: rgb(200, 220, 240);
+            margin-left: 20px;
+        }
+        
+        .ai-message {
+            background: rgb(240, 245, 250);
+            margin-right: 20px;
+        }
+        
+        .llm-call {
+            background: rgb(255, 248, 220);
+            border-left: 3px solid rgb(255, 193, 7);
+            font-family: 'Courier New', monospace;
+            font-size: 0.75em;
+            color: rgb(184, 134, 11);
+        }
+        
+        /* Arrows and Connectors */
+        .flow-arrow {
+            color: rgb(0, 50, 100);
+            font-size: 20px;
+            margin: 0 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        .connector-lines {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .connector-line {
+            position: absolute;
+            background: rgb(100, 140, 180);
+            opacity: 0.6;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .layer {
+                flex-direction: column;
+            }
+            
+            .layer-label {
+                width: 100%;
+                writing-mode: horizontal-tb;
+                text-orientation: unset;
+                min-height: 50px;
+            }
+            
+            .conversation-panel {
+                width: 100%;
+                border-left: none;
+                border-top: 3px solid rgb(0, 50, 100);
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .layer-content {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .agent-box, .security-component, .integration-component, .data-source {
+                min-width: unset;
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI-Powered Investment Platform</h1>
+            <p>Multi-Layer Agentic Architecture with AWS AI Services</p>
+        </div>
+        
+        <!-- Layer 1: User Interface -->
+        <div class="layer layer-1">
+            <div class="layer-label">Layer 1: User Interface</div>
+            <div class="layer-content">
+                <div class="user-interface">
+                    <div class="interface-title">Investment Client Portal</div>
+                    <div class="interface-features">
+                        <span class="feature-badge">Document Upload</span>
+                        <span class="feature-badge">KYC Forms</span>
+                        <span class="feature-badge">Portfolio View</span>
+                        <span class="feature-badge">Chat Interface</span>
+                    </div>
+                </div>
+                <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="user-interface">
+                    <div class="interface-title">Real-time Analytics Dashboard</div>
+                    <div class="interface-features">
+                        <span class="feature-badge">Performance Metrics</span>
+                        <span class="feature-badge">Risk Assessment</span>
+                        <span class="feature-badge">Recommendations</span>
+                    </div>
+                </div>
+            </div>
+            <div class="conversation-panel">
+                <div class="conversation-title">Client Interaction</div>
+                <div class="chat-bubble user-message">
+                    "I'd like to invest $500k in alternative investments"
+                </div>
+                <div class="chat-bubble ai-message">
+                    "I'll help you find suitable alternative investments. Let me analyze your profile..."
+                </div>
+                <div class="chat-bubble llm-call">
+                    LLM Call: analyze_investor_profile(amount=$500k, risk_tolerance=moderate)
+                </div>
+            </div>
+        </div>
+        
+        <!-- Layer 2: Security & API Management -->
+        <div class="layer layer-2">
+            <div class="layer-label">Layer 2: Security & API Management</div>
+            <div class="layer-content">
+                <div class="security-component">
+                    <div class="component-title">AWS Cognito Identity</div>
+                    <div class="component-features">
+                        • Multi-factor authentication<br>
+                        • OAuth 2.0 integration<br>
+                        • User session management<br>
+                        • Identity federation
+                    </div>
+                </div>
+                <div class="security-component">
+                    <div class="component-title">API Gateway Management</div>
+                    <div class="component-features">
+                        • Request/Response throttling<br>
+                        • API versioning & monitoring<br>
+                        • Rate limiting for endpoints<br>
+                        • Request validation
+                    </div>
+                </div>
+                <div class="security-component">
+                    <div class="component-title">Content Filter & Security</div>
+                    <div class="component-features">
+                        • Input sanitization<br>
+                        • Data loss prevention<br>
+                        • Prompt injection detection<br>
+                        • Compliance monitoring
+                    </div>
+                </div>
+                <div class="security-component">
+                    <div class="component-title">Audit & Compliance</div>
+                    <div class="component-features">
+                        • Real-time activity logging<br>
+                        • GDPR/SOC compliance<br>
+                        • Regulatory reporting<br>
+                        • Data encryption at rest
+                    </div>
+                </div>
+            </div>
+            <div class="conversation-panel">
+                <div class="conversation-title">Security Processing</div>
+                <div class="chat-bubble llm-call">
+                    Security Check: validate_user_session()
+                </div>
+                <div class="chat-bubble llm-call">
+                    Content Filter: scan_input_for_risks()
+                </div>
+                <div class="chat-bubble ai-message">
+                    Security validation passed. Processing request...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Layer 3: Agent Orchestration -->
+        <div class="layer layer-3">
+            <div class="layer-label">Layer 3: Agent Orchestration</div>
+            <div class="layer-content">
+                <div class="agent-box">
+                    <div class="agent-icon"><i class="fas fa-file-alt"></i></div>
+                    <div class="agent-title">Document Processing Agent</div>
+                    <div class="agent-description">
+                        Extracts data from uploaded documents using AWS Textract and Comprehend
+                    </div>
+                </div>
+                <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="agent-box">
+                    <div class="agent-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="agent-title">KYC & Compliance Agent</div>
+                    <div class="agent-description">
+                        Performs identity verification and AML screening with regulatory compliance
+                    </div>
+                </div>
+                <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="agent-box">
+                    <div class="agent-icon"><i class="fas fa-chart-line"></i></div>
+                    <div class="agent-title">Investment Research Agent</div>
+                    <div class="agent-description">
+                        Analyzes market data and recommends suitable alternative investment options
+                    </div>
+                </div>
+                <div class="flow-arrow"><i class="fas fa-arrow-right"></i></div>
+                <div class="agent-box">
+                    <div class="agent-icon"><i class="fas fa-robot"></i></div>
+                    <div class="agent-title">Agent Coordination Hub</div>
+                    <div class="agent-description">
+                        Orchestrates workflows between specialized agents and maintains context
+                    </div>
+                </div>
+            </div>
+            <div class="conversation-panel">
+                <div class="conversation-title">Agent Processing</div>
+                <div class="chat-bubble llm-call">
+                    Document Agent: extract_financial_data()
+                </div>
+                <div class="chat-bubble llm-call">
+                    KYC Agent: verify_accredited_investor()
+                </div>
+                <div class="chat-bubble llm-call">
+                    Research Agent: generate_investment_recommendations()
+                </div>
+                <div class="chat-bubble ai-message">
+                    Analysis complete. Generating personalized recommendations...
+                </div>
+            </div>
+        </div>
+        
+        <!-- Layer 4: Data Integration -->
+        <div class="layer layer-4">
+            <div class="layer-label">Layer 4: Data Integration - MCP Protocol Hub</div>
+            <div class="layer-content">
+                <div class="integration-component">
+                    <div class="component-title">Security & Audit</div>
+                    <div class="component-features">
+                        • OACT Protocol encryption<br>
+                        • Compliance KYC authentication<br>
+                        • Regulatory audit trails
+                    </div>
+                </div>
+                
+                <div class="mcp-hub">
+                    <div class="mcp-title">AWS AgentCore MCP Server</div>
+                    <div style="font-size: 0.7em; color: rgb(30, 70, 110); text-align: center; margin-top: 5px;">
+                        Protocol Hub Gateway
+                    </div>
+                </div>
+                
+                <div class="integration-component">
+                    <div class="component-title">AI Search & Services</div>
+                    <div class="component-features">
+                        • Amazon Kendra search<br>
+                        • OpenSearch vector embeddings<br>
+                        • Bedrock model serving
+                    </div>
+                </div>
+                
+                <div class="integration-component">
+                    <div class="component-title">External APIs & Services</div>
+                    <div class="component-features">
+                        • Market data providers<br>
+                        • Credit bureau APIs<br>
+                        • Regulatory databases
+                    </div>
+                </div>
+                
+                <div class="integration-component">
+                    <div class="component-title">File Systems & Documents</div>
+                    <div class="component-features">
+                        • S3 document storage<br>
+                        • EFS shared file systems<br>
+                        • Document versioning
+                    </div>
+                </div>
+                
+                <div class="integration-component">
+                    <div class="component-title">Data Processing Pipeline</div>
+                    <div class="component-features">
+                        • Real-time ETL processes<br>
+                        • Data validation & cleansing<br>
+                        • Streaming analytics
+                    </div>
+                </div>
+            </div>
+            <div class="conversation-panel">
+                <div class="conversation-title">Data Integration</div>
+                <div class="chat-bubble llm-call">
+                    MCP Server: route_data_request()
+                </div>
+                <div class="chat-bubble llm-call">
+                    Vector DB: similarity_search()
+                </div>
+                <div class="chat-bubble llm-call">
+                    Knowledge Base: retrieve_investment_data()
+                </div>
+            </div>
+        </div>
+        
+        <!-- Layer 5: Data Sources -->
+        <div class="layer layer-5">
+            <div class="layer-label">Layer 5: Primary Data Sources</div>
+            <div class="layer-content">
+                <div class="data-source">
+                    <div class="component-title">AWS Bedrock Knowledge Base</div>
+                    <div class="source-category">
+                        <div class="source-title">Investment Intelligence</div>
+                        <div class="source-items">
+                            • Private equity performance<br>
+                            • Real estate market analysis<br>
+                            • Alternative investment trends<br>
+                            • Risk assessment models
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-source">
+                    <div class="component-title">Financial Market Data</div>
+                    <div class="source-category">
+                        <div class="source-title">Real-time Market Feeds</div>
+                        <div class="source-items">
+                            • Bloomberg Terminal data<br>
+                            • Reuters market feeds<br>
+                            • Alternative investment pricing<br>
+                            • Economic indicators
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-source">
+                    <div class="component-title">Regulatory & Compliance</div>
+                    <div class="source-category">
+                        <div class="source-title">Compliance Databases</div>
+                        <div class="source-items">
+                            • SEC filing repositories<br>
+                            • AML watchlist databases<br>
+                            • KYC verification services<br>
+                            • Regulatory reporting systems
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="data-source">
+                    <div class="component-title">Customer & Operational Data</div>
+                    <div class="source-category">
+                        <div class="source-title">Enterprise Systems</div>
+                        <div class="source-items">
+                            • Customer relationship data<br>
+                            • Portfolio management systems<br>
+                            • Transaction processing<br>
+                            • Performance analytics
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="conversation-panel">
+                <div class="conversation-title">Data Sources</div>
+                <div class="chat-bubble llm-call">
+                    Query: fetch_market_data()
+                </div>
+                <div class="chat-bubble llm-call">
+                    Query: get_compliance_status()
+                </div>
+                <div class="chat-bubble ai-message">
+                    Based on current market data and your profile, here are my recommendations...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add staggered animation to components
+            const components = document.querySelectorAll('.agent-box, .security-component, .integration-component, .data-source, .user-interface');
+            
+            components.forEach((component, index) => {
+                component.style.opacity = 0;
+                component.style.transform = 'translateY(20px)';
+                component.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+                
+                setTimeout(() => {
+                    component.style.opacity = 1;
+                    component.style.transform = 'translateY(0)';
+                }, index * 100);
+            });
+            
+            // Add hover effects
+            components.forEach(component => {
+                component.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                    this.style.boxShadow = '0 8px 20px rgba(0, 50, 100, 0.15)';
+                });
+                
+                component.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = 'none';
+                });
+            });
+        });
+    </script>
+</body>
+</html>
