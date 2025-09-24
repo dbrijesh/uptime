@@ -1,6 +1,7 @@
 import os
 import json
 import time
+import re
 from datetime import datetime
 import boto3
 from watchdog.observers import Observer
@@ -32,28 +33,28 @@ def ensure_log_stream(run_id):
 
 def extract_run_id(file_path):
     """
-    Extract run_id from JSON entries in the log file.
-    Supports multi-line JSON with structure:
-    {"contextData":{"github":{"t":2,"d":[{"k":"run_id","v":"123456"}]}}}
+    Robustly extract run_id from JSON in the log file.
+    Handles multi-line JSON and JSON embedded in other text.
     """
-    buffer = ""
+    run_id = None
+    json_pattern = re.compile(r'\{.*?"contextData":.*?\}', re.DOTALL)
+
     with open(file_path, "r") as f:
-        for line in f:
-            buffer += line
-            buffer_strip = buffer.strip()
-            if buffer_strip.startswith("{") and buffer_strip.endswith("}"):
-                try:
-                    data = json.loads(buffer_strip)
-                    github_data = data.get("contextData", {}).get("github", {}).get("d", [])
-                    for obj in github_data:
-                        if obj.get("k") == "run_id":
-                            run_id = obj.get("v")
-                            log(f"Found run_id: {run_id} in {file_path}")
-                            return run_id
-                except json.JSONDecodeError:
-                    continue
-                finally:
-                    buffer = ""
+        content = f.read()
+
+    matches = json_pattern.findall(content)
+    for match in matches:
+        try:
+            data = json.loads(match)
+            github_data = data.get("contextData", {}).get("github", {}).get("d", [])
+            for obj in github_data:
+                if obj.get("k") == "run_id":
+                    run_id = obj.get("v")
+                    log(f"Found run_id: {run_id} in {file_path}")
+                    return run_id
+        except json.JSONDecodeError:
+            continue  # skip invalid JSON
+
     return None
 
 
