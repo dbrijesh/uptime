@@ -6,9 +6,9 @@ import boto3
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 
-LOG_DIR = "/home/actions-runner/_diag"
+LOG_DIR = "/actions-runner/_diag"
 LOG_GROUP = "/var/log"
-REGION = "ap-south-1"
+REGION = "us-east-2"
 
 client = boto3.client("logs", region_name=REGION)
 
