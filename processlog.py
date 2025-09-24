@@ -33,29 +33,33 @@ def ensure_log_stream(run_id):
 
 def extract_run_id(file_path):
     """
-    Robustly extract run_id from JSON in the log file.
-    Handles multi-line JSON and JSON embedded in other text.
+    Extract run_id by looking for a JSON entry like:
+    {
+        "k": "run_id",
+        "v": "123456789"
+    }
+    Handles spaces, indentation, line breaks, and other JSON entries.
     """
     run_id = None
-    json_pattern = re.compile(r'\{.*?"contextData":.*?\}', re.DOTALL)
+
+    # Regex explanation:
+    # - matches {"k": "run_id", "v": "<number>"} with optional spaces/newlines
+    pattern = re.compile(
+        r'\{\s*"k"\s*:\s*"run_id"\s*,\s*"v"\s*:\s*"(\d+)"\s*\}',
+        re.MULTILINE
+    )
 
     with open(file_path, "r") as f:
         content = f.read()
 
-    matches = json_pattern.findall(content)
-    for match in matches:
-        try:
-            data = json.loads(match)
-            github_data = data.get("contextData", {}).get("github", {}).get("d", [])
-            for obj in github_data:
-                if obj.get("k") == "run_id":
-                    run_id = obj.get("v")
-                    log(f"Found run_id: {run_id} in {file_path}")
-                    return run_id
-        except json.JSONDecodeError:
-            continue  # skip invalid JSON
+    match = pattern.search(content)
+    if match:
+        run_id = match.group(1)
+        log(f"Found run_id: {run_id} in {file_path}")
+    else:
+        log(f"⚠️ run_id not found in {file_path}")
 
-    return None
+    return run_id
 
 
 def wait_for_job_completed(file_path, timeout=300, interval=5):
