@@ -12,15 +12,17 @@ REGION = "us-east-2"
 
 client = boto3.client("logs", region_name=REGION)
 
-# Keep track of already processed files to avoid re-uploading
+# Keep track of already processed files
 processed_files = set()
 
 
 def log(msg):
+    """Helper to print timestamped messages"""
     print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {msg}")
 
 
 def ensure_log_stream(run_id):
+    """Ensure log stream exists for this run_id"""
     try:
         client.create_log_stream(logGroupName=LOG_GROUP, logStreamName=str(run_id))
         log(f"Created log stream: {run_id}")
@@ -29,8 +31,12 @@ def ensure_log_stream(run_id):
 
 
 def extract_run_id(file_path):
+    """
+    Extract run_id from JSON entries in the log file.
+    Supports multi-line JSON with structure:
+    {"contextData":{"github":{"t":2,"d":[{"k":"run_id","v":"123456"}]}}}
+    """
     buffer = ""
-    run_id = None
     with open(file_path, "r") as f:
         for line in f:
             buffer += line
@@ -38,22 +44,39 @@ def extract_run_id(file_path):
             if buffer_strip.startswith("{") and buffer_strip.endswith("}"):
                 try:
                     data = json.loads(buffer_strip)
-                    if "contextData" in data and "github.d" in data["contextData"]:
-                        for obj in data["contextData"]["github.d"]:
-                            if obj.get("k") == "run_id":
-                                run_id = obj.get("v")
-                                log(f"Found run_id: {run_id} in {file_path}")
-                                return run_id
+                    github_data = data.get("contextData", {}).get("github", {}).get("d", [])
+                    for obj in github_data:
+                        if obj.get("k") == "run_id":
+                            run_id = obj.get("v")
+                            log(f"Found run_id: {run_id} in {file_path}")
+                            return run_id
                 except json.JSONDecodeError:
                     continue
                 finally:
                     buffer = ""
-    log(f"No run_id found in {file_path}")
-    return run_id
+    return None
+
+
+def wait_for_job_completed(file_path, timeout=300, interval=5):
+    """
+    Wait until 'Job completed.' appears in the file, or timeout (seconds) reached.
+    """
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        with open(file_path, "r") as f:
+            content = f.read()
+            if "Job completed." in content:
+                log(f"'Job completed.' found in {file_path}")
+                return True
+        time.sleep(interval)
+    log(f"⚠️ Timeout waiting for 'Job completed.' in {file_path}")
+    return False
 
 
 def upload_file_to_cloudwatch(file_path, run_id):
+    """Upload entire log file contents to CloudWatch Logs"""
     ensure_log_stream(run_id)
+
     with open(file_path, "r") as f:
         lines = f.readlines()
 
@@ -97,12 +120,17 @@ class WorkerLogHandler(FileSystemEventHandler):
         file_name = os.path.basename(event.src_path)
         if "Worker_" in file_name and event.src_path not in processed_files and is_file_today(event.src_path):
             log(f"New Worker log detected: {event.src_path}")
-            time.sleep(2)  # wait for file to stabilize
-            run_id = extract_run_id(event.src_path)
-            if run_id:
-                upload_file_to_cloudwatch(event.src_path, run_id)
+            time.sleep(2)  # wait briefly for file to stabilize
+
+            if wait_for_job_completed(event.src_path):
+                run_id = extract_run_id(event.src_path)
+                if run_id:
+                    upload_file_to_cloudwatch(event.src_path, run_id)
+                else:
+                    log(f"⚠️ run_id not found in {event.src_path}, skipping upload")
+                    processed_files.add(event.src_path)
             else:
-                log(f"⚠️ Skipping upload, no run_id found in {event.src_path}")
+                log(f"⚠️ Skipping {event.src_path} as 'Job completed.' not found")
                 processed_files.add(event.src_path)
 
 
@@ -114,11 +142,15 @@ def process_existing_files():
             continue
         if "Worker_" in file_name and is_file_today(file_path):
             log(f"Processing existing Worker log: {file_path}")
-            run_id = extract_run_id(file_path)
-            if run_id:
-                upload_file_to_cloudwatch(file_path, run_id)
+            if wait_for_job_completed(file_path):
+                run_id = extract_run_id(file_path)
+                if run_id:
+                    upload_file_to_cloudwatch(file_path, run_id)
+                else:
+                    log(f"⚠️ run_id not found in {file_path}, skipping upload")
+                    processed_files.add(file_path)
             else:
-                log(f"⚠️ Skipping upload, no run_id found in {file_path}")
+                log(f"⚠️ Skipping {file_path} as 'Job completed.' not found")
                 processed_files.add(file_path)
 
 
@@ -142,3 +174,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
