@@ -1,0 +1,128 @@
+🔹 1. Install Fluent Bit
+Amazon Linux 2
+# Add Fluent Bit repo
+curl https://packages.fluentbit.io/fluentbit.repo | sudo tee /etc/yum.repos.d/fluentbit.repo
+
+# Install Fluent Bit
+sudo yum install -y td-agent-bit
+
+# Enable service
+sudo systemctl enable td-agent-bit
+sudo systemctl start td-agent-bit
+
+Amazon Linux 2023
+# Add repo
+curl https://packages.fluentbit.io/fluentbit.repo | sudo tee /etc/yum.repos.d/fluentbit.repo
+
+# Install Fluent Bit
+sudo dnf install -y td-agent-bit
+
+# Enable service
+sudo systemctl enable td-agent-bit
+sudo systemctl start td-agent-bit
+
+
+✅ After install, check version:
+
+td-agent-bit --version
+
+🔹 2. Install Lua Support
+
+Fluent Bit has LuaJIT built in, but you need the script file.
+
+Create Lua script dir:
+
+sudo mkdir -p /etc/fluent-bit
+
+
+Create the Lua script:
+
+sudo tee /etc/fluent-bit/runid_jobcheck.lua > /dev/null <<'EOF'
+-- Track job completion per file
+local job_completed = {}
+
+function process_log(tag, timestamp, record)
+    local msg = record["log"] or ""
+    local file = record["filepath"] or "unknown"
+
+    -- Look for "Job completed."
+    if string.find(msg, "Job completed.") then
+        job_completed[file] = true
+    end
+
+    -- Only forward logs after job completed
+    if job_completed[file] then
+        local run_id = string.match(msg, '"k"%s*:%s*"run_id"%s*,%s*"v"%s*:%s*"?(%d+)"?')
+        if run_id ~= nil then
+            record["run_id"] = run_id
+        end
+        return 1, timestamp, record
+    else
+        return -1, timestamp, record
+    end
+end
+EOF
+
+🔹 3. Configure Fluent Bit
+
+Create config:
+
+sudo tee /etc/fluent-bit/fluent-bit.conf > /dev/null <<'EOF'
+[SERVICE]
+    Flush        5
+    Daemon       Off
+    Log_Level    info
+
+[INPUT]
+    Name        tail
+    Path        /actions-runner/_diag/worker*.log
+    Tag         runner.worker
+    Multiline   On
+    Parser      docker
+    Refresh_Interval 10
+    Skip_Long_Lines  On
+    Mem_Buf_Limit    50MB
+
+[FILTER]
+    Name        lua
+    Match       runner.worker
+    script      /etc/fluent-bit/runid_jobcheck.lua
+    call        process_log
+
+[OUTPUT]
+    Name        cloudwatch_logs
+    Match       runner.worker
+    region      us-east-1
+    log_group_name  /actions-runner/worker
+    log_stream_name_key run_id
+    auto_create_group true
+EOF
+
+🔹 4. Restart Fluent Bit
+sudo systemctl restart td-agent-bit
+sudo systemctl status td-agent-bit -l
+
+🔹 5. Validate
+
+Check Fluent Bit logs:
+
+journalctl -u td-agent-bit -f
+
+
+Check CloudWatch Logs:
+
+aws logs describe-log-groups --region us-east-1
+aws logs describe-log-streams --log-group-name /actions-runner/worker --region us-east-1
+
+
+⚡ This setup ensures:
+
+Logs are tailed from /actions-runner/_diag/worker*.log.
+
+Lua extracts the run_id.
+
+run_id is used as the log stream name in CloudWatch.
+
+Only logs after “Job completed.” get streamed.
+
+Do you want me to also add a retry/backoff policy in case CloudWatch API throttles when many jobs run at once?
