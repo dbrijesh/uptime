@@ -1,0 +1,102 @@
+[SERVICE]
+    Flush         1
+    Log_Level     info
+    Daemon        off
+    Parsers_File  /etc/fluent-bit/parsers.conf
+
+[INPUT]
+    Name              tail
+    Path              /home/runner/_diag/Worker_*.log
+    Tag               github.runner
+    Path_Key          filename              # capture filename for per-file state
+    Refresh_Interval  5
+    Read_from_Head    false
+    Skip_Long_Lines   off
+    Skip_Empty_Lines  on
+
+[FILTER]
+    Name    lua
+    Match   github.runner
+    Script  /etc/fluent-bit/extract_run_id.lua
+    Call    extract_run_id_from_log
+
+# Debug filter to confirm run_id is set
+[FILTER]
+    Name    record_modifier
+    Match   github.runner.*
+    Record  debug_extraction true
+
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner.*
+    region              us-east-1
+    log_group_name      /github-actions/runners
+    log_stream_prefix   runner-
+    auto_create_group   true
+    auto_create_stream  true
+    log_retention_days  7
+
+
+
+
+-----------
+
+
+-- State table for each log file
+if not files_state then
+    files_state = {}
+end
+
+function extract_run_id_from_log(tag, ts, record)
+    -- Track state per log file
+    local fname = record["filename"] or "default"
+    local state = files_state[fname] or { run_id = "unknown", found = false, expecting_value = false }
+    files_state[fname] = state
+
+    -- Always attach current run_id to the record
+    record["run_id"] = state.run_id
+
+    -- If run_id already found for this file, just retag and return
+    if state.found then
+        local new_tag = "github.runner." .. state.run_id
+        return 2, ts, new_tag, record
+    end
+
+    -- Clean up the log line
+    local content = record["log"] or record["message"] or ""
+    local line = content:gsub("^%s+", ""):gsub("%s+$", ""):gsub(",$", "")
+
+    if not line or line == "" then
+        return 1, ts, record
+    end
+
+    -- If we saw "k": "run_id" previously, expect value now
+    if state.expecting_value then
+        local value = line:match('"v"%s*:%s*"([^"]+)"')
+                  or line:match('"v":%s*"([^"]+)"')
+                  or line:match('"v"%s*:%s*\'([^\']+)\'')
+                  or line:match('"v":%s*\'([^\']+)\'')
+        if value then
+            state.run_id = value
+            state.found = true
+            state.expecting_value = false
+            record["run_id"] = value
+            local new_tag = "github.runner." .. value
+            print("✅ Extracted run_id from " .. fname .. ": " .. value)
+            return 2, ts, new_tag, record
+        end
+        state.expecting_value = false
+
+    else
+        -- Look for "k": "run_id"
+        if line:match('"k"%s*:%s*"run_id"')
+        or line:match('"k":%s*"run_id"')
+        or line:match('"k"%s*:%s*\'run_id\'')
+        or line:match('"k":%s*\'run_id\'') then
+            state.expecting_value = true
+            print("📍 Found run_id key in " .. fname .. ", waiting for value")
+        end
+    end
+
+    return 1, ts, record
+end
