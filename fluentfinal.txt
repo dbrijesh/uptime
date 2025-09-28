@@ -1,3 +1,83 @@
+-- Track state per log file
+if not files_state then
+    files_state = {}
+end
+
+function extract_run_id_from_log(tag, ts, record)
+    if not record then
+        record = {}
+    end
+
+    -- Get filename to scope state
+    local fname = record["filename"] or "default"
+    local state = files_state[fname] or { run_id = "unknown", found = false, expecting_value = false }
+    files_state[fname] = state
+
+    -- Always attach current run_id
+    record["run_id"] = state.run_id
+
+    -- Debug: incoming info
+    print("🔎 [DEBUG] Processing file:", fname)
+    print("🔎 [DEBUG] Current run_id state:", state.run_id, " found:", tostring(state.found), " expecting_value:", tostring(state.expecting_value))
+
+    -- If already found, just retag
+    if state.found then
+        local new_tag = "github.runner." .. state.run_id
+        print("🔎 [DEBUG] Already found run_id -> tagging record with:", new_tag)
+        return 2, ts, new_tag, record
+    end
+
+    -- Extract current line
+    local content = record["log"] or record["message"] or ""
+    if type(content) ~= "string" then
+        content = tostring(content)
+    end
+    local line = content:gsub("^%s+", ""):gsub("%s+$", ""):gsub(",$", "")
+
+    print("🔎 [DEBUG] Raw line from log:", line)
+
+    if line == "" then
+        print("⚠️ [DEBUG] Empty line, skipping")
+        return 1, ts, record
+    end
+
+    -- If expecting value (after "k": "run_id")
+    if state.expecting_value then
+        print("🔎 [DEBUG] Expecting run_id value in file:", fname)
+        local value = line:match('"v"%s*:%s*"([^"]+)"')
+                  or line:match('"v":%s*"([^"]+)"')
+                  or line:match('"v"%s*:%s*\'([^\']+)\'')
+                  or line:match('"v":%s*\'([^\']+)\'')
+        if value then
+            state.run_id = value
+            state.found = true
+            state.expecting_value = false
+            record["run_id"] = value
+            local new_tag = "github.runner." .. value
+            print("✅ [DEBUG] Extracted run_id from", fname, "->", value)
+            return 2, ts, new_tag, record
+        else
+            print("⚠️ [DEBUG] No value found after run_id key in file:", fname)
+        end
+        state.expecting_value = false
+    else
+        -- Look for "k": "run_id"
+        if line:match('"k"%s*:%s*"run_id"')
+        or line:match('"k":%s*"run_id"')
+        or line:match('"k"%s*:%s*\'run_id\'')
+        or line:match('"k":%s*\'run_id\'') then
+            state.expecting_value = true
+            print("📍 [DEBUG] Found run_id key in", fname, "- will extract value on next line")
+        else
+            print("🔎 [DEBUG] No run_id key in this line for file:", fname)
+        end
+    end
+
+    return 1, ts, record
+end
+
+
+
 [SERVICE]
     Flush         1
     Log_Level     info
