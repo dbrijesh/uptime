@@ -15,6 +15,86 @@ function extract_run_id_from_log(tag, timestamp, record)
         file_states[filename] = {
             run_id = "unknown",
             found = false,
+            state = "searching"  -- "searching", "found_brace", "found_k", "expecting_v"
+        }
+        print("🔎 [DEBUG] Initialized state for file: " .. filename)
+    end
+
+    local state = file_states[filename]
+
+    -- Use cached run_id if found
+    if state.found then
+        record["run_id"] = state.run_id
+        local new_tag = "github.runner." .. state.run_id
+        print("🔎 [DEBUG] Using cached run_id: " .. state.run_id)
+        return 2, new_tag, timestamp, record
+    end
+
+    local content = record["log"] or record["message"] or ""
+    content = tostring(content):gsub("^%s+", ""):gsub("%s+$", "")
+
+    print("🔎 [DEBUG] File: " .. filename .. " | State: " .. state.state .. " | Content: " .. content)
+
+    -- State machine for multiline JSON parsing
+    if state.state == "searching" then
+        -- Looking for opening brace
+        if content:match("^{%s*$") then
+            state.state = "found_brace"
+            print("📍 [DEBUG] Found opening brace")
+        end
+        
+    elseif state.state == "found_brace" then
+        -- Found opening brace, now look for "k": "run_id"
+        if content:match('"k"%s*:%s*"run_id"') then
+            state.state = "expecting_v"
+            print("📍 [DEBUG] Found k: run_id line")
+        else
+            -- If we don't find the k line after brace, reset
+            state.state = "searching"
+        end
+        
+    elseif state.state == "expecting_v" then
+        -- Found "k": "run_id", now look for "v" line
+        local run_id = content:match('"v"%s*:%s*"([^"]+)"')
+        if run_id then
+            state.run_id = run_id
+            state.found = true
+            record["run_id"] = run_id
+            state.state = "searching"
+            local new_tag = "github.runner." .. run_id
+            print("✅ [SUCCESS] Extracted run_id: " .. run_id)
+            return 2, new_tag, timestamp, record
+        else
+            -- If we don't find v line, reset
+            state.state = "searching"
+            print("⚠️ [DEBUG] Expected v value but didn't find it")
+        end
+    end
+
+    record["run_id"] = "unknown"
+    -- Return without tag change
+    return 1, timestamp, record
+end
+
+
+
+-- Simple state tracking per file
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    if type(record) ~= "table" then
+        return 1, timestamp, record
+    end
+
+    -- Extract filename
+    local file_path = record["file_path"] or ""
+    local filename = file_path:match("([^/]+)$") or "unknown"
+
+    -- Initialize state
+    if not file_states[filename] then
+        file_states[filename] = {
+            run_id = "unknown",
+            found = false,
             state = "searching",  -- "searching", "found_k", "found_v"
             created_time = os.time()
         }
