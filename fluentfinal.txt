@@ -1,3 +1,144 @@
+-- Simple state tracking per file
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    if type(record) ~= "table" then
+        return 1, timestamp, record
+    end
+
+    -- Extract filename
+    local file_path = record["file_path"] or ""
+    local filename = file_path:match("([^/]+)$") or "unknown"
+
+    -- Initialize state
+    if not file_states[filename] then
+        file_states[filename] = {
+            run_id = "unknown",
+            found = false,
+            state = "searching",  -- "searching", "found_k", "found_v"
+            created_time = os.time()
+        }
+    end
+
+    local state = file_states[filename]
+
+    -- Use cached run_id if found
+    if state.found then
+        record["run_id"] = state.run_id
+        return 2, "github.runner." .. state.run_id, timestamp, record
+    end
+
+    local content = record["log"] or record["message"] or ""
+    content = tostring(content):gsub("^%s+", ""):gsub("%s+$", "")
+
+    print("🔎 [DEBUG] File: " .. filename .. " | State: " .. state.state .. " | Content: " .. content)
+
+    -- State machine for multiline JSON parsing
+    if state.state == "searching" then
+        -- Looking for opening brace or "k" line
+        if content:match("^{%s*$") or content:match('"k"%s*:%s*"run_id"') then
+            state.state = "found_k"
+            print("📍 [DEBUG] Found JSON start or k line")
+        end
+        
+    elseif state.state == "found_k" then
+        -- Previous line had opening brace, look for "k": "run_id" or directly for "v"
+        if content:match('"k"%s*:%s*"run_id"') then
+            state.state = "found_k_complete"
+            print("📍 [DEBUG] Found k: run_id line")
+        elseif content:match('"v"%s*:%s*"([^"]+)"') then
+            local run_id = content:match('"v"%s*:%s*"([^"]+)"')
+            state.run_id = run_id
+            state.found = true
+            record["run_id"] = run_id
+            state.state = "searching"
+            print("✅ [SUCCESS] Extracted run_id: " .. run_id)
+            return 2, "github.runner." .. run_id, timestamp, record
+        end
+        
+    elseif state.state == "found_k_complete" then
+        -- Found "k": "run_id", now look for "v" line
+        local run_id = content:match('"v"%s*:%s*"([^"]+)"')
+        if run_id then
+            state.run_id = run_id
+            state.found = true
+            record["run_id"] = run_id
+            state.state = "searching"
+            print("✅ [SUCCESS] Extracted run_id: " .. run_id)
+            return 2, "github.runner." .. run_id, timestamp, record
+        end
+        
+        -- If we didn't find value, reset
+        state.state = "searching"
+    end
+
+    record["run_id"] = "unknown"
+    return 1, timestamp, record
+end
+
+
+[SERVICE]
+    Flush         1
+    Log_Level     info
+    Daemon        off
+    Parsers_File  /etc/fluent-bit/parsers.conf
+
+[INPUT]
+    Name              tail
+    Path              /usr/bin/actions-runner/_diag/Worker_*.log
+    Tag               github.runner
+    Refresh_Interval  5
+    Read_from_Head    false
+    Skip_Long_Lines   off
+    Path_Key          file_path
+
+[FILTER]
+    Name                record_modifier
+    Match               github.runner
+    Record              worker_filename ${file_path}
+
+[FILTER]
+    Name                lua
+    Match               github.runner
+    Script              /etc/fluent-bit/extract_run_id.lua
+    Call                extract_run_id_from_log
+
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner.*
+    region              us-east-2
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-${run_id}-${HOSTNAME}
+    auto_create_group   true
+    auto_create_stream  true
+    log_retention_days  7
+
+# Fallback for records without run_id
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner
+    region              us-east-2
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-unknown-${HOSTNAME}
+    auto_create_group   true
+    auto_create_stream  true
+    log_retention_days  7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 -- Track state per log file
 if not files_state then
     files_state = {}
