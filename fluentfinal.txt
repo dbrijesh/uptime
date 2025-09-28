@@ -1,6 +1,147 @@
 local file_states = {}
 
 function extract_run_id_from_log(tag, timestamp, record)
+    print("LUA: === FUNCTION START ===")
+    
+    -- Fluent Bit 4: Always return exactly 2 values
+    if type(record) ~= "table" then
+        print("LUA: ❌ Record is not a table, returning early")
+        return 2, timestamp, record
+    end
+
+    local filename = "default"
+    if record.file_path then
+        filename = tostring(record.file_path):match("([^/]+)$") or "unknown"
+    end
+    print("LUA: 📁 Processing file: " .. filename)
+
+    if not file_states[filename] then
+        file_states[filename] = {
+            run_id = "unknown",
+            found = false,
+            expect_value = false
+        }
+        print("LUA: 🆕 Initialized state for: " .. filename)
+    end
+
+    local state = file_states[filename]
+    print("LUA: 📊 State - found: " .. tostring(state.found) .. ", run_id: " .. state.run_id .. ", expect_value: " .. tostring(state.expect_value))
+
+    if state.found then
+        record.run_id = state.run_id
+        print("LUA: 💾 Using cached run_id: " .. state.run_id)
+        print("LUA: ✅ RETURN: 2, timestamp, record (cached)")
+        return 2, timestamp, record
+    end
+
+    local content = record.log or ""
+    content = tostring(content)
+    print("LUA: 📄 Content: '" .. content .. "'")
+
+    if state.expect_value then
+        print("LUA: 🔍 Looking for v value...")
+        local run_id = content:match('%s*"v"%s*:%s*"([^"]+)"')
+        print("LUA: 🎯 Pattern match result: '" .. tostring(run_id) .. "'")
+        
+        if run_id then
+            run_id = run_id:gsub("^%s+", ""):gsub("%s+$", "")
+            state.run_id = run_id
+            state.found = true
+            record.run_id = run_id
+            state.expect_value = false
+            print("LUA: 🎉 SUCCESS - Extracted run_id: " .. run_id)
+            print("LUA: ✅ RETURN: 2, timestamp, record (success)")
+            return 2, timestamp, record
+        else
+            print("LUA: ❌ No v value found")
+            state.expect_value = false
+        end
+    else
+        print("LUA: 🔍 Looking for k:run_id...")
+        if content:find('%s*"k"%s*:%s*"run_id"') then
+            state.expect_value = true
+            print("LUA: ✅ Found k:run_id, expecting v next")
+        else
+            print("LUA: ➡️ No k:run_id found")
+        end
+    end
+
+    record.run_id = "unknown"
+    print("LUA: ⚠️ Setting run_id to unknown")
+    print("LUA: ✅ RETURN: 2, timestamp, record (default)")
+    return 2, timestamp, record
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    -- Fluent Bit 4: Always return exactly 2 values
+    if type(record) ~= "table" then
+        return 2, timestamp, record  -- Return code 2 for Fluent Bit 4
+    end
+
+    local filename = "default"
+    if record.file_path then
+        filename = tostring(record.file_path):match("([^/]+)$") or "unknown"
+    end
+
+    if not file_states[filename] then
+        file_states[filename] = {
+            run_id = "unknown",
+            found = false,
+            expect_value = false
+        }
+    end
+
+    local state = file_states[filename]
+
+    if state.found then
+        record.run_id = state.run_id
+        return 2, timestamp, record  -- Return code 2 for Fluent Bit 4
+    end
+
+    local content = record.log or ""
+    content = tostring(content)
+
+    if state.expect_value then
+        local run_id = content:match('%s*"v"%s*:%s*"([^"]+)"')
+        if run_id then
+            run_id = run_id:gsub("^%s+", ""):gsub("%s+$", "")
+            state.run_id = run_id
+            state.found = true
+            record.run_id = run_id
+            state.expect_value = false
+            return 2, timestamp, record  -- Return code 2 for Fluent Bit 4
+        else
+            state.expect_value = false
+        end
+    else
+        if content:find('%s*"k"%s*:%s*"run_id"') then
+            state.expect_value = true
+        end
+    end
+
+    record.run_id = "unknown"
+    return 2, timestamp, record  -- Return code 2 for Fluent Bit 4
+end
+
+
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
     if type(record) ~= "table" then
         return 0, timestamp, record
     end
