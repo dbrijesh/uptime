@@ -1,0 +1,108 @@
+-- Table to store run_id per file
+local file_run_ids = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    local content = record["log"] or record["message"] or ""
+    
+    -- Get the filename from the tag or record
+    local filename = record["filename"] or "unknown"
+    
+    -- Check if we already have a run_id for this file
+    if file_run_ids[filename] and file_run_ids[filename] ~= "unknown" then
+        record["run_id"] = file_run_ids[filename]
+        return 1, timestamp, record
+    end
+    
+    -- Extract run_id from JSON pattern
+    local run_id = extract_run_id_from_content(content)
+    
+    if run_id then
+        -- Store run_id for this specific file
+        file_run_ids[filename] = run_id
+        record["run_id"] = run_id
+        print("✅ Extracted run_id '" .. run_id .. "' for file: " .. filename)
+    else
+        -- Set to unknown if not found yet
+        record["run_id"] = "unknown"
+        file_run_ids[filename] = "unknown"
+    end
+    
+    return 1, timestamp, record
+end
+
+function extract_run_id_from_content(content)
+    -- More robust JSON pattern matching
+    local patterns = {
+        -- Complete JSON object on one line
+        '{%s*"k"%s*:%s*"run_id"%s*,%s*"v"%s*:%s*"([^"]+)"%s*}',
+        '{%s*"k"%s*:%s*"run_id"%s*,%s*"v"%s*:%s*\'([^\']+)\'%s*}',
+        
+        -- Key-value pairs that might be separated
+        '"k"%s*:%s*"run_id"[^}]*"v"%s*:%s*"([^"]+)"',
+        '"k"%s*:%s*"run_id"[^}]*"v"%s*:%s*\'([^\']+)\'',
+        
+        -- More flexible pattern for varying whitespace
+        '"k"%s*:%s*"run_id"%s*,?%s*"v"%s*:%s*["\']([^"\']+)["\']',
+        
+        -- Handle minified JSON
+        '"k":"run_id".-"v":"([^"]+)"'
+    }
+    
+    for _, pattern in ipairs(patterns) do
+        local run_id = content:match(pattern)
+        if run_id and run_id ~= "" then
+            return run_id
+        end
+    end
+    
+    return nil
+end
+
+-- Optional: Clean up old file entries periodically
+function cleanup_old_files()
+    -- This could be called periodically to prevent memory growth
+    -- For now, we'll rely on Fluent Bit restarting periodically
+end
+
+
+
+
+[SERVICE]
+    Flush         1
+    Log_Level     info
+    Daemon        off
+    Parsers_File  /etc/fluent-bit/parsers.conf
+
+# Define a multiline parser for JSON objects
+[PARSER]
+    Name        multiline_json
+    Format      regex
+    Regex       /^\s*\{.*/
+    Skip_Empty_Lines On
+
+[INPUT]
+    Name              tail
+    Path              /home/runner/_diag/Worker_*.log
+    Tag               github.runner
+    Refresh_Interval  5
+    Read_from_Head    false
+    Multiline         On
+    Parser_Firstline  multiline_json
+    Buffer_Chunk_Size 128k  # Larger chunks to capture complete JSON
+    Buffer_Max_Size   256k
+
+[FILTER]
+    Name    lua
+    Match   github.runner
+    Script  /etc/fluent-bit/extract_run_id.lua
+    Call    extract_run_id_from_log
+
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner
+    region              us-east-1
+    log_group_name      /github-actions/runners
+    log_stream_name     runner-${run_id}-${HOSTNAME}
+    auto_create_group   true
+    auto_create_stream  true
+    log_retention_days  7
