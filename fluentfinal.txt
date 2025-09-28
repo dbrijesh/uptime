@@ -1,6 +1,69 @@
 local file_states = {}
 
 function extract_run_id_from_log(tag, timestamp, record)
+    if type(record) ~= "table" then
+        return 0, timestamp, record
+    end
+
+    local filename = "default"
+    if record.file_path then
+        filename = tostring(record.file_path):match("([^/]+)$") or "unknown"
+    end
+
+    if not file_states[filename] then
+        file_states[filename] = {
+            run_id = "unknown",
+            found = false,
+            expect_value = false
+        }
+    end
+
+    local state = file_states[filename]
+
+    if state.found then
+        record.run_id = state.run_id
+        return 2, timestamp, record
+    end
+
+    local content = record.log or ""
+    content = tostring(content)
+
+    if state.expect_value then
+        -- Looking for v value with whitespace before "v"
+        local run_id = content:match('%s*"v"%s*:%s*"([^"]+)"')
+        if run_id then
+            run_id = run_id:gsub("^%s+", ""):gsub("%s+$", "")
+            state.run_id = run_id
+            state.found = true
+            record.run_id = run_id
+            state.expect_value = false
+            return 2, timestamp, record
+        else
+            state.expect_value = false
+        end
+    else
+        -- Looking for k:run_id with whitespace BEFORE "k"
+        if content:find('%s*"k"%s*:%s*"run_id"') then
+            state.expect_value = true
+        end
+    end
+
+    record.run_id = "unknown"
+    return 2, timestamp, record
+end
+
+
+
+
+
+
+
+
+
+
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
     print("LUA START - Record type: " .. type(record))
     
     if type(record) ~= "table" then
