@@ -4,6 +4,108 @@ function extract_run_id_from_log(tag, timestamp, record)
     print("LUA START - Record type: " .. type(record))
     
     if type(record) ~= "table" then
+        return 1, timestamp, record
+    end
+
+    local file_path = record["file_path"] or ""
+    local filename = file_path:match("([^/]+)$") or "unknown"
+
+    if not file_states[filename] then
+        file_states[filename] = { run_id = "unknown", found = false, expect_value = false }
+        print("Initialized state for: " .. filename)
+    end
+
+    local state = file_states[filename]
+    print("State - run_id: " .. state.run_id .. ", found: " .. tostring(state.found) .. ", expect_value: " .. tostring(state.expect_value))
+
+    -- Use cached run_id if found
+    if state.found then
+        record["run_id"] = state.run_id
+        local new_tag = "github.runner." .. state.run_id
+        print("RETURN: Using cached run_id -> " .. new_tag)
+        return 2, new_tag, timestamp, record
+    end
+
+    local content = record["log"] or record["message"] or ""
+    content = tostring(content)
+    
+    print("Processing content: '" .. content .. "'")
+
+    -- Clean the content but preserve internal formatting
+    local clean_content = content:gsub("^%s+", ""):gsub("%s+$", "")
+    print("Cleaned content: '" .. clean_content .. "'")
+
+    if state.expect_value then
+        -- Looking for "v" value with tabs and spaces
+        print("🔍 Looking for v value...")
+        
+        -- More flexible patterns that handle tabs and spaces
+        local patterns = {
+            '^%s*"v"%s*:%s*"([^"]+)"',      -- "v" : "value" with any whitespace
+            '^%s*"v":%s*"([^"]+)"',         -- "v":"value" with any whitespace before
+            '"v"%s*:%s*"([^"]+)"',          -- "v" : "value" anywhere in line
+            '"v":%s*"([^"]+)"'              -- "v":"value" anywhere in line
+        }
+        
+        for i, pattern in ipairs(patterns) do
+            local run_id = clean_content:match(pattern)
+            if run_id then
+                -- Clean the extracted run_id
+                run_id = run_id:gsub("^%s+", ""):gsub("%s+$", ""):gsub(",$", "")
+                state.run_id = run_id
+                state.found = true
+                record["run_id"] = run_id
+                state.expect_value = false
+                local new_tag = "github.runner." .. run_id
+                print("✅ SUCCESS: Extracted run_id: " .. run_id .. " (pattern " .. i .. ")")
+                print("RETURN: 2, " .. new_tag .. ", timestamp, record")
+                return 2, new_tag, timestamp, record
+            end
+        end
+        
+        print("❌ No v value found with any pattern")
+        state.expect_value = false
+        
+    else
+        -- Looking for "k": "run_id" with tabs and spaces
+        print("🔍 Looking for k:run_id...")
+        
+        local patterns = {
+            '^%s*"k"%s*:%s*"run_id"',      -- "k" : "run_id" with any whitespace
+            '^%s*"k":%s*"run_id"',         -- "k":"run_id" with any whitespace before
+            '"k"%s*:%s*"run_id"',          -- "k" : "run_id" anywhere in line
+            '"k":%s*"run_id"'              -- "k":"run_id" anywhere in line
+        }
+        
+        for i, pattern in ipairs(patterns) do
+            if clean_content:match(pattern) then
+                state.expect_value = true
+                print("📍 Found k:run_id (pattern " .. i .. ")")
+                break
+            end
+        end
+        
+        if not state.expect_value then
+            print("➡️ No k:run_id found")
+        end
+    end
+
+    record["run_id"] = "unknown"
+    print("RETURN: 1, timestamp, record (no change)")
+    return 1, timestamp, record
+end
+
+
+
+-----------------
+
+
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    print("LUA START - Record type: " .. type(record))
+    
+    if type(record) ~= "table" then
         print("ERROR: Record not table")
         return 1, timestamp, record
     end
