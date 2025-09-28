@@ -1,3 +1,58 @@
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    print("LUA START - Record type: " .. type(record))
+    
+    if type(record) ~= "table" then
+        print("ERROR: Record not table")
+        return 1, timestamp, record
+    end
+
+    local file_path = record["file_path"] or ""
+    local filename = file_path:match("([^/]+)$") or "unknown"
+
+    if not file_states[filename] then
+        file_states[filename] = { run_id = "unknown", found = false, expect_value = false }
+    end
+
+    local state = file_states[filename]
+
+    if state.found then
+        record["run_id"] = state.run_id
+        local new_tag = "github.runner." .. state.run_id
+        print("RETURN: 2, " .. new_tag .. ", timestamp, record")
+        return 2, new_tag, timestamp, record
+    end
+
+    local content = record["log"] or record["message"] or ""
+    content = tostring(content)
+
+    if state.expect_value then
+        print("Looking for v in: " .. content)
+        local run_id = content:match('%s*"v"%s*:%s*"([^"]+)"')
+        if run_id then
+            state.run_id = run_id
+            state.found = true
+            record["run_id"] = run_id
+            state.expect_value = false
+            local new_tag = "github.runner." .. run_id
+            print("RETURN: 2, " .. new_tag .. ", timestamp, record")
+            return 2, new_tag, timestamp, record
+        end
+        state.expect_value = false
+    else
+        if content:match('%s*"k"%s*:%s*"run_id"') then
+            state.expect_value = true
+            print("Found k:run_id in: " .. content)
+        end
+    end
+
+    record["run_id"] = "unknown"
+    print("RETURN: 1, timestamp, record")
+    return 1, timestamp, record
+end
+
+
 -- Simple state tracking per file
 local file_states = {}
 
