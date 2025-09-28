@@ -1,6 +1,120 @@
 local file_states = {}
 
 function extract_run_id_from_log(tag, timestamp, record)
+    if type(record) ~= "table" then
+        return 2, timestamp, record
+    end
+
+    local filename = "default"
+    if record.file_path then
+        filename = tostring(record.file_path):match("([^/]+)$") or "unknown"
+    end
+
+    if not file_states[filename] then
+        file_states[filename] = {
+            run_id = nil,
+            found = false,
+            expect_value = false
+        }
+    end
+
+    local state = file_states[filename]
+
+    -- If we found run_id previously, change the tag
+    if state.found and state.run_id then
+        local new_tag = "github.runner." .. state.run_id
+        return 1, new_tag, timestamp, record  -- Return 1 to change tag in Fluent Bit 4
+    end
+
+    local content = record.log or ""
+    content = tostring(content)
+
+    if state.expect_value then
+        local run_id = content:match('%s*"v"%s*:%s*"([^"]+)"')
+        if run_id then
+            run_id = run_id:gsub("^%s+", ""):gsub("%s+$", "")
+            state.run_id = run_id
+            state.found = true
+            state.expect_value = false
+            local new_tag = "github.runner." .. run_id
+            return 1, new_tag, timestamp, record  -- Change tag immediately
+        else
+            state.expect_value = false
+        end
+    else
+        if content:find('%s*"k"%s*:%s*"run_id"') then
+            state.expect_value = true
+        end
+    end
+
+    return 2, timestamp, record  -- Keep original tag
+end
+
+
+[SERVICE]
+    Flush         1
+    Log_Level     info
+    Daemon        off
+
+[INPUT]
+    Name              tail
+    Path              /usr/bin/actions-runner/_diag/Worker_*.log
+    Tag               github.runner
+    Refresh_Interval  5
+    Read_from_Head    false
+    Skip_Long_Lines   on
+    Path_Key          file_path
+
+[FILTER]
+    Name                lua
+    Match               github.runner
+    Script              /etc/fluent-bit/extract_run_id.lua
+    Call                extract_run_id_from_log
+
+# Route to different tags based on run_id
+[FILTER]
+    Name                rewrite_tag
+    Match               github.runner
+    Rule                $run_id ^(?!unknown$).* github.runner.$run_id false
+
+# Output for logs WITH run_id (they get tagged as github.runner.1234, etc.)
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner.*
+    region              us-east-2
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-${TAG[2]}-${HOSTNAME}  # Use the run_id from tag
+    auto_create_group   true
+    log_retention_days  7
+
+# Output for logs WITHOUT run_id (keep original tag)
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner
+    region              us-east-2
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-unknown-${HOSTNAME}
+    auto_create_group   true
+    log_retention_days  7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+l
+ocal file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
     print("LUA: === FUNCTION START ===")
     
     -- Fluent Bit 4: Always return exactly 2 values
