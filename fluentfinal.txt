@@ -3,6 +3,211 @@ if not files_state then
     files_state = {}
 end
 
+-- Track which files we've seen and their run_ids
+if not file_run_ids then
+    file_run_ids = {}
+end
+
+function extract_run_id_from_log(tag, timestamp, record)
+    if type(record) ~= "table" then
+        return 1, timestamp, record
+    end
+
+    -- Extract filename from file_path
+    local file_path = record["file_path"] or ""
+    local filename = "unknown"
+    
+    if file_path ~= "" then
+        filename = file_path:match("([^/]+)$") or "unknown"
+    end
+    
+    -- Use worker_filename if available
+    if record["worker_filename"] then
+        filename = record["worker_filename"]
+    end
+    
+    print("🔎 [DEBUG] Processing file: " .. filename)
+
+    -- Initialize state for this file if not exists
+    if not files_state[filename] then
+        files_state[filename] = {
+            buffer = "",
+            run_id = "unknown",
+            found = false,
+            expecting_value = false,
+            line_count = 0
+        }
+        print("🔎 [DEBUG] Initialized new state for: " .. filename)
+    end
+
+    local state = files_state[filename]
+    state.line_count = state.line_count + 1
+
+    -- If we already found run_id for this file, use it
+    if state.found then
+        record["run_id"] = state.run_id
+        local new_tag = "github.runner." .. state.run_id
+        print("🔎 [DEBUG] Using existing run_id: " .. state.run_id .. " for file: " .. filename)
+        return 2, new_tag, timestamp, record
+    end
+
+    -- Get log content
+    local content = record["log"] or record["message"] or ""
+    content = tostring(content):gsub("^%s+", ""):gsub("%s+$", "")
+
+    -- Add to buffer for multiline processing
+    state.buffer = state.buffer .. content .. "\n"
+
+    print("🔎 [DEBUG] Line " .. state.line_count .. " for " .. filename .. ": " .. content)
+
+    -- Process the accumulated buffer for JSON patterns
+    if state.expecting_value then
+        -- Looking for value after finding "k": "run_id"
+        local value_patterns = {
+            '"v"%s*:%s*"([^"]+)"',
+            '"v":%s*"([^"]+)"',
+            '"v"%s*:%s*\'([^\']+)\'',
+            '"v":%s*\'([^\']+)\''
+        }
+        
+        for _, pattern in ipairs(value_patterns) do
+            local run_id = content:match(pattern)
+            if run_id then
+                state.run_id = run_id
+                state.found = true
+                state.expecting_value = false
+                record["run_id"] = run_id
+                file_run_ids[filename] = run_id
+                
+                local new_tag = "github.runner." .. run_id
+                print("✅ [SUCCESS] Extracted run_id: " .. run_id .. " from file: " .. filename)
+                
+                -- Clear buffer to save memory
+                state.buffer = ""
+                return 2, new_tag, timestamp, record
+            end
+        end
+        
+        -- If we didn't find value after expecting it, reset
+        state.expecting_value = false
+        print("⚠️ [DEBUG] Expected value but didn't find it in: " .. filename)
+        
+    else
+        -- Looking for "k": "run_id" pattern
+        local key_patterns = {
+            '"k"%s*:%s*"run_id"',
+            '"k":%s*"run_id"',
+            '"k"%s*:%s*\'run_id\'',
+            '"k":%s*\'run_id\''
+        }
+        
+        for _, pattern in ipairs(key_patterns) do
+            if content:match(pattern) then
+                state.expecting_value = true
+                print("📍 [DEBUG] Found run_id key in " .. filename .. " - expecting value next")
+                break
+            end
+        end
+    end
+
+    -- If buffer gets too large, clear it (memory management)
+    if #state.buffer > 4096 then  -- 4KB limit
+        state.buffer = ""
+        print("⚠️ [DEBUG] Cleared buffer for: " .. filename)
+    end
+
+    -- Set run_id to unknown for now
+    record["run_id"] = "unknown"
+    return 1, timestamp, record
+end
+
+-- Optional: Clean up old file states periodically
+function cleanup_old_files()
+    -- Could be called periodically to prevent memory growth
+end
+
+
+[SERVICE]
+    Flush         1
+    Log_Level     info
+    Daemon        off
+    Parsers_File  /etc/fluent-bit/parsers.conf
+
+# Define multiline parser for JSON
+[PARSER]
+    Name          multiline_json
+    Format        regex
+    Regex         ^\s*\{
+    Skip_Empty_Lines On
+
+[INPUT]
+    Name              tail
+    Path              /usr/bin/actions-runner/_diag/Worker_*.log
+    Tag               github.runner
+    Refresh_Interval  5
+    Read_from_Head    false
+    Skip_Long_Lines   off
+    # CRITICAL: Enable multiline parsing
+    Multiline         On
+    Parser_Firstline  multiline_json
+    # Capture the actual filename
+    Path_Key          file_path
+
+# Extract filename from path and add to record
+[FILTER]
+    Name                record_modifier
+    Match               github.runner
+    Record              worker_filename /usr/bin/actions-runner/_diag/(Worker_[^/]+)$
+
+[FILTER]
+    Name                lua
+    Match               github.runner
+    Script              /etc/fluent-bit/extract_run_id.lua
+    Call                extract_run_id_from_log
+
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner.*
+    region              us-east-1
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-${run_id}-${HOSTNAME}
+    auto_create_group   true
+    auto_create_stream  true
+    log_retention_days  7
+
+# Fallback for records without run_id
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner
+    region              us-east-1
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-unknown-${HOSTNAME}
+    auto_create_group   true
+    auto_create_stream  true
+    log_retention_days  7
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- Track state per log file
+if not files_state then
+    files_state = {}
+end
+
 function extract_run_id_from_log(tag, ts, record)
     -- Always ensure record is a table
     if type(record) ~= "table" then
