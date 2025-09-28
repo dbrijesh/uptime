@@ -10,6 +10,57 @@ function extract_run_id_from_log(tag, timestamp, record)
     local filename = file_path:match("([^/]+)$") or "unknown"
 
     if not file_states[filename] then
+        file_states[filename] = { run_id = "unknown", found = false, expect_value = false }
+    end
+
+    local state = file_states[filename]
+
+    -- Use cached run_id if found
+    if state.found then
+        record["run_id"] = state.run_id
+        return 2, "github.runner." .. state.run_id, timestamp, record
+    end
+
+    local content = record["log"] or record["message"] or ""
+    content = tostring(content)
+
+    if state.expect_value then
+        -- We previously found "k": "run_id", now look for the NEXT "v" value
+        local run_id = content:match('%s*"v"%s*:%s*"([^"]+)"')
+        if run_id then
+            state.run_id = run_id
+            state.found = true
+            record["run_id"] = run_id
+            state.expect_value = false
+            return 2, "github.runner." .. run_id, timestamp, record
+        end
+        -- If we don't find "v" after "k": "run_id", reset
+        state.expect_value = false
+    else
+        -- Only look for EXACTLY "k": "run_id" (not "ref" or others)
+        if content:match('%s*"k"%s*:%s*"run_id"') then
+            state.expect_value = true
+        end
+    end
+
+    record["run_id"] = "unknown"
+    return 1, timestamp, record
+end
+
+
+--------------
+-- Simple state tracking per file
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    if type(record) ~= "table" then
+        return 1, timestamp, record
+    end
+
+    local file_path = record["file_path"] or ""
+    local filename = file_path:match("([^/]+)$") or "unknown"
+
+    if not file_states[filename] then
         file_states[filename] = { 
             run_id = "unknown", 
             found = false, 
