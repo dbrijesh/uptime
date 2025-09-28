@@ -1,3 +1,126 @@
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    if type(record) ~= "table" then
+        return 0, timestamp, record
+    end
+
+    local filename = "default"
+    if record.file_path then
+        filename = tostring(record.file_path):match("([^/]+)$") or "unknown"
+    end
+
+    if not file_states[filename] then
+        file_states[filename] = {
+            run_id = "unknown",
+            found = false,
+            expect_value = false
+        }
+        print("LUA: 🆕 Initialized state for " .. filename)
+    end
+
+    local state = file_states[filename]
+
+    print("LUA: 📊 File=" .. filename .. " | State: found=" .. tostring(state.found) .. " | run_id='" .. tostring(state.run_id) .. "'")
+
+    if state.found then
+        record.run_id = state.run_id
+        print("LUA: 💾 Using cached run_id: '" .. state.run_id .. "'")
+        print("LUA: ✅ Record.run_id set to: '" .. tostring(record.run_id) .. "'")
+        return 2, timestamp, record
+    end
+
+    local content = record.log or record.message or ""
+    content = tostring(content)
+
+    print("LUA: 📄 Raw content: '" .. content .. "'")
+
+    if state.expect_value then
+        print("LUA: 🔍 Looking for v value...")
+        local run_id = content:match('%s*"v"%s*:%s*"([^"]+)"')
+        print("LUA: 🎯 Pattern match result: '" .. tostring(run_id) .. "'")
+        
+        if run_id then
+            run_id = run_id:gsub("^%s+", ""):gsub("%s+$", "")
+            state.run_id = run_id
+            state.found = true
+            record.run_id = run_id
+            state.expect_value = false
+            
+            print("LUA: 🎉 SUCCESS - Extracted and set run_id: '" .. run_id .. "'")
+            print("LUA: 📝 Record.run_id is now: '" .. tostring(record.run_id) .. "'")
+            return 2, timestamp, record
+        else
+            print("LUA: ❌ No v value found")
+            state.expect_value = false
+        end
+    else
+        print("LUA: 🔍 Looking for k:run_id...")
+        if content:find('%s*"k"%s*:%s*"run_id"') then
+            state.expect_value = true
+            print("LUA: ✅ Found k:run_id, expecting v next")
+        else
+            print("LUA: ➡️ No k:run_id found")
+        end
+    end
+
+    record.run_id = "unknown"
+    print("LUA: ⚠️ Setting run_id to 'unknown'")
+    print("LUA: 📝 Record.run_id is now: '" .. tostring(record.run_id) .. "'")
+    return 2, timestamp, record
+end
+
+
+[SERVICE]
+    Flush         1
+    Log_Level     info
+    Daemon        off
+
+[INPUT]
+    Name              tail
+    Path              /usr/bin/actions-runner/_diag/Worker_*.log
+    Tag               github.runner
+    Refresh_Interval  5
+    Read_from_Head    false
+
+[FILTER]
+    Name                lua
+    Match               github.runner
+    Script              /etc/fluent-bit/extract_run_id.lua
+    Call                extract_run_id_from_log
+
+# Ensure run_id field is properly set
+[FILTER]
+    Name                record_modifier
+    Match               github.runner
+    Record              run_id ${run_id}
+    Record              hostname ${HOSTNAME}
+
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner
+    region              us-east-2
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-${run_id}-${HOSTNAME}
+    auto_create_group   true
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 [SERVICE]
     Flush         1
     Log_Level     info
