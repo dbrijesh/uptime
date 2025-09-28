@@ -6,6 +6,91 @@ function extract_run_id_from_log(tag, timestamp, record)
         return 1, timestamp, record
     end
 
+    local file_path = record["file_path"] or ""
+    local filename = file_path:match("([^/]+)$") or "unknown"
+
+    if not file_states[filename] then
+        file_states[filename] = { 
+            run_id = "unknown", 
+            found = false, 
+            expect_value = false 
+        }
+        print("🔎 Initialized state for: " .. filename)
+    end
+
+    local state = file_states[filename]
+
+    -- Use cached run_id if found
+    if state.found then
+        record["run_id"] = state.run_id
+        local new_tag = "github.runner." .. state.run_id
+        print("🔎 Using cached run_id: " .. state.run_id)
+        return 2, new_tag, timestamp, record
+    end
+
+    local content = record["log"] or record["message"] or ""
+    content = tostring(content)
+
+    print("🔎 File: " .. filename .. " | State: " .. tostring(state.expect_value) .. " | Content: " .. content)
+
+    if state.expect_value then
+        -- Patterns for "v" with various spacing options
+        local patterns_v = {
+            '%s*"v"%s*:%s*"([^"]+)"',      -- spaces before "v", around colon
+            '%s*"v":%s*"([^"]+)"',         -- spaces before "v", no spaces around colon
+            '"v"%s*:%s*"([^"]+)"',         -- no spaces before "v", spaces around colon
+            '"v":%s*"([^"]+)"'             -- no spaces anywhere
+        }
+        
+        for _, pattern in ipairs(patterns_v) do
+            local run_id = content:match(pattern)
+            if run_id then
+                state.run_id = run_id
+                state.found = true
+                record["run_id"] = run_id
+                state.expect_value = false
+                local new_tag = "github.runner." .. run_id
+                print("✅ Extracted run_id: " .. run_id)
+                return 2, new_tag, timestamp, record
+            end
+        end
+        state.expect_value = false
+        print("⚠️ Expected value but didn't find pattern")
+    else
+        -- Patterns for "k" with various spacing options
+        local patterns_k = {
+            '%s*"k"%s*:%s*"run_id"',      -- spaces before "k", around colon
+            '%s*"k":%s*"run_id"',         -- spaces before "k", no spaces around colon  
+            '"k"%s*:%s*"run_id"',         -- no spaces before "k", spaces around colon
+            '"k":%s*"run_id"'             -- no spaces anywhere
+        }
+        
+        for _, pattern in ipairs(patterns_k) do
+            if content:match(pattern) then
+                state.expect_value = true
+                print("📍 Found run_id key")
+                break
+            end
+        end
+    end
+
+    record["run_id"] = "unknown"
+    return 1, timestamp, record
+end
+
+
+---------
+
+
+
+-- Simple state tracking per file
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    if type(record) ~= "table" then
+        return 1, timestamp, record
+    end
+
     -- Extract filename
     local file_path = record["file_path"] or ""
     local filename = file_path:match("([^/]+)$") or "unknown"
