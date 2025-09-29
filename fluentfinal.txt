@@ -1,4 +1,161 @@
+#!/bin/bash
 
+# Enable error logging
+exec 2>&1
+set -o pipefail
+
+LOG_FILE="/tmp/cloudwatch-upload-$(date +%s).log"
+echo "=== Post-Job: Uploading logs to CloudWatch ===" | tee -a "$LOG_FILE"
+
+RUN_ID="${GITHUB_RUN_ID:-unknown}"
+RUNNER_NAME="${RUNNER_NAME:-$(hostname)}"
+REGION="us-east-2"
+LOG_GROUP="githubrunnerlogs"
+LOG_STREAM="runner-${RUN_ID}"
+DIAG_DIR="/usr/bin/actions-runner/_diag"
+
+# Function to log with timestamp
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
+}
+
+# Wait for log file to be fully written
+log "⏳ Waiting for log file to be fully written..."
+sleep 5
+
+LATEST_LOG=$(ls -t "${DIAG_DIR}"/Worker_*.log 2>/dev/null | head -1)
+
+if [ -z "$LATEST_LOG" ]; then
+    log "❌ No Worker log file found in ${DIAG_DIR}"
+    log "Directory contents:"
+    ls -la "${DIAG_DIR}" | tee -a "$LOG_FILE"
+    exit 0
+fi
+
+FILE_SIZE=$(wc -l < "$LATEST_LOG")
+log "📁 Log file: $LATEST_LOG"
+log "📊 Total lines in file: $FILE_SIZE"
+log "🏃 Run ID: $RUN_ID"
+
+# Create log group and stream
+log "Creating CloudWatch log group and stream..."
+aws logs create-log-group --log-group-name "$LOG_GROUP" --region "$REGION" 2>&1 | tee -a "$LOG_FILE" || true
+aws logs put-retention-policy --log-group-name "$LOG_GROUP" --retention-in-days 7 --region "$REGION" 2>&1 | tee -a "$LOG_FILE" || true
+aws logs create-log-stream --log-group-name "$LOG_GROUP" --log-stream-name "$LOG_STREAM" --region "$REGION" 2>&1 | tee -a "$LOG_FILE" || true
+
+# Get initial sequence token (if stream already exists)
+SEQUENCE_TOKEN=$(aws logs describe-log-streams \
+    --log-group-name "$LOG_GROUP" \
+    --log-stream-name-prefix "$LOG_STREAM" \
+    --region "$REGION" 2>/dev/null | \
+    jq -r ".logStreams[] | select(.logStreamName==\"$LOG_STREAM\") | .uploadSequenceToken // empty")
+
+if [ -n "$SEQUENCE_TOKEN" ]; then
+    log "Found existing sequence token: ${SEQUENCE_TOKEN:0:20}..."
+fi
+
+TIMESTAMP=$(date +%s%3N)
+BATCH_SIZE=1000
+LINE_COUNT=0
+BATCH_COUNT=0
+TEMP_BATCH=$(mktemp)
+
+log "📤 Starting upload..."
+
+# Read file and create batches
+while IFS= read -r line || [ -n "$line" ]; do
+    # Skip empty lines
+    [ -z "$line" ] && continue
+    
+    # Create event and append to temp file
+    jq -n \
+        --arg msg "$line" \
+        --arg ts "$((TIMESTAMP + LINE_COUNT))" \
+        '{timestamp: ($ts|tonumber), message: $msg}' >> "$TEMP_BATCH"
+    
+    LINE_COUNT=$((LINE_COUNT + 1))
+    
+    # Send batch when full
+    if [ $((LINE_COUNT % BATCH_SIZE)) -eq 0 ]; then
+        # Create JSON array from individual events
+        EVENTS=$(jq -s '.' "$TEMP_BATCH")
+        
+        # Upload with proper error handling
+        if [ -n "$SEQUENCE_TOKEN" ]; then
+            RESULT=$(aws logs put-log-events \
+                --log-group-name "$LOG_GROUP" \
+                --log-stream-name "$LOG_STREAM" \
+                --log-events "$EVENTS" \
+                --sequence-token "$SEQUENCE_TOKEN" \
+                --region "$REGION" 2>&1)
+        else
+            RESULT=$(aws logs put-log-events \
+                --log-group-name "$LOG_GROUP" \
+                --log-stream-name "$LOG_STREAM" \
+                --log-events "$EVENTS" \
+                --region "$REGION" 2>&1)
+        fi
+        
+        if [ $? -eq 0 ]; then
+            SEQUENCE_TOKEN=$(echo "$RESULT" | jq -r '.nextSequenceToken // empty')
+            BATCH_COUNT=$((BATCH_COUNT + 1))
+            log "  ✅ Batch $BATCH_COUNT: Uploaded $BATCH_SIZE events (Total: $LINE_COUNT/$FILE_SIZE)"
+        else
+            log "  ❌ Error uploading batch $BATCH_COUNT:"
+            log "$RESULT"
+        fi
+        
+        # Clear temp file for next batch
+        > "$TEMP_BATCH"
+        sleep 0.2
+    fi
+done < "$LATEST_LOG"
+
+# Send remaining events
+REMAINING=$(wc -l < "$TEMP_BATCH")
+if [ "$REMAINING" -gt 0 ]; then
+    log "📤 Uploading final batch of $REMAINING events..."
+    
+    EVENTS=$(jq -s '.' "$TEMP_BATCH")
+    
+    if [ -n "$SEQUENCE_TOKEN" ]; then
+        RESULT=$(aws logs put-log-events \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" \
+            --log-events "$EVENTS" \
+            --sequence-token "$SEQUENCE_TOKEN" \
+            --region "$REGION" 2>&1)
+    else
+        RESULT=$(aws logs put-log-events \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" \
+            --log-events "$EVENTS" \
+            --region "$REGION" 2>&1)
+    fi
+    
+    if [ $? -eq 0 ]; then
+        log "  ✅ Final batch: Uploaded $REMAINING events"
+    else
+        log "  ❌ Error uploading final batch:"
+        log "$RESULT"
+    fi
+fi
+
+# Cleanup
+rm -f "$TEMP_BATCH"
+
+log ""
+log "✅ Upload complete: $LINE_COUNT lines uploaded out of $FILE_SIZE total"
+
+if [ "$LINE_COUNT" -ne "$FILE_SIZE" ]; then
+    log "⚠️  WARNING: Line count mismatch!"
+else
+    log "✅ All lines uploaded successfully!"
+fi
+
+log "🔗 View logs: https://console.aws.amazon.com/cloudwatch/home?region=${REGION}#logsV2:log-groups/log-group/${LOG_GROUP}/log-events/${LOG_STREAM}"
+log "📝 Upload log saved to: $LOG_FILE"
+log "=== Post-Job Complete ==="
 
 
 
