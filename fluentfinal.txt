@@ -1,3 +1,87 @@
+
+
+
+
+#!/bin/bash
+set -e
+
+echo "=== Post-Job: Uploading logs to CloudWatch ==="
+
+RUN_ID="${GITHUB_RUN_ID:-unknown}"
+RUNNER_NAME="${RUNNER_NAME:-$(hostname)}"
+REGION="us-east-2"
+LOG_GROUP="githubrunnerlogs"
+LOG_STREAM="runner-${RUN_ID}"
+
+DIAG_DIR="/usr/bin/actions-runner/_diag"
+LATEST_LOG=$(ls -t "${DIAG_DIR}"/Worker_*.log 2>/dev/null | head -1)
+
+if [ -z "$LATEST_LOG" ]; then
+    echo "❌ No Worker log file found"
+    exit 0
+fi
+
+echo "📁 Log file: $LATEST_LOG"
+echo "🏃 Run ID: $RUN_ID"
+
+# Create log group and stream
+aws logs create-log-group --log-group-name "$LOG_GROUP" --region "$REGION" 2>/dev/null || true
+aws logs put-retention-policy --log-group-name "$LOG_GROUP" --retention-in-days 7 --region "$REGION" 2>/dev/null || true
+aws logs create-log-stream --log-group-name "$LOG_GROUP" --log-stream-name "$LOG_STREAM" --region "$REGION" 2>/dev/null || true
+
+# Stream logs in batches
+TIMESTAMP=$(date +%s%3N)
+BATCH_SIZE=1000
+EVENTS="[]"
+LINE_COUNT=0
+BATCH_COUNT=0
+
+echo "📤 Uploading logs..."
+
+while IFS= read -r line || [ -n "$line" ]; do
+    # Create event
+    EVENT=$(jq -n \
+        --arg msg "$line" \
+        --arg ts "$((TIMESTAMP + LINE_COUNT))" \
+        '{timestamp: ($ts|tonumber), message: $msg}')
+    
+    # Add to batch
+    EVENTS=$(echo "$EVENTS" | jq --argjson event "$EVENT" '. + [$event]')
+    LINE_COUNT=$((LINE_COUNT + 1))
+    
+    # Send batch when full
+    if [ $((LINE_COUNT % BATCH_SIZE)) -eq 0 ]; then
+        aws logs put-log-events \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" \
+            --log-events "$EVENTS" \
+            --region "$REGION" >/dev/null
+        
+        BATCH_COUNT=$((BATCH_COUNT + 1))
+        echo "  ✅ Batch $BATCH_COUNT: Uploaded $BATCH_SIZE events"
+        
+        EVENTS="[]"
+        sleep 0.1  # Avoid throttling
+    fi
+done < "$LATEST_LOG"
+
+# Send remaining events
+if [ "$(echo "$EVENTS" | jq 'length')" -gt 0 ]; then
+    aws logs put-log-events \
+        --log-group-name "$LOG_GROUP" \
+        --log-stream-name "$LOG_STREAM" \
+        --log-events "$EVENTS" \
+        --region "$REGION" >/dev/null
+    
+    REMAINING=$(echo "$EVENTS" | jq 'length')
+    echo "  ✅ Final batch: Uploaded $REMAINING events"
+fi
+
+echo "✅ Successfully uploaded $LINE_COUNT log lines"
+echo "🔗 https://console.aws.amazon.com/cloudwatch/home?region=${REGION}#logsV2:log-groups/log-group/${LOG_GROUP}/log-events/${LOG_STREAM}"
+echo "=== Post-Job Complete ==="
+
+
 local file_states = {}
 
 function extract_run_id_from_log(tag, timestamp, record)
