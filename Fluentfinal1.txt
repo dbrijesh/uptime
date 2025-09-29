@@ -1,0 +1,134 @@
+local file_states = {}
+
+function extract_run_id_from_log(tag, timestamp, record)
+    print("=== LUA FILTER START ===")
+    print("LUA: Input tag: " .. tostring(tag))
+    print("LUA: Input timestamp: " .. tostring(timestamp))
+    
+    if type(record) ~= "table" then
+        print("LUA: ❌ ERROR: Record is not a table")
+        return 2, timestamp, record
+    end
+
+    -- Debug: Show all record fields
+    print("LUA: 📋 Record fields:")
+    for k, v in pairs(record) do
+        print("LUA:   " .. k .. " = '" .. tostring(v) .. "'")
+    end
+
+    local filename = "default"
+    if record.file_path then
+        filename = tostring(record.file_path):match("([^/]+)$") or "unknown"
+    end
+    print("LUA: 📁 Processing file: '" .. filename .. "'")
+
+    if not file_states[filename] then
+        file_states[filename] = {
+            run_id = nil,
+            found = false,
+            expect_value = false
+        }
+        print("LUA: 🆕 Initialized new state for file: " .. filename)
+    end
+
+    local state = file_states[filename]
+    print("LUA: 📊 Current state - run_id: '" .. tostring(state.run_id) .. "', found: " .. tostring(state.found) .. ", expect_value: " .. tostring(state.expect_value))
+
+    -- If we found run_id previously, change the tag
+    if state.found and state.run_id then
+        local new_tag = "github.runner." .. state.run_id
+        print("LUA: 🏷️  Changing tag from '" .. tag .. "' to '" .. new_tag .. "'")
+        print("LUA: ✅ RETURN: 1, " .. new_tag .. ", timestamp, record")
+        return 1, new_tag, timestamp, record
+    end
+
+    local content = record.log or ""
+    content = tostring(content)
+    print("LUA: 📄 Content: '" .. content .. "'")
+
+    if state.expect_value then
+        print("LUA: 🔍 State: expecting_value = TRUE - Looking for v pattern")
+        local run_id = content:match('%s*"v"%s*:%s*"([^"]+)"')
+        print("LUA: 🎯 Pattern match result: '" .. tostring(run_id) .. "'")
+        
+        if run_id then
+            run_id = run_id:gsub("^%s+", ""):gsub("%s+$", "")
+            state.run_id = run_id
+            state.found = true
+            state.expect_value = false
+            
+            local new_tag = "github.runner." .. run_id
+            print("LUA: 🎉 SUCCESS: Extracted run_id '" .. run_id .. "', changing tag to '" .. new_tag .. "'")
+            print("LUA: ✅ RETURN: 1, " .. new_tag .. ", timestamp, record")
+            return 1, new_tag, timestamp, record
+        else
+            print("LUA: ❌ No v value found, resetting expect_value")
+            state.expect_value = false
+        end
+    else
+        print("LUA: 🔍 State: expecting_value = FALSE - Looking for k:run_id pattern")
+        local has_run_id_key = content:find('%s*"k"%s*:%s*"run_id"')
+        print("LUA: 🎯 Pattern match result: " .. tostring(has_run_id_key))
+        
+        if has_run_id_key then
+            state.expect_value = true
+            print("LUA: ✅ Found k:run_id, now expecting v value")
+        else
+            print("LUA: ➡️ No k:run_id found")
+        end
+    end
+
+    print("LUA: 🔄 Keeping original tag: " .. tag)
+    print("LUA: ✅ RETURN: 2, timestamp, record")
+    print("=== LUA FILTER END ===")
+    return 2, timestamp, record
+end
+
+[SERVICE]
+    Flush         1
+    Log_Level     debug  # Change to debug for more details
+    Daemon        off
+
+[INPUT]
+    Name              tail
+    Path              /usr/bin/actions-runner/_diag/Worker_*.log
+    Tag               github.runner
+    Refresh_Interval  5
+    Read_from_Head    false
+    Skip_Long_Lines   on
+    Path_Key          file_path
+    # Add these for better debugging
+    Buffer_Chunk_Size 1k
+    Buffer_Max_Size   8k
+
+[FILTER]
+    Name                lua
+    Match               github.runner
+    Script              /etc/fluent-bit/extract_run_id.lua
+    Call                extract_run_id_from_log
+
+# Add stdout output to see what's happening
+[OUTPUT]
+    Name                stdout
+    Match               *
+    Format              json
+
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner.*
+    region              us-east-2
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-${TAG[2]}-${HOSTNAME}
+    auto_create_group   true
+    auto_create_stream  true
+    log_retention_days  7
+
+[OUTPUT]
+    Name                cloudwatch_logs
+    Match               github.runner
+    region              us-east-2
+    log_group_name      githubrunnerlogs
+    log_stream_name     runner-unknown-${HOSTNAME}
+    auto_create_group   true
+    auto_create_stream  true
+    log_retention_days  7
