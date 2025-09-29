@@ -1,3 +1,225 @@
+#!/bin/bash
+
+# post_job_simple.sh - Simple version for direct runner usage
+
+set -e
+
+# Configuration
+LOG_DIR="/usr/bin/actions-runner/_diag"
+LOG_GROUP="githubrunnerlogs"
+REGION="us-east-2"
+HOSTNAME=$(hostname)
+
+# Get RUN_ID from environment (most reliable sources)
+if [ -n "$GITHUB_RUN_ID" ]; then
+    RUN_ID="$GITHUB_RUN_ID"
+elif [ -n "$RUNNER_TRACKING_ID" ]; then
+    RUN_ID=$(echo "$RUNNER_TRACKING_ID" | grep -o '[0-9]\+' | head -1)
+else
+    echo "Error: No RUN_ID found in environment"
+    echo "Available env vars:"
+    env | grep -E "(GITHUB|RUNNER)" || echo "None found"
+    exit 1
+fi
+
+echo "Streaming logs for Run ID: $RUN_ID"
+
+# Find latest log file
+LATEST_LOG=$(find "$LOG_DIR" -name "Worker_*.log" -type f -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)
+
+if [ -z "$LATEST_LOG" ]; then
+    echo "No log files found"
+    exit 1
+fi
+
+LOG_STREAM="runner-${RUN_ID}-${HOSTNAME}"
+
+# Create log stream
+aws logs create-log-stream \
+    --log-group-name "$LOG_GROUP" \
+    --log-stream-name "$LOG_STREAM" \
+    --region "$REGION" 2>/dev/null || true
+
+# Stream the log file
+echo "Streaming $LATEST_LOG to $LOG_STREAM"
+aws logs put-log-events \
+    --log-group-name "$LOG_GROUP" \
+    --log-stream-name "$LOG_STREAM" \
+    --log-events file://<(while IFS= read -r line; do echo "{\"timestamp\": $(date +%s%3N), \"message\": \"$line\"}"; done < "$LATEST_LOG") \
+    --region "$REGION"
+
+echo "Log streaming complete!"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--------------
+
+#!/bin/bash
+
+# post_job_enhanced.sh - Handles CloudWatch limits properly
+
+set -e
+
+# Configuration
+LOG_DIR="/usr/bin/actions-runner/_diag"
+LOG_GROUP="githubrunnerlogs"
+REGION="us-east-2"
+HOSTNAME=$(hostname)
+
+# CloudWatch Limits
+MAX_BATCH_SIZE=10000  # Max events per batch
+MAX_BATCH_BYTES=1048576  # 1MB in bytes
+BATCH_DELAY=0.2  # Delay between batches (seconds)
+
+# Get RUN_ID from environment
+if [ -n "$GITHUB_RUN_ID" ]; then
+    RUN_ID="$GITHUB_RUN_ID"
+else
+    echo "Error: GITHUB_RUN_ID not found"
+    exit 1
+fi
+
+echo "Streaming logs for Run ID: $RUN_ID"
+
+# Find latest log file
+LATEST_LOG=$(find "$LOG_DIR" -name "Worker_*.log" -type f -printf '%T@ %p\n' | sort -nr | head -1 | cut -d' ' -f2-)
+
+if [ -z "$LATEST_LOG" ]; then
+    echo "No log files found"
+    exit 1
+fi
+
+LOG_STREAM="runner-${RUN_ID}-${HOSTNAME}"
+
+# Create log stream
+aws logs create-log-stream \
+    --log-group-name "$LOG_GROUP" \
+    --log-stream-name "$LOG_STREAM" \
+    --region "$REGION" 2>/dev/null || true
+
+echo "Streaming $LATEST_LOG to $LOG_STREAM"
+
+# Function to send logs in batches respecting limits
+stream_logs_with_limits() {
+    local log_file="$1"
+    local sequence_token=""
+    local batch_count=0
+    local total_lines=0
+    local batch_lines=()
+    local batch_size=0
+    
+    while IFS= read -r line; do
+        if [ -n "$line" ]; then
+            # Calculate line size (rough estimate)
+            line_size=${#line}
+            
+            # Check if adding this line would exceed limits
+            if [ ${#batch_lines[@]} -ge $MAX_BATCH_SIZE ] || [ $((batch_size + line_size)) -gt $MAX_BATCH_BYTES ]; then
+                # Send current batch
+                send_batch "${batch_lines[@]}"
+                batch_lines=()
+                batch_size=0
+                sleep $BATCH_DELAY
+            fi
+            
+            # Add line to batch
+            batch_lines+=("$line")
+            batch_size=$((batch_size + line_size))
+            total_lines=$((total_lines + 1))
+        fi
+    done < "$log_file"
+    
+    # Send any remaining lines
+    if [ ${#batch_lines[@]} -gt 0 ]; then
+        send_batch "${batch_lines[@]}"
+    fi
+    
+    echo "✅ Sent $total_lines total lines in $batch_count batches"
+}
+
+# Function to send a batch of logs
+send_batch() {
+    local batch_lines=("$@")
+    local batch_events="["
+    local first=true
+    
+    for line in "${batch_lines[@]}"; do
+        if [ "$first" = true ]; then
+            first=false
+        else
+            batch_events+=","
+        fi
+        
+        # Escape JSON and create event
+        ESCAPED_LINE=$(echo "$line" | sed 's/"/\\"/g' | sed 's/\\/\\\\/g')
+        TIMESTAMP=$(date +%s%3N)
+        batch_events+="{\"timestamp\": $TIMESTAMP, \"message\": \"$ESCAPED_LINE\"}"
+    done
+    
+    batch_events+="]"
+    
+    # Send to CloudWatch
+    if [ -z "$sequence_token" ]; then
+        RESPONSE=$(aws logs put-log-events \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" \
+            --log-events "$batch_events" \
+            --region "$REGION" 2>/dev/null || echo "{}")
+    else
+        RESPONSE=$(aws logs put-log-events \
+            --log-group-name "$LOG_GROUP" \
+            --log-stream-name "$LOG_STREAM" \
+            --log-events "$batch_events" \
+            --sequence-token "$sequence_token" \
+            --region "$REGION" 2>/dev/null || echo "{}")
+    fi
+    
+    # Update sequence token
+    sequence_token=$(echo "$RESPONSE" | grep -o '"nextSequenceToken":"[^"]*"' | cut -d'"' -f4)
+    
+    batch_count=$((batch_count + 1))
+    echo "  Batch $batch_count: sent ${#batch_lines[@]} lines"
+}
+
+# Stream the logs with proper limits
+stream_logs_with_limits "$LATEST_LOG"
+
+echo "Log streaming complete!"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 local file_states = {}
 
 function extract_run_id_from_log(tag, timestamp, record)
