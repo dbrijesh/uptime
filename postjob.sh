@@ -1,3 +1,9 @@
+Automatically runs after each GitHub Actions job completes on your self-hosted runner and finds log files in /actions-runner/_diag/blocks that were modified in the last 5 minutes.
+Checks a tracking file (/actions-runner/_diag/.processed_blocks) to see if each log file has already been uploaded, skipping any duplicates to prevent re-processing the same files.
+Reads each new log file line-by-line, prefixes each line with the filename for identification, and batches the lines into groups of 10 for efficient uploading.
+Uploads all batched log events to AWS CloudWatch Logs using the AWS CLI, creating a unique log stream named by runner/repository/run-ID/job/timestamp for easy organization.
+After successful upload, records the file in the tracking file and deletes it from disk (if PURGE_LOGS=true) to save space, while automatically cleaning up tracking entries older than 2 hours.
+
 #!/bin/bash
 set -euo pipefail
 
