@@ -10,8 +10,9 @@ Src/
 ├── Application/     # Use cases, CQRS handlers, business logic
 ├── Common/          # Shared utilities and cross-cutting concerns
 ├── Infrastructure/  # External services, file system, email, etc.
+├── Database/        # Contains DDL, DML Database scripts
 ├── Persistence/     # Database context, repositories, configurations
-└── WebUI/          # Presentation layer (API controllers + Angular SPA)
+├── Presentation/    # Contanins API Controllers, DTO's, and handle HTTP requests
 ```
 
 ## Dependency Flow
@@ -47,12 +48,31 @@ Src/
 
 ```
 ClientApp/
+├── public/
+│   ├── index.html      # static assets
+│   ├── favicon.ico     # static file
 ├── src/
 │   ├── app/         # Angular components, services, modules
+│   ├── app/         # Angular components, services, modules
 │   ├── assets/      # Static assets
-│   └── environments/ # Environment configurations
+│       ├── images/        # Global image files
+│       ├── icons/         # Global icons
+│       ├── fonts/         # Global fonts
+│       ├── styles/        # Global style, themes, variables
+│   ├── components/      #  reusable, presentational components that are not tied to specific pages or features (e.g., Button, Modal, Input, Card)
+│   ├── pages/      #  main entry-point components for different routes or pages of the application
+│   ├── hooks/      #  Stores custom React hooks for encapsulating reusable logic (e.g., useAuth, useForm)
+│   ├── utils/      #  Contains utility functions, helpers, constants, and other generic JavaScript modules not directly related to UI components or state management
+│   ├── services/   # Handles logic related to interacting with external APIs or backend services
+│   ├── store/   # Contains files related to global state management using Redux, including reducers, actions, selectors, store configuration
+│   ├── routes/   # Defines the application's routing configuration using React Router
+│   ├── types/   # Contains general TypeScript types, interfaces, and enums
+│   ├── configs/   # Stores application configurations, such as environment variables
+│   ├── environments/ # Environment configurations
+├── app.tsx     # Serves as the top-level container for all other components in the application
+├── index.js     # Entry point for rendering the root component and mounting it to the DOM
 ├── package.json     # npm dependencies
-└── angular.json     # Angular CLI configuration
+
 ```
 
 ### Tests (`Tests/`)
@@ -117,16 +137,16 @@ ClientApp/
 
 ## Frontend (Angular)
 
-- **Angular 19.0** - Frontend framework
-- **TypeScript 5.6.3** - Primary language
+- **React 18.2** - Frontend framework
+- **TypeScript 5.9** - Primary language
 - **Angular CLI** - Build tooling
-- **NgBootstrap 18.0.2** - UI components
-- **Angular Feather 6.5.0** - Icons
-- **OIDC Client TS 3.1.0** - Authentication
+- **NgBootstrap 19.0.1** - UI components
+- **React Icon 15.6.0** - Icons
+- **OIDC Client TS 8.0.16** - Authentication
 
 ## Testing
 
-- **xUnit 2.6.2** - Unit testing framework
+- **xUnit 2.9.3** - Unit testing framework
 - **Moq 4.20.69** - Mocking framework
 - **Shouldly 4.2.1** - Assertion library
 - **Entity Framework InMemory** - In-memory database for testing
