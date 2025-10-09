@@ -1,3 +1,107 @@
+
+
+import boto3
+import json
+from datetime import datetime, timezone
+import os
+
+logs = boto3.client('logs')
+
+# Preconfigured log group (secure)
+LOG_GROUP_NAME = os.environ.get("LOG_GROUP_NAME", "/aws/codebuild/github-runner-logs")
+
+def lambda_handler(event, context):
+    try:
+        params = event.get("queryStringParameters") or {}
+
+        # Extract user-provided filters
+        run_id = params.get("run_id")
+        repo_name = params.get("repo_name")
+        job_name = params.get("job_name")
+        from_time = params.get("from")
+        to_time = params.get("to")
+
+        # Convert timestamps to milliseconds
+        start_time = None
+        end_time = None
+        if from_time:
+            start_time = int(datetime.fromisoformat(from_time.replace('Z', '+00:00')).timestamp() * 1000)
+        if to_time:
+            end_time = int(datetime.fromisoformat(to_time.replace('Z', '+00:00')).timestamp() * 1000)
+
+        # Build stream name filter
+        filters = [f for f in [run_id, repo_name, job_name] if f]
+
+        # Fetch matching log streams
+        matching_streams = []
+        paginator = logs.get_paginator("describe_log_streams")
+        for page in paginator.paginate(logGroupName=LOG_GROUP_NAME):
+            for stream in page.get("logStreams", []):
+                name = stream["logStreamName"]
+                if all(f in name for f in filters):
+                    matching_streams.append(name)
+
+        if not matching_streams:
+            return {
+                "statusCode": 200,
+                "headers": {"Access-Control-Allow-Origin": "*"},
+                "body": json.dumps({"logStreams": []})
+            }
+
+        # Fetch log events for each matching stream
+        result = {"logStreams": []}
+        for stream_name in matching_streams:
+            kwargs = {
+                "logGroupName": LOG_GROUP_NAME,
+                "logStreamName": stream_name,
+                "startFromHead": True
+            }
+
+            if start_time:
+                kwargs["startTime"] = start_time
+            if end_time:
+                kwargs["endTime"] = end_time
+
+            response = logs.get_log_events(**kwargs)
+            events = [
+                {
+                    "timestamp": datetime.fromtimestamp(e["timestamp"] / 1000, tz=timezone.utc).isoformat(),
+                    "message": e["message"]
+                } for e in response.get("events", [])
+            ]
+
+            result["logStreams"].append({
+                "name": stream_name,
+                "events": events
+            })
+
+        return {
+            "statusCode": 200,
+            "headers": {
+                "Access-Control-Allow-Origin": "*",
+                "Content-Type": "application/json"
+            },
+            "body": json.dumps(result)
+        }
+
+    except Exception as e:
+        print("Error:", str(e))
+        return {
+            "statusCode": 500,
+            "headers": {"Access-Control-Allow-Origin": "*"},
+            "body": json.dumps({"error": str(e)})
+        }
+
+
+
+
+
+
+
+
+
+
+
 import json
 import boto3
 import time
