@@ -1,0 +1,120 @@
+import json
+import boto3
+import time
+
+logs = boto3.client('logs')
+
+def lambda_handler(event, context):
+    try:
+        params = event.get('queryStringParameters') or {}
+        log_group = params.get('logGroupName')
+        query = params.get('query', '')
+        start_time = int(time.time()) - 3600  # Default: last 1 hour
+        end_time = int(time.time())
+
+        if 'start' in params:
+            start_time = int(params['start'])
+        if 'end' in params:
+            end_time = int(params['end'])
+
+        if not log_group:
+            return {
+                'statusCode': 400,
+                'body': json.dumps({'error': 'Missing logGroupName'})
+            }
+
+        # Run Logs Insights query
+        query_string = f'fields @timestamp, @message | sort @timestamp desc | filter @message like /{query}/'
+        response = logs.start_query(
+            logGroupName=log_group,
+            startTime=start_time,
+            endTime=end_time,
+            queryString=query_string,
+            limit=50
+        )
+
+        query_id = response['queryId']
+
+        # Wait for results
+        time.sleep(2)
+        result = logs.get_query_results(queryId=query_id)
+
+        # Format results
+        logs_list = []
+        for r in result['results']:
+            entry = {f['field']: f['value'] for f in r if f['field'] in ['@timestamp', '@message']}
+            logs_list.append(entry)
+
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps(logs_list)
+        }
+
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'body': json.dumps({'error': str(e)})
+        }
+
+
+
+
+
+{
+  "Effect": "Allow",
+  "Action": [
+    "logs:StartQuery",
+    "logs:GetQueryResults",
+    "logs:DescribeLogGroups",
+    "logs:DescribeLogStreams"
+  ],
+  "Resource": "*"
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>CloudWatch Log Viewer</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #f9fafb; }
+    input, select, button { padding: 8px; margin: 5px; }
+    pre { background: #111; color: #0f0; padding: 10px; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <h2>CloudWatch Log Viewer</h2>
+  <label>Log Group:</label>
+  <input type="text" id="logGroup" placeholder="/aws/lambda/my-function">
+  <label>Search:</label>
+  <input type="text" id="query" placeholder="error or keyword">
+  <button onclick="fetchLogs()">Fetch Logs</button>
+  <div id="result"></div>
+
+  <script>
+    const apiUrl = "https://abc123.execute-api.us-east-1.amazonaws.com/logs";
+
+    async function fetchLogs() {
+      const logGroup = document.getElementById('logGroup').value;
+      const query = document.getElementById('query').value;
+      const url = `${apiUrl}?logGroupName=${encodeURIComponent(logGroup)}&query=${encodeURIComponent(query)}`;
+
+      document.getElementById('result').innerHTML = '<p>Loading...</p>';
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+        const logsHtml = data.map(d => `<pre>[${d['@timestamp']}] ${d['@message']}</pre>`).join('');
+        document.getElementById('result').innerHTML = logsHtml || '<p>No logs found.</p>';
+      } catch (err) {
+        document.getElementById('result').innerHTML = `<p style="color:red;">Error: ${err.message}</p>`;
+      }
+    }
+  </script>
+</body>
+</html>
