@@ -1,0 +1,21 @@
+/actions-runner/_diag/* /actions-runner/_diag/*/* /actions-runner/_diag/*/*/* /actions-runner/_diag/*/*/*/* {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    maxage 30
+}
+
+/actions-runner/_work/* /actions-runner/_work/*/* /actions-runner/_work/*/*/* /actions-runner/_work/*/*/*/* {
+    daily
+    rotate 7
+    compress
+    delaycompress
+    missingok
+    notifempty
+    copytruncate
+    maxage 30
+}
