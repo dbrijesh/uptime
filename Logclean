@@ -15,3 +15,24 @@ find /actions-runner/_diag -type d -empty -delete 2>> "$LOG_FILE"
 find /actions-runner/_work -type d -empty -delete 2>> "$LOG_FILE"
 
 echo "$(date): Cleanup completed" >> "$LOG_FILE"
+
+# Update package manager
+sudo yum update -y
+
+# Install cronie package (contains crond)
+sudo yum install cronie -y
+
+# Start the service
+sudo systemctl start crond
+
+# Enable it to start on boot
+sudo systemctl enable crond
+
+# Verify it's running
+sudo systemctl status crond
+sudo crontab -e
+```
+
+This will open an editor. Add this line:
+```
+0 2 * * * /usr/local/bin/cleanup-runner-files.sh
