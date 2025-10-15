@@ -1,0 +1,17 @@
+#!/bin/bash
+
+LOG_FILE="/var/log/runner-cleanup.log"
+
+echo "$(date): Starting cleanup of action-runner files" >> "$LOG_FILE"
+
+# Delete files older than 5 days in _diag
+find /actions-runner/_diag -type f -mtime +5 -delete 2>> "$LOG_FILE"
+
+# Delete files older than 5 days in _work
+find /actions-runner/_work -type f -mtime +5 -delete 2>> "$LOG_FILE"
+
+# Optional: Remove empty directories
+find /actions-runner/_diag -type d -empty -delete 2>> "$LOG_FILE"
+find /actions-runner/_work -type d -empty -delete 2>> "$LOG_FILE"
+
+echo "$(date): Cleanup completed" >> "$LOG_FILE"
