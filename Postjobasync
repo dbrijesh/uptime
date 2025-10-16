@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# This is a wrapper that runs the actual log upload asynchronously
+# Save this as: /actions-runner/post_job.sh
+
+ACTUAL_SCRIPT="/actions-runner/post_job_sync.sh"
+LOG_DIR="/actions-runner/_diag/async_logs"
+RUN_ID=${GITHUB_RUN_ID:-"manual-$(date +%s)"}
+JOB_NAME=${GITHUB_JOB:-"unknown"}
+
+# Create log directory if it doesn't exist
+mkdir -p "$LOG_DIR"
+
+# Create separate log file for this run
+LOG_FILE="${LOG_DIR}/run_${RUN_ID}_${JOB_NAME}.log"
+
+# Log start time with context
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] Starting async upload" > "$LOG_FILE"
+echo "  Run ID: ${RUN_ID}" >> "$LOG_FILE"
+echo "  Job: ${JOB_NAME}" >> "$LOG_FILE"
+echo "  Repository: ${GITHUB_REPOSITORY:-unknown}" >> "$LOG_FILE"
+echo "  Runner: ${RUNNER_NAME:-$(hostname)}" >> "$LOG_FILE"
+echo "----------------------------------------" >> "$LOG_FILE"
+
+# Run the actual upload script in background, detached from current process
+nohup "$ACTUAL_SCRIPT" >> "$LOG_FILE" 2>&1 &
+
+# Disown the process so it continues even after parent exits
+disown
+
+# Optional: Clean up old log files (older than 7 days)
+find "$LOG_DIR" -name "run_*.log" -type f -mtime +7 -delete 2>/dev/null &
+
+# Exit immediately - don't wait for background process
+exit 0#!/bin/bash
+
+# This is a wrapper that runs the actual log upload asynchronously
+# Save this as: /actions-runner/post_job.sh
+
+ACTUAL_SCRIPT="/actions-runner/post_job_sync.sh"
+LOG_FILE="/actions-runner/_diag/post_job_async.log"
+
+# Optional: Log that we're starting (for debugging)
+echo "[$(date)] Starting async upload for Run: ${GITHUB_RUN_ID:-unknown}, Job: ${GITHUB_JOB:-unknown}" >> "$LOG_FILE"
+
+# Run the actual upload script in background, detached from current process
+# All environment variables (GITHUB_RUN_ID, GITHUB_JOB, etc.) are automatically inherited
+nohup "$ACTUAL_SCRIPT" >> "$LOG_FILE" 2>&1 &
+
+# Disown the process so it continues even after parent exits
+disown
+
+# Exit immediately - don't wait for background process
+exit 0
