@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Architecture & Digital Transformation Strategy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e1e1e 0%, #2d2d30 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            padding: 60px 0;
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            margin-bottom: 40px;
+            border-radius: 25px;
+            box-shadow: 0 20px 50px rgba(30, 64, 175, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M 12 0 L 0 0 0 12" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+            opacity: 0.4;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            font-size: 1.5em;
+            opacity: 0.95;
+            margin-bottom: 25px;
+        }
+
+        .header-stats {
+            display: flex;
+            justify-content: center;
+            gap: 50px;
+            margin-top: 35px;
+        }
+
+        .header-stat {
+            text-align: center;
+        }
+
+        .header-stat-number {
+            font-size: 2.2em;
+            font-weight: bold;
+            display: block;
+            color: #22c55e;
+        }
+
+        .header-stat-label {
+            font-size: 1em;
+            opacity: 0.85;
+        }
+
+        .presentation-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 100px;
+            position: relative;
+        }
+
+        .section-slide {
+            display: flex;
+            align-items: flex-start;
+            gap: 50px;
+            opacity: 0;
+            transform: translateY(60px);
+            animation: fadeInUp 1s ease forwards;
+            position: relative;
+            padding: 40px;
+            background: rgba(45, 45, 48, 0.4);
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.12);
+            min-height: 600px;
+        }
+
+        .section-slide:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .section-slide:nth-child(1) { animation-delay: 0.2s; }
+        .section-slide:nth-child(2) { animation-delay: 0.4s; }
+        .section-slide:nth-child(3) { animation-delay: 0.6s; }
+        .section-slide:nth-child(4) { animation-delay: 0.8s; }
+        .section-slide:nth-child(5) { animation-delay: 1.0s; }
+
+        .diagram-container {
+            flex: 1.3;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            transition: all 0.4s ease;
+            min-height: 500px;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+        }
+
+        .diagram-container:hover {
+            transform: scale(1.02) translateZ(0);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.7);
+        }
+
+        .screenshot {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            border-radius: 20px;
+        }
+
+        .diagram-placeholder {
+            width: 100%;
+            height: 500px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 3px dashed #1e40af;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+            position: relative;
+            color: #1e40af;
+        }
+
+        .diagram-placeholder:hover {
+            background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+            border-color: #1d4ed8;
+        }
+
+        .placeholder-icon {
+            font-size: 5em;
+            margin-bottom: 20px;
+            opacity: 0.8;
+        }
+
+        .placeholder-title {
+            font-size: 1.8em;
+            color: #1e40af;
+            margin-bottom: 10px;
+            font-weight: 700;
+            text-align: center;
+        }
+
+        .placeholder-subtitle {
+            font-size: 1.1em;
+            opacity: 0.7;
+            text-align: center;
+            max-width: 300px;
+        }
+
+        .content-panel {
+            flex: 1;
+            padding: 45px;
+            background: linear-gradient(135deg, #2d2d30 0%, #404040 100%);
+            border-radius: 20px;
+            border-left: 6px solid #1e40af;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+        }
+
+        .slide-number {
+            display: inline-block;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            line-height: 60px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 25px rgba(59, 130, 246, 0.4);
+            font-size: 1.4em;
+        }
+
+        .slide-title {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            color: #3b82f6;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+
+        .slide-summary {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            color: #e0e0e0;
+            line-height: 1.8;
+            font-style: italic;
+            padding: 20px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            border-left: 4px solid #3b82f6;
+        }
+
+        .slide-description {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+            color: #e0e0e0;
+            line-height: 1.8;
+        }
+
+        .highlights {
+            list-style: none;
+            padding: 0;
+            margin-bottom: 25px;
+        }
+
+        .highlights li {
+            background: rgba(34, 197, 94, 0.12);
+            padding: 15px 22px;
+            margin: 12px 0;
+            border-radius: 10px;
+            border-left: 4px solid #22c55e;
+            font-size: 1em;
+            transition: all 0.3s ease;
+            line-height: 1.6;
+        }
+
+        .highlights li:hover {
+            background: rgba(34, 197, 94, 0.18);
+            transform: translateX(8px);
+        }
+
+        .highlights li:before {
+            content: "✓";
+            color: #22c55e;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.2em;
+        }
+
+        .tech-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 25px;
+        }
+
+        .tech-badge {
+            background: linear-gradient(135deg, #1e40af 0%, #1e3a8a 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            font-size: 0.9em;
+            font-weight: 600;
+            box-shadow: 0 6px 15px rgba(30, 64, 175, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .tech-badge:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(30, 64, 175, 0.4);
+        }
+
+        .special-features {
+            background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+            padding: 30px;
+            border-radius: 15px;
+            margin-top: 25px;
+            border-left: 5px solid #a855f7;
+        }
+
+        .special-features h4 {
+            color: #e9d5ff;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            font-weight: 600;
+        }
+
+        .special-features p {
+            color: #ddd6fe;
+            font-size: 1em;
+            line-height: 1.7;
+        }
+
+        .section-divider {
+            text-align: center;
+            margin: 80px 0 60px 0;
+            position: relative;
+        }
+
+        .section-divider h2 {
+            font-size: 3em;
+            color: #3b82f6;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-weight: 700;
+        }
+
+        .section-divider p {
+            font-size: 1.3em;
+            opacity: 0.85;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .section-divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, transparent, #3b82f6, transparent);
+            z-index: -1;
+        }
+
+        .timeline {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 8px;
+            background: linear-gradient(to bottom, #3b82f6, #22c55e, #7c3aed, #f59e0b, #ef4444);
+            transform: translateX(-50%);
+            z-index: 1;
+            border-radius: 4px;
+        }
+
+        .navigation {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(45, 45, 48, 0.95);
+            padding: 30px 15px;
+            border-radius: 35px;
+            backdrop-filter: blur(20px);
+            z-index: 100;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.4);
+        }
+
+        .nav-dot {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+            margin: 15px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot.active {
+            background: #3b82f6;
+            transform: scale(1.5);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+        }
+
+        .nav-dot:hover {
+            background: #22c55e;
+            transform: scale(1.3);
+        }
+
+        .summary-section {
+            background: linear-gradient(135deg, #059669 0%, #047857 100%);
+            padding: 60px;
+            border-radius: 25px;
+            margin: 100px 0;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(5, 150, 105, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .summary-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 15px,
+                rgba(255,255,255,0.06) 15px,
+                rgba(255,255,255,0.06) 30px
+            );
+            animation: slidePattern 25s linear infinite;
+        }
+
+        .summary-content {
+            position: relative;
+            z-index: 2;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 35px;
+            margin-top: 50px;
+        }
+
+        .benefit-item {
+            background: rgba(255,255,255,0.15);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(15px);
+            transition: all 0.4s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .benefit-item:hover {
+            transform: translateY(-8px);
+            background: rgba(255,255,255,0.25);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        .benefit-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .benefit-title {
+            font-size: 1.4em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .benefit-description {
+            font-size: 1em;
+            opacity: 0.9;
+            line-height: 1.6;
+        }
+
+        .mermaid-notice {
+            background: rgba(124, 58, 237, 0.15);
+            padding: 20px;
+            border-radius: 12px;
+            margin-top: 20px;
+            border: 1px solid rgba(124, 58, 237, 0.3);
+            text-align: center;
+        }
+
+        .mermaid-notice h5 {
+            color: #a855f7;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .mermaid-notice p {
+            color: #ddd6fe;
+            font-size: 0.9em;
+            line-height: 1.5;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slidePattern {
+            0% {
+                transform: translateX(-60px);
+            }
+            100% {
+                transform: translateX(60px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .section-slide {
+                flex-direction: column !important;
+                text-align: center;
+                gap: 30px;
+                padding: 30px 20px;
+            }
+            
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .header-stats {
+                flex-direction: column;
+                gap: 25px;
+            }
+            
+            .navigation {
+                display: none;
+            }
+            
+            .timeline {
+                display: none;
+            }
+            
+            .slide-title {
+                font-size: 2em;
+            }
+
+            .diagram-container {
+                min-height: 350px;
+            }
+
+            .diagram-placeholder {
+                height: 350px;
+            }
+        }
+
+        /* Color-coded slides for different domains */
+        .slide-1 { border-left-color: #3b82f6; }
+        .slide-1 .slide-number { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); }
+
+        .slide-2 { border-left-color: #ef4444; }
+        .slide-2 .slide-number { background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); }
+
+        .slide-3 { border-left-color: #f59e0b; }
+        .slide-3 .slide-number { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); }
+
+        .slide-4 { border-left-color: #22c55e; }
+        .slide-4 .slide-number { background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%); }
+
+        .slide-5 { border-left-color: #7c3aed; }
+        .slide-5 .slide-number { background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-content">
+                <h1>🏢 Enterprise Architecture & Digital Transformation</h1>
+                <p>Comprehensive Strategy for Modern, Secure, and Scalable Enterprise Systems</p>
+                <div class="header-stats">
+                    <div class="header-stat">
+                        <span class="header-stat-number">5</span>
+                        <span class="header-stat-label">Strategic Pillars</span>
+                    </div>
+                    <div class="header-stat">
+                        <span class="header-stat-number">99.9%</span>
+                        <span class="header-stat-label">Target Uptime</span>
+                    </div>
+                    <div class="header-stat">
+                        <span class="header-stat-number">Cloud</span>
+                        <span class="header-stat-label">Native Ready</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="presentation-flow">
+            <div class="timeline"></div>
+
+            <!-- Slide 1: Enterprise Target Architecture -->
+            <div class="section-slide slide-1" id="slide1">
+                <div class="diagram-container">
+                    <img src="images/1.png" alt="CQRS Enterprise Architecture" class="screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="diagram-placeholder" style="display: none;">
+                        <div class="placeholder-icon">🏗️</div>
+                        <div class="placeholder-title">CQRS Enterprise Architecture</div>
+                        <div class="placeholder-subtitle">Data flow from Hogan Mainframe to AWS Cloud Services</div>
+                    </div>
+                </div>
+                <div class="content-panel">
+                    <span class="slide-number">1</span>
+                    <h2 class="slide-title">Enterprise Target Architecture</h2>
+                    <div class="slide-summary">
+                        Modern CQRS-based architecture with edge computing capabilities, featuring seamless data migration from legacy Hogan mainframe to AWS cloud services for optimized read/write operations.
+                    </div>
+                    <p class="slide-description">
+                        Our enterprise target architecture implements Command Query Responsibility Segregation (CQRS) as the foundational architectural pattern, enabling optimal performance and scalability across diverse data access patterns. This design strategically separates write operations (commands) from read operations (queries), allowing for independent optimization of each pathway.
+                    </p>
+                    <ul class="highlights">
+                        <li><strong>Write Operations:</strong> Direct integration with Hogan mainframe systems ensuring data consistency and transactional integrity for all business-critical operations</li>
+                        <li><strong>Read Operations:</strong> High-performance queries executed against Aurora RDS with read replicas and intelligent caching for sub-millisecond response times</li>
+                        <li><strong>Analytics Platform:</strong> Snowflake data warehouse providing enterprise-scale analytics with automatic scaling and cost optimization</li>
+                        <li><strong>Data Pipeline:</strong> Real-time data synchronization using Precisely Connect for data quality and Confluent Kafka for reliable message streaming</li>
+                        <li><strong>Edge Computing:</strong> Distributed processing capabilities at edge locations for reduced latency and improved user experience</li>
+                        <li><strong>Event-Driven Architecture:</strong> Asynchronous event propagation ensuring eventual consistency across all data stores</li>
+                        <li><strong>API Gateway:</strong> Centralized routing and transformation layer managing traffic between legacy and modern systems</li>
+                    </ul>
+                    <div class="tech-badges">
+                        <span class="tech-badge">CQRS Pattern</span>
+                        <span class="tech-badge">Aurora RDS</span>
+                        <span class="tech-badge">Snowflake DW</span>
+                        <span class="tech-badge">Confluent Kafka</span>
+                        <span class="tech-badge">Edge Computing</span>
+                        <span class="tech-badge">Precisely Connect</span>
+                    </div>
+                    <div class="special-features">
+                        <h4>🎯 Architecture Benefits:</h4>
+                        <p>This CQRS implementation provides 10x improved read performance, 99.99% data consistency, real-time analytics capabilities, and seamless mainframe integration while maintaining enterprise-grade reliability and compliance.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 2: Enterprise Security -->
+            <div class="section-slide slide-2" id="slide2">
+                <div class="diagram-container">
+                    <img src="images/2.png" alt="Zero Trust Security Model" class="screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="diagram-placeholder" style="display: none;">
+                        <div class="placeholder-icon">🛡️</div>
+                        <div class="placeholder-title">Zero Trust Security Model</div>
+                        <div class="placeholder-subtitle">Multi-layered security with Azure Entra, NAM, and AWS Cognito</div>
+                    </div>
+                </div>
+                <div class="content-panel">
+                    <span class="slide-number">2</span>
+                    <h2 class="slide-title">Enterprise Security Framework</h2>
+                    <div class="slide-summary">
+                        Comprehensive zero-trust security implementation leveraging principle of least privilege, multi-layered network security, and federated identity management across hybrid cloud environments.
+                    </div>
+                    <p class="slide-description">
+                        Our enterprise security framework implements a defense-in-depth strategy that protects data, applications, and infrastructure through multiple security layers. The approach combines identity federation, network segmentation, and encryption to create an impenetrable security posture.
+                    </p>
+                    <ul class="highlights">
+                        <li><strong>Principle of Least Privilege:</strong> Role-based access control (RBAC) with just-in-time (JIT) access provisioning and automatic privilege expiration</li>
+                        <li><strong>Network Security:</strong> Private subnets for all AWS services with NAT gateways for controlled outbound access and AWS PrivateLink for service-to-service communication</li>
+                        <li><strong>Identity Management:</strong> Azure Entra ID as primary identity provider for internal users with conditional access policies and multi-factor authentication</li>
+                        <li><strong>External User Management:</strong> NetIQ Access Manager (NAM) for customer and partner authentication with federation capabilities</li>
+                        <li><strong>Service Provider Integration:</strong> AWS Cognito as centralized user pool with SAML 2.0 and OIDC integration for seamless SSO experience</li>
+                        <li><strong>Token-Based Authentication:</strong> JWT tokens with short expiration times, refresh token rotation, and cryptographic signature validation</li>
+                        <li><strong>Data Protection:</strong> AES-256 encryption at rest using AWS KMS with customer-managed keys and TLS 1.3 for all data in transit</li>
+                        <li><strong>Security Monitoring:</strong> AWS CloudTrail, GuardDuty, and Security Hub for continuous threat detection and compliance monitoring</li>
+                    </ul>
+                    <div class="tech-badges">
+                        <span class="tech-badge">Azure Entra ID</span>
+                        <span class="tech-badge">NAM Federation</span>
+                        <span class="tech-badge">AWS Cognito</span>
+                        <span class="tech-badge">JWT/JWKS</span>
+                        <span class="tech-badge">AWS KMS</span>
+                        <span class="tech-badge">Zero Trust</span>
+                    </div>
+                    <div class="special-features">
+                        <h4>🔒 Security Compliance:</h4>
+                        <p>Meets SOC 2 Type II, ISO 27001, PCI DSS, and GDPR requirements with automated compliance monitoring, quarterly security assessments, and continuous vulnerability management.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 3: Enterprise Infrastructure Automation -->
+            <div class="section-slide slide-3" id="slide3">
+                <div class="diagram-container">
+                    <img src="images/3.png" alt="Infrastructure as Code" class="screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="diagram-placeholder" style="display: none;">
+                        <div class="placeholder-icon">⚙️</div>
+                        <div class="placeholder-title">Infrastructure as Code</div>
+                        <div class="placeholder-subtitle">Pre-engineered Terraform templates for AWS deployment</div>
+                    </div>
+                </div>
+                <div class="content-panel">
+                    <span class="slide-number">3</span>
+                    <h2 class="slide-title">Enterprise Infrastructure Automation</h2>
+                    <div class="slide-summary">
+                        Pre-engineered Infrastructure as Code (IaC) templates providing turnkey deployment of enterprise-grade AWS infrastructure, enabling development teams to focus exclusively on business logic.
+                    </div>
+                    <p class="slide-description">
+                        Our infrastructure automation strategy eliminates the complexity of cloud deployment through battle-tested Terraform modules that provision production-ready infrastructure in minutes, not months. These templates incorporate enterprise best practices, security compliance, and operational excellence from day one.
+                    </p>
+                    <ul class="highlights">
+                        <li><strong>Application Load Balancer (ALB):</strong> Layer 7 load balancing with SSL termination, health checks, and intelligent traffic routing across multiple availability zones</li>
+                        <li><strong>Amazon ECS Fargate:</strong> Serverless container orchestration with automatic scaling, zero server management, and integrated security scanning</li>
+                        <li><strong>Amazon ECR:</strong> Private container registry with vulnerability scanning, image signing, and lifecycle policies for automated cleanup</li>
+                        <li><strong>Aurora PostgreSQL:</strong> Serverless v2 database with automatic scaling, point-in-time recovery, and cross-region automated backups</li>
+                        <li><strong>Frontend Deployment:</strong> Angular applications deployed to ECS with CDN integration and edge caching for global performance</li>
+                        <li><strong>Backend Services:</strong> .NET Core APIs on ECS Fargate with auto-scaling based on CPU/memory utilization and request volume</li>
+                        <li><strong>Network Security:</strong> VPC with private subnets, security groups with least-privilege rules, and NACLs for additional protection</li>
+                        <li><strong>Comprehensive Documentation:</strong> Setup guides, troubleshooting runbooks, and team onboarding materials with interactive tutorials</li>
+                    </ul>
+                    <div class="tech-badges">
+                        <span class="tech-badge">Terraform IaC</span>
+                        <span class="tech-badge">ECS Fargate</span>
+                        <span class="tech-badge">Aurora Serverless</span>
+                        <span class="tech-badge">ALB</span>
+                        <span class="tech-badge">ECR</span>
+                        <span class="tech-badge">Pre-engineered</span>
+                    </div>
+                    <div class="special-features">
+                        <h4>🚀 Automation Benefits:</h4>
+                        <p>Reduces infrastructure setup time from weeks to hours, eliminates configuration drift, ensures compliance with enterprise standards, and provides consistent environments across dev/test/prod.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 4: Enterprise CI/CD -->
+            <div class="section-slide slide-4" id="slide4">
+                <div class="diagram-container">
+                    <img src="images/4.png" alt="CI/CD Pipeline Flow" class="screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="diagram-placeholder" style="display: none;">
+                        <div class="placeholder-icon">🔄</div>
+                        <div class="placeholder-title">CI/CD Pipeline Flow</div>
+                        <div class="placeholder-subtitle">GitHub Actions with multi-environment deployment strategy</div>
+                    </div>
+                </div>
+                <div class="content-panel">
+                    <span class="slide-number">4</span>
+                    <h2 class="slide-title">Enterprise CI/CD Pipeline</h2>
+                    <div class="slide-summary">
+                        Fully automated CI/CD pipeline using GitHub Actions with environment-specific deployments, comprehensive testing gates, and zero-downtime deployment strategies across development, QA, and production environments.
+                    </div>
+                    <p class="slide-description">
+                        Our enterprise CI/CD strategy implements GitOps principles with automated testing, security scanning, and progressive deployment across multiple environments. This approach ensures code quality, reduces deployment risks, and accelerates time-to-market while maintaining enterprise-grade reliability.
+                    </p>
+                    <ul class="highlights">
+                        <li><strong>Development to Test:</strong> Automated Docker build and deployment to AWS test region triggered by PR approval with comprehensive smoke testing</li>
+                        <li><strong>Test to QA:</strong> Promotion-based deployment when test branch is merged to QA branch, including integration tests and performance validation</li>
+                        <li><strong>QA to Production:</strong> Blue-green deployment strategy when QA is merged to main branch, with automated rollback capabilities and health monitoring</li>
+                        <li><strong>Environment Configuration:</strong> Environment-specific configuration management with AWS Parameter Store and Secrets Manager integration</li>
+                        <li><strong>Security Integration:</strong> GitHub Personal Access Tokens (PAT) with limited scopes and private GitHub runners for enhanced security</li>
+                        <li><strong>Quality Gates:</strong> Automated unit tests, integration tests, security scans, and code quality checks at each stage</li>
+                        <li><strong>Deployment Monitoring:</strong> Real-time deployment status tracking with Slack notifications and automated rollback triggers</li>
+                        <li><strong>Compliance Tracking:</strong> Audit trails for all deployments with approval workflows and change management integration</li>
+                    </ul>
+                    <div class="tech-badges">
+                        <span class="tech-badge">GitHub Actions</span>
+                        <span class="tech-badge">Private Runners</span>
+                        <span class="tech-badge">Blue-Green Deploy</span>
+                        <span class="tech-badge">Auto Rollback</span>
+                        <span class="tech-badge">Multi-Environment</span>
+                        <span class="tech-badge">GitOps</span>
+                    </div>
+                    <div class="special-features">
+                        <h4>⚡ Pipeline Efficiency:</h4>
+                        <p>Achieves 15-minute deployment cycles with 99.95% success rate, automated quality gates, and comprehensive rollback capabilities ensuring zero-downtime deployments to production.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Slide 5: Enterprise Observability -->
+            <div class="section-slide slide-5" id="slide5">
+                <div class="diagram-container">
+                    <img src="images/5.png" alt="Observability Architecture" class="screenshot" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <div class="diagram-placeholder" style="display: none;">
+                        <div class="placeholder-icon">📊</div>
+                        <div class="placeholder-title">Observability Architecture</div>
+                        <div class="placeholder-subtitle">Splunk premium monitoring and AWS OpenSearch cost optimization</div>
+                    </div>
+                </div>
+                <div class="content-panel">
+                    <span class="slide-number">5</span>
+                    <h2 class="slide-title">Enterprise Observability Strategy</h2>
+                    <div class="slide-summary">
+                        Hybrid observability approach utilizing Splunk for mission-critical use cases and AWS OpenSearch for cost-effective centralized logging, providing comprehensive visibility across all enterprise systems.
+                    </div>
+                    <p class="slide-description">
+                        Our observability strategy implements a tiered approach that balances comprehensive monitoring capabilities with cost optimization. By strategically deploying premium tools for critical systems and cost-effective solutions for broader observability, we achieve enterprise-grade visibility while maintaining operational efficiency.
+                    </p>
+                    <ul class="highlights">
+                        <li><strong>Splunk Enterprise:</strong> Premium monitoring for mission-critical applications including real-time fraud detection, security incident response, and business KPI tracking</li>
+                        <li><strong>AWS OpenSearch:</strong> Cost-effective centralized logging solution for application logs, infrastructure metrics, and compliance audit trails</li>
+                        <li><strong>Centralized Log Aggregation:</strong> AWS-native logging pipeline using CloudWatch, Kinesis Data Firehose, and Lambda for real-time log processing</li>
+                        <li><strong>Application Performance Monitoring:</strong> Distributed tracing across microservices with X-Ray integration and custom performance metrics</li>
+                        <li><strong>Infrastructure Monitoring:</strong> CloudWatch dashboards with custom metrics, automated alerting, and integration with PagerDuty for incident management</li>
+                        <li><strong>Security Information and Event Management (SIEM):</strong> Integration between Splunk and AWS Security Hub for comprehensive threat detection</li>
+                        <li><strong>Business Intelligence:</strong> Real-time dashboards connecting operational metrics with business KPIs using Splunk Enterprise and custom analytics</li>
+                        <li><strong>Cost Optimization:</strong> Intelligent log retention policies, data lifecycle management, and automated archival to reduce long-term storage costs</li>
+                    </ul>
+                    <div class="tech-badges">
+                        <span class="tech-badge">Splunk Enterprise</span>
+                        <span class="tech-badge">AWS OpenSearch</span>
+                        <span class="tech-badge">CloudWatch</span>
+                        <span class="tech-badge">X-Ray Tracing</span>
+                        <span class="tech-badge">Kinesis</span>
+                        <span class="tech-badge">SIEM Integration</span>
+                    </div>
+                    <div class="special-features">
+                        <h4>📈 Observability ROI:</h4>
+                        <p>Reduces mean time to detection (MTTD) by 75%, provides 360-degree system visibility, and optimizes monitoring costs by 60% through intelligent tool selection and data lifecycle management.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Summary -->
+        <div class="summary-section">
+            <div class="summary-content">
+                <h2 style="font-size: 3.5em; margin-bottom: 25px;">🎯 Enterprise Transformation Impact</h2>
+                <p style="font-size: 1.5em; opacity: 0.95; margin-bottom: 25px;">From Legacy Monolith to AI-Powered Cloud-Native Enterprise Platform</p>
+                <p style="font-size: 1.2em; opacity: 0.85;">5 Strategic Pillars | 99.9% Uptime Target | Cloud-Native Architecture</p>
+                
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <span class="benefit-icon">⚡</span>
+                        <div class="benefit-title">Performance</div>
+                        <div class="benefit-description">10x faster read operations with CQRS architecture and edge computing capabilities</div>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">🛡️</span>
+                        <div class="benefit-title">Security</div>
+                        <div class="benefit-description">Zero-trust model with multi-layered defense and comprehensive compliance coverage</div>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">🚀</span>
+                        <div class="benefit-title">Automation</div>
+                        <div class="benefit-description">95% reduction in manual infrastructure management through IaC and pre-engineered templates</div>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">🔄</span>
+                        <div class="benefit-title">DevOps</div>
+                        <div class="benefit-description">15-minute deployment cycles with automated testing and zero-downtime deployments</div>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">📊</span>
+                        <div class="benefit-title">Observability</div>
+                        <div class="benefit-description">360-degree system visibility with 75% faster incident detection and resolution</div>
+                    </div>
+                    <div class="benefit-item">
+                        <span class="benefit-icon">💰</span>
+                        <div class="benefit-title">Cost Optimization</div>
+                        <div class="benefit-description">60% reduction in monitoring costs and 40% improvement in infrastructure efficiency</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Navigation -->
+    <div class="navigation">
+        <div class="nav-dot active" onclick="scrollToSlide(1)" title="Target Architecture"></div>
+        <div class="nav-dot" onclick="scrollToSlide(2)" title="Enterprise Security"></div>
+        <div class="nav-dot" onclick="scrollToSlide(3)" title="Infrastructure Automation"></div>
+        <div class="nav-dot" onclick="scrollToSlide(4)" title="CI/CD Pipeline"></div>
+        <div class="nav-dot" onclick="scrollToSlide(5)" title="Observability"></div>
+    </div>
+
+    <!-- Mermaid Integration Notice -->
+    <div class="mermaid-notice">
+        <h5>📋 Mermaid Diagrams Available</h5>
+        <p>Professional Mermaid diagrams are provided separately for each slide. You can replace the placeholders with rendered diagrams or use the Mermaid code directly in your presentation tools.</p>
+    </div>
+
+    <script>
+        function scrollToSlide(slide) {
+            const element = document.getElementById(`slide${slide}`);
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Update active navigation dot
+            document.querySelectorAll('.nav-dot').forEach((dot, index) => {
+                dot.classList.toggle('active', index + 1 === slide);
+            });
+        }
+
+        // Auto-update navigation on scroll
+        window.addEventListener('scroll', () => {
+            const slides = document.querySelectorAll('.section-slide');
+            const windowCenter = window.innerHeight / 2;
+            
+            slides.forEach((slide, index) => {
+                const rect = slide.getBoundingClientRect();
+                const slideCenter = rect.top + rect.height / 2;
+                
+                if (Math.abs(slideCenter - windowCenter) < 350) {
+                    document.querySelectorAll('.nav-dot').forEach((dot, dotIndex) => {
+                        dot.classList.toggle('active', dotIndex === index);
+                    });
+                }
+            });
+        });
+
+        // Enhanced interactions
+        document.addEventListener('DOMContentLoaded', () => {
+            // Diagram container hover effects
+            document.querySelectorAll('.diagram-container').forEach(container => {
+                container.addEventListener('mouseenter', () => {
+                    container.style.transform = 'scale(1.02) translateZ(0)';
+                });
+                
+                container.addEventListener('mouseleave', () => {
+                    container.style.transform = 'scale(1) translateZ(0)';
+                });
+            });
+
+            // Intersection observer for slide animations
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.animationPlayState = 'running';
+                        entry.target.classList.add('visible');
+                    }
+                });
+            }, { threshold: 0.15 });
+
+            document.querySelectorAll('.section-slide').forEach(slide => {
+                observer.observe(slide);
+            });
+
+            // Add smooth scrolling for all internal links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            const currentSlide = document.querySelector('.nav-dot.active');
+            const currentIndex = Array.from(document.querySelectorAll('.nav-dot')).indexOf(currentSlide);
+            
+            if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
+                e.preventDefault();
+                const nextIndex = Math.min(currentIndex + 1, 4);
+                scrollToSlide(nextIndex + 1);
+            } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                const prevIndex = Math.max(currentIndex - 1, 0);
+                scrollToSlide(prevIndex + 1);
+            }
+        });
+    </script>
+</body>
+</html>
