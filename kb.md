@@ -1,3 +1,6 @@
+FactorReactAngularBacking & SupportMeta (Facebook), 2013. Focus on React Server Components, Concurrent Rendering. Most core team now works on Next.js.Google, 2016. Active roadmap with Zoneless change detection (stable v20.2), Signal Forms, incremental hydration. Clear 2-year vision.Bundle SizeSmaller, lightweight library. Minimal core footprint.Larger framework. More built-in features = bigger size.PerformanceVirtual DOM. Faster for dynamic, frequent updates.Real DOM. Better for stable, less dynamic apps.FlexibilityLibrary - choose your own tools. Maximum flexibility.Full framework - everything included. Opinionated structure.
+
+
 Here's a more detailed but still clean Mermaid architecture diagram:
 
 ```mermaid
