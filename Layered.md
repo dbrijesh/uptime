@@ -1,6 +1,6 @@
 graph TB
     %% Consumer Layer
-    brijeshAKIAZKDIC767N6DWBSGGendD3Tl1oxKYO1o8QZSQk+mtQV/A3LgZRS2HHxcTRix
+
 
     subgraph "Consumer Layer"
         WEB[Web Portal]
