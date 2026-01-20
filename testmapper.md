@@ -1,51 +1,39 @@
-# Ultra-Comprehensive Codebase Map
+# Multi-Agent Ultra-Comprehensive Codebase Map
 
-**Generated:** 2026-01-20 20:08:04
-**Analyzer:** Ultra-Comprehensive Code Analyzer with Deep Parsing
+**Generated:** 2026-01-20 21:27:47
+**Analyzer:** Multi-Agent Ultra-Comprehensive Analyzer (Language-Agnostic)
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
 1. [Executive Summary](#executive-summary)
 2. [Architecture Overview](#architecture-overview)
-3. [Directory Structure & File Purpose](#directory-structure--file-purpose)
+3. [Technology Stack](#technology-stack)
 4. [Component Catalog](#component-catalog)
-5. [Data Flow & Process Maps](#data-flow--process-maps)
-6. [Integration Points](#integration-points)
-7. [API Specifications](#api-specifications)
-8. [Data Models & Schemas](#data-models--schemas)
-9. [Business Logic & Rules](#business-logic--rules)
-10. [Development Guide](#development-guide)
+5. [API Specifications](#api-specifications)
+6. [Data Models](#data-models)
+7. [Business Logic](#business-logic)
+8. [Development Guide](#development-guide)
 
 ---
 
 ## Executive Summary
 
-### 📊 Key Statistics
+### Key Statistics
 
 | Metric | Value |
 |--------|-------|
 | **Total Files** | 550 |
 | **Total Tokens** | 632,504 |
-| **C# Source Files** | 157 |
-| **Domain Entities** | 17 |
-| **Command Handlers** | 3 |
-| **Query Handlers** | 8 |
-| **Validators** | 4 |
-| **API Controllers** | 5 |
-| **Total API Endpoints** | 19 |
-
-### 🛠️ Technology Stack
-
-| Layer | Technologies |
-|-------|--------------|
-| **Backend** | net8.0, ASP.NET Core, C# |
-| **Architecture** | AutoMapper, AutoMapper.Extensions.Microsoft.DependencyInjection, FluentValidation, FluentValidation.DependencyInjectionExtensions, MediatR |
-| **Database** | Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.InMemory, Microsoft.EntityFrameworkCore.InMemory |
-| **Authentication** | Microsoft.AspNetCore.Identity.EntityFrameworkCore, Microsoft.AspNetCore.Identity.UI, Microsoft.AspNetCore.Authentication.JwtBearer |
-| **Testing** | Microsoft.NET.Test.Sdk, Moq, xunit |
-
+| **Total Size** | 2,076,201 bytes (2.0 MB) |
+| **Languages Detected** | 3 |
+| **Domain Entities** | 118 |
+| **Command Handlers** | 18 |
+| **Query Handlers** | 18 |
+| **Validators** | 3 |
+| **API Controllers** | 36 |
+| **Total Endpoints** | 50 |
 
 ---
 
@@ -55,951 +43,579 @@
 
 ```mermaid
 graph TB
-    Client[Client Layer<br/>Frontend Application]
-    API[Presentation Layer<br/>ASP.NET Core API<br/>Controllers]
-    App[Application Layer<br/>CQRS Commands & Queries<br/>MediatR Pipeline]
-    Domain[Domain Layer<br/>Entities & Business Rules<br/>Value Objects]
-    Infra[Infrastructure Layer<br/>EF Core DbContext<br/>Repositories]
-    DB[(Database<br/>SQL Server)]
+    Client[Client Layer]
+    API[API Layer<br/>Controllers/Routes]
+    Business[Business Logic Layer<br/>Commands & Queries]
+    Domain[Domain Layer<br/>Entities & Models]
+    Data[Data Layer<br/>Repositories & ORM]
+    DB[(Database)]
 
-    Client -->|HTTP/REST| API
-    API -->|Send Commands/Queries| App
-    App -->|Uses| Domain
-    App -->|Data Access| Infra
-    Infra -->|Queries| DB
-    Domain -.->|Defines| Infra
+    Client --> API
+    API --> Business
+    Business --> Domain
+    Business --> Data
+    Data --> DB
 
     style Client fill:#e1f5fe
     style API fill:#fff3e0
-    style App fill:#f3e5f5
+    style Business fill:#f3e5f5
     style Domain fill:#e8f5e9
-    style Infra fill:#fce4ec
+    style Data fill:#fce4ec
     style DB fill:#cfd8dc
 ```
 
-### 🏗️ Architectural Pattern
+### Languages & Frameworks
 
-**Clean Architecture with CQRS**
+**Primary Languages:**
+- csharp
+- javascript
+- typescript
 
-The application follows Clean Architecture principles with clear separation of concerns:
 
-#### Layer Responsibilities
+**Frameworks:**
+- .NET net8.0
+- Angular
 
-1. **Domain Layer** (Core)
-   - Pure business logic
-   - Entity definitions
-   - Domain events
-   - Business rules and invariants
-   - Independent of frameworks
 
-2. **Application Layer**
-   - Use case orchestration
-   - CQRS commands and queries
-   - Input validation (FluentValidation)
-   - DTO mappings (AutoMapper)
-   - MediatR pipeline behaviors
+**Databases:**
+- SQL Server
+- Redis
 
-3. **Infrastructure Layer**
-   - Data access (Entity Framework Core)
-   - External service integrations
-   - File system operations
-   - Email/notification services
-   - Caching implementations
-
-4. **Presentation Layer**
-   - REST API controllers
-   - Request/response models
-   - Authentication/authorization
-   - Swagger documentation
-
-### 🎨 Design Patterns
-
-- **CQRS**: Command Query Responsibility Segregation via MediatR
-- **Repository Pattern**: Data access abstraction
-- **Unit of Work**: Transaction management via DbContext
-- **Dependency Injection**: Built-in ASP.NET Core DI container
-- **Mediator Pattern**: MediatR for loose coupling
-- **Specification Pattern**: Query specifications
-- **Factory Pattern**: Entity creation
 
 ---
 
-## Directory Structure & File Purpose
+## Technology Stack
 
-### 📁 Project Structure
+### Complete Package List
 
-```
-📦 Project Root
-├── 📄 .gitignore
-├── 📁 LICENSE/
-├── 📄 Northwind.sln
-├── 📄 NuGet.Config
-├── 📄 README.md
-├── 📁 Src/
-│   ├── 📁 Application/
-│   │   ├── 📄 Application.csproj
-│   │   ├── 📁 Categories/
-│   │   │   ├── 📁 Commands/
-│   │   │   ├── 📁 Queries/
-│   │   ├── 📁 Common/
-│   │   │   ├── 📁 Behaviours/
-│   │   │   ├── 📁 Exceptions/
-│   │   │   ├── 📁 Interfaces/
-│   │   │   ├── 📁 Mappings/
-│   │   │   ├── 📁 Models/
-│   │   ├── 📁 Customers/
-│   │   │   ├── 📁 Commands/
-```
 
-### 📄 Key File Purposes
+#### .NET Packages
 
-| File | Purpose | Tokens |
-|------|---------|--------|
-| `Src\WebUI\Areas\Identity\IdentityHostingStartup.cs` | Application configuration and service registration | 99 |
-| `Src\WebUI\Program.cs` | Application entry point | 788 |
-| `Tests\Persistence.IntegrationTests\NorthwindDbContextTests.cs` | Entity Framework database context | 472 |
-| `Src\Persistence\DesignTimeDbContextFactoryBase.cs` | Entity Framework database context | 351 |
-| `Src\Persistence\NorthwindDbContext.cs` | Entity Framework database context | 443 |
-| `Src\Persistence\NorthwindDbContextFactory.cs` | Entity Framework database context | 63 |
-| `Src\Infrastructure\Identity\ApplicationDbContext.cs` | Entity Framework database context | 49 |
-| `Src\Infrastructure\Identity\Migrations\ApplicationDbContextModelSnapshot.cs` | Entity Framework database context | 1,900 |
-| `Src\Application\Common\Interfaces\INorthwindDbContext.cs` | Entity Framework database context | 184 |
-| `Tests\Application.UnitTests\Application.UnitTests.csproj` | Project file with dependencies | 328 |
-| `Tests\Domain.UnitTests\Domain.UnitTests.csproj` | Project file with dependencies | 257 |
-| `Tests\Persistence.IntegrationTests\Persistence.IntegrationTests.csproj` | Project file with dependencies | 285 |
-| `Tests\WebUI.IntegrationTests\WebUI.IntegrationTests.csproj` | Project file with dependencies | 309 |
-| `Src\Application\Application.csproj` | Project file with dependencies | 242 |
-| `Src\Common\Common.csproj` | Project file with dependencies | 60 |
-| `Src\Domain\Domain.csproj` | Project file with dependencies | 60 |
-| `Src\Infrastructure\Infrastructure.csproj` | Project file with dependencies | 270 |
-| `Src\Persistence\Persistence.csproj` | Project file with dependencies | 317 |
-| `Src\WebUI\WebUI.csproj` | Project file with dependencies | 1,123 |
-| `Tests\WebUI.IntegrationTests\Controllers\Categories\GetCategoryList.cs` | REST API endpoint controller | 131 |
-| `Tests\WebUI.IntegrationTests\Controllers\Customers\Create.cs` | REST API endpoint controller | 261 |
-| `Tests\WebUI.IntegrationTests\Controllers\Customers\Delete.cs` | REST API endpoint controller | 223 |
-| `Tests\WebUI.IntegrationTests\Controllers\Customers\GetAll.cs` | REST API endpoint controller | 176 |
-| `Tests\WebUI.IntegrationTests\Controllers\Customers\GetById.cs` | REST API endpoint controller | 254 |
-| `Tests\WebUI.IntegrationTests\Controllers\Customers\Update.cs` | REST API endpoint controller | 449 |
-| `Tests\WebUI.IntegrationTests\Controllers\Products\Create.cs` | REST API endpoint controller | 225 |
-| `Tests\WebUI.IntegrationTests\Controllers\Products\Delete.cs` | REST API endpoint controller | 217 |
-| `Tests\WebUI.IntegrationTests\Controllers\Products\GetAll.cs` | REST API endpoint controller | 172 |
-| `Tests\WebUI.IntegrationTests\Controllers\Products\GetById.cs` | REST API endpoint controller | 242 |
-| `Tests\WebUI.IntegrationTests\Controllers\Products\Update.cs` | REST API endpoint controller | 354 |
+| Package | Version |
+|---------|----------|
+| Microsoft.EntityFrameworkCore.InMemory | 8.0.0 |
+| Microsoft.NET.Test.Sdk | 17.8.0 |
+| Moq | 4.20.69 |
+| Shouldly | 4.2.1 |
+| xunit | 2.6.1 |
+| xunit.runner.visualstudio | 2.5.3 |
+| coverlet.collector | 6.0.0 |
+| Microsoft.NET.Test.Sdk | 17.8.0 |
+| xunit | 2.6.1 |
+| xunit.runner.visualstudio | 2.5.3 |
+| coverlet.collector | 6.0.0 |
+| Microsoft.EntityFrameworkCore.InMemory | 8.0.0 |
+| Microsoft.NET.Test.Sdk | 17.8.0 |
+| Moq | 4.20.69 |
+| Shouldly | 4.2.1 |
+| xunit | 2.6.1 |
+| xunit.runner.visualstudio | 2.5.3 |
+| coverlet.collector | 6.0.0 |
+| Microsoft.EntityFrameworkCore.InMemory | 8.0.0 |
+| Microsoft.NET.Test.Sdk | 17.8.0 |
+| xunit | 2.6.1 |
+| xunit.runner.visualstudio | 2.5.3 |
+| Microsoft.AspNetCore.Mvc.Testing | 8.0.0 |
+| coverlet.collector | 6.0.0 |
+| AutoMapper | 12.0.1 |
+| AutoMapper.Extensions.Microsoft.DependencyInjection | 12.0.1 |
+| FluentValidation | 11.8.1 |
+| FluentValidation.DependencyInjectionExtensions | 11.8.1 |
+| MediatR | 12.2.0 |
+| Microsoft.EntityFrameworkCore | 8.0.0 |
 
+#### NPM Packages
+
+| Package | Version |
+|---------|----------|
+| @angular/animations | ^18.2.0 |
+| @angular/cdk | ^18.2.0 |
+| @angular/common | ^18.2.0 |
+| @angular/compiler | ^18.2.0 |
+| @angular/core | ^18.2.0 |
+| @angular/forms | ^18.2.0 |
+| @angular/platform-browser | ^18.2.0 |
+| @angular/platform-browser-dynamic | ^18.2.0 |
+| @angular/platform-server | ^18.2.0 |
+| @angular/router | ^18.2.0 |
+| @angular/ssr | ^18.2.0 |
+| angular-feather | ^6.5.0 |
+| bootstrap | ^5.3.0 |
+| oidc-client-ts | ^3.3.0 |
+| rxjs | ^7.8.1 |
+| tslib | ^2.6.0 |
+| zone.js | ^0.14.10 |
 
 ---
 
 ## Component Catalog
 
-### 📋 Domain Entities
+### Domain Entities
 
-Total entities: **17**
+Total: **118**
 
 
 ```mermaid
 erDiagram
-    ValueObjectTests {
-        int X
-        int Y
+    SyncBailHook {
+        function call
     }
-    AdAccountTests {
+    WebpackLogger {
+        function error
+        function warn
+        function info
+        function log
+        function debug
+        function assert
     }
-    AddingAuditableEntities {
+    AnimationFrameAction {
+        any scheduler
+        any work
     }
-    AuditableEntity {
-        string CreatedBy
-        DateTime Created
-        string LastModifiedBy
+    CamelCaseToText {
+        function transform
+        function upFirstLetter
+        static function ɵfac
+        static object ɵpipe
     }
-    Category {
-        int CategoryId
-        string CategoryName
-        string Description
-        List Products
+    AsapScheduler {
+        boolean _active
+        any _scheduled
+        array actions
     }
-    Customer {
-        string CustomerId
-        string CompanyName
-        string ContactName
-        string ContactTitle
-        string Address
-        string City
-        string Region
-        string PostalCode
+    CustomerDetailComponent {
+        CustomerDetailVm customer
+        string[] detailKeys
     }
-    Employee {
-        int EmployeeId
-        string UserId
-        string LastName
-        string FirstName
-        string Title
-        string TitleOfCourtesy
-        string Address
-        string City
+    BehaviorSubject {
+        unknown _value
     }
-    EmployeeTerritory {
-        int EmployeeId
-        string TerritoryId
-        Employee Employee
-        Territory Territory
+    TimeInterval {
+        unknown value
+        unknown interval
     }
-    Order {
-        int OrderId
-        string CustomerId
-        string ShipName
-        string ShipAddress
-        string ShipCity
-        string ShipRegion
-        string ShipPostalCode
-        string ShipCountry
+    TokenService {
+        IConfiguration _configuration
     }
-    OrderDetail {
-        int OrderId
-        int ProductId
-        decimal UnitPrice
-        short Quantity
-        float Discount
-        Order Order
-        Product Product
+    AuthController {
+        UserManager _userManager
+        SignInManager _signInManager
+        ITokenService _tokenService
+        ILogger _logger
     }
-    Product {
-        int ProductId
-        string ProductName
-        string QuantityPerUnit
-        bool Discontinued
-        Category Category
-        Supplier Supplier
-        List OrderDetails
+    LoginRequest {
+        string Email
+        string Password
     }
-    Region {
-        int RegionId
-        string RegionDescription
-        List Territories
+    RegisterRequest {
+        string Email
+        string Password
     }
-
-    Category ||--o{ Product : has
-    Customer ||--o{ Order : has
-    Employee }o--|| Employee : references
-    Employee ||--o{ EmployeeTerritory : has
-    Employee ||--o{ Employee : has
-    Employee ||--o{ Order : has
-    EmployeeTerritory }o--|| Employee : references
-    Order }o--|| Customer : references
-    Order }o--|| Employee : references
-    Order ||--o{ OrderDetail : has
-    OrderDetail }o--|| Order : references
-    OrderDetail }o--|| Product : references
-    Product }o--|| Category : references
-    Product ||--o{ OrderDetail : has
+    CustomerDetailComponent ||--o{ CustomerDetailVm : has
+    AuthController ||--o{ ITokenService : has
 ```
 
 ### Entity Details
 
-| Entity | Properties | Inherits From | File |
-|--------|------------|---------------|------|
-| **ValueObjectTests** | 2 | None | `Tests\Domain.UnitTests\Common\ValueObjectTests.cs` |
-| **AdAccountTests** | 0 | None | `Tests\Domain.UnitTests\ValueObjects\AdAccountTests.cs` |
-| **AddingAuditableEntities** | 0 | Migration | `Src\Persistence\Migrations\20190916013737_AddingAuditableEntities.cs` |
-| **AuditableEntity** | 3 | None | `Src\Domain\Common\AuditableEntity.cs` |
-| **Category** | 4 | None | `Src\Domain\Entities\Category.cs` |
-| **Customer** | 12 | None | `Src\Domain\Entities\Customer.cs` |
-| **Employee** | 19 | AuditableEntity | `Src\Domain\Entities\Employee.cs` |
-| **EmployeeTerritory** | 4 | None | `Src\Domain\Entities\EmployeeTerritory.cs` |
-| **Order** | 12 | AuditableEntity | `Src\Domain\Entities\Order.cs` |
-| **OrderDetail** | 7 | AuditableEntity | `Src\Domain\Entities\OrderDetail.cs` |
-| **Product** | 7 | AuditableEntity | `Src\Domain\Entities\Product.cs` |
-| **Region** | 3 | None | `Src\Domain\Entities\Region.cs` |
-| **Shipper** | 4 | None | `Src\Domain\Entities\Shipper.cs` |
-| **Supplier** | 13 | None | `Src\Domain\Entities\Supplier.cs` |
-| **Territory** | 5 | None | `Src\Domain\Entities\Territory.cs` |
+| Entity | Language | Properties | File |
+|--------|----------|------------|------|
+| **SyncBailHook** | unknown | 1 | `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\dfc7a7386069bcb03c6eab436370145cbe3b483a5877dc7f004de50b6ae6a829.json` |
+| **WebpackLogger** | unknown | 19 | `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\dfc7a7386069bcb03c6eab436370145cbe3b483a5877dc7f004de50b6ae6a829.json` |
+| **AnimationFrameAction** | unknown | 2 | `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\bdf5d127b9c5e9802126a0034c59ebad24c9a14c06c2c0d4ffb429b74d70108d.json` |
+| **CamelCaseToText** | unknown | 4 | `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\005fae0beb985540531127ea06396eb1ad8dbb73a243a74d6bdd48a7038d5676.json` |
+| **AsapScheduler** | unknown | 3 | `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\4240595bbd32d339c3fe03051f2c214e1ac54d16dd2577e905f51b90d02ba755.json` |
+| **CustomerDetailComponent** | unknown | 2 | `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\ff5983563113e1edd985067af6275fd39334de2a378cbd4d55eb0b165176e82d.json` |
+| **BehaviorSubject** | unknown | 1 | `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\f7a5b848258f3e4ce12a962a33cda064d75de78fc4e403112ea54ea27c5aad4c.json` |
+| **TimeInterval** | unknown | 2 | `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\4472324ca1ea680909fa044762105899e9480bf8cc505b86ce0e1523bcd4556e.json` |
+| **TokenService** | csharp | 1 | `Src\Infrastructure\Identity\TokenService.cs` |
+| **AuthController** | csharp | 4 | `Src\WebUI\Controllers\AuthController.cs` |
+| **LoginRequest** | csharp | 2 | `Src\WebUI\Controllers\AuthController.cs` |
+| **RegisterRequest** | csharp | 2 | `Src\WebUI\Controllers\AuthController.cs` |
+| **Category** | csharp | 0 | `Src\Persistence\NorthwindDbContext.cs` |
+| **Customer** | csharp | 0 | `Src\Persistence\NorthwindDbContext.cs` |
+| **Employee** | csharp | 0 | `Src\Persistence\NorthwindDbContext.cs` |
+| **EmployeeTerritory** | csharp | 0 | `Src\Persistence\NorthwindDbContext.cs` |
+| **OrderDetail** | csharp | 0 | `Src\Persistence\NorthwindDbContext.cs` |
+| **Order** | csharp | 0 | `Src\Persistence\NorthwindDbContext.cs` |
+| **Product** | csharp | 0 | `Src\Persistence\NorthwindDbContext.cs` |
+| **Region** | csharp | 0 | `Src\Persistence\NorthwindDbContext.cs` |
 
-### 🎯 Command Handlers
+### Command Handlers
 
-Total commands: **3**
+Total: **18**
 
-| Component | Purpose | Return Type | File |
-|-----------|---------|-------------|------|
-| **CreateProductCommand** | Execute createProduct operation | `int` | `Src\Application\Products\Commands\CreateProduct\CreateProductCommand.cs` |
-| **UpsertEmployeeCommand** | Execute UpsertEmployee operation | `int` | `Src\Application\Employees\Commands\UpsertEmployee\UpsertEmployeeCommand.cs` |
-| **UpsertCategoryCommand** | Execute UpsertCategory operation | `int` | `Src\Application\Categories\Commands\UpsertCategory\UpsertCategoryCommand.cs` |
+| Command | Language | Return Type | File |
+|---------|----------|-------------|------|
+| **signIn** | unknown | `Promise<IAuthenticationResult>` | `Src\WebUI\ClientApp\src\api-authorization\authorize.service.ts.backup` |
+| **completeSignIn** | unknown | `Promise<IAuthenticationResult>` | `Src\WebUI\ClientApp\src\api-authorization\authorize.service.ts.backup` |
+| **signOut** | unknown | `Promise<IAuthenticationResult>` | `Src\WebUI\ClientApp\src\api-authorization\authorize.service.ts.backup` |
+| **completeSignOut** | unknown | `Promise<IAuthenticationResult>` | `Src\WebUI\ClientApp\src\api-authorization\authorize.service.ts.backup` |
+| **UpdateCustomerCommand.Handler** | csharp | `Task` | `Src\Application\Customers\Commands\UpdateCustomer\UpdateCustomerCommand.cs` |
+| **UpsertCategoryCommandHandler** | csharp | `int` | `Src\Application\Categories\Commands\UpsertCategory\UpsertCategoryCommand.cs` |
+| **CreateUserAsync** | csharp | `Task<(Result Result, string UserId)>` | `Src\Infrastructure\Identity\UserManagerService.cs` |
+| **DeleteUserAsync** | csharp | `Task<Result>` | `Src\Infrastructure\Identity\UserManagerService.cs` |
+| **DeleteCategoryCommandHandler** | csharp | `Task` | `Src\Application\Categories\Commands\DeleteCategory\DeleteCategoryCommand.cs` |
+| **DeleteCustomerCommand** | csharp | `void` | `Src\Application\Customers\Commands\DeleteCustomer\DeleteCustomerCommand.cs` |
+| **UpsertEmployeeCommandHandler** | csharp | `Task<int>` | `Src\Application\Employees\Commands\UpsertEmployee\UpsertEmployeeCommand.cs` |
+| **DeleteEmployeeCommandHandler** | csharp | `Task` | `Src\Application\Employees\Commands\DeleteEmployee\DeleteEmployeeCommand.cs` |
+| **CreateCustomerCommand.Handler** | csharp | `Unit` | `Tests\Application.UnitTests\Customers\Commands\CreateCustomer\CreateCustomerCommandTests.cs` |
+| **SeedSampleDataCommandHandler** | csharp | `Task` | `Src\Application\System\Commands\SeedSampleData\SeedSampleDataCommand.cs` |
+| **DeleteProductCommand** | csharp | `void` | `Src\Application\Products\Commands\DeleteProduct\DeleteProductCommand.cs` |
 
-### 🔍 Query Handlers
+### Query Handlers
 
-Total queries: **8**
+Total: **18**
 
-| Component | Purpose | Return Type | File |
-|-----------|---------|-------------|------|
-| **GetProductDetailQuery** | Retrieve ProductDetail data | `ProductDetailVm` | `Src\Application\Products\Queries\GetProductDetail\GetProductDetailQuery.cs` |
-| **GetProductsFileQuery** | Retrieve ProductsFile data | `ProductsFileVm` | `Src\Application\Products\Queries\GetProductsFile\GetProductsFileQuery.cs` |
-| **GetProductsListQuery** | Retrieve Productslist of data | `ProductsListVm` | `Src\Application\Products\Queries\GetProductsList\GetProductsListQuery.cs` |
-| **GetEmployeeDetailQuery** | Retrieve EmployeeDetail data | `EmployeeDetailVm` | `Src\Application\Employees\Queries\GetEmployeeDetail\GetEmployeeDetailQuery.cs` |
-| **GetEmployeesListQuery** | Retrieve Employeeslist of data | `EmployeesListVm` | `Src\Application\Employees\Queries\GetEmployeesList\GetEmployeesListQuery.cs` |
-| **GetCustomerDetailQuery** | Retrieve CustomerDetail data | `CustomerDetailVm` | `Src\Application\Customers\Queries\GetCustomerDetail\GetCustomerDetailQuery.cs` |
-| **GetCustomersListQuery** | Retrieve Customerslist of data | `CustomersListVm` | `Src\Application\Customers\Queries\GetCustomersList\GetCustomersListQuery.cs` |
-| **GetCategoriesListQuery** | Retrieve Categorieslist of data | `CategoriesListVm` | `Src\Application\Categories\Queries\GetCategoriesList\GetCategoriesListQuery.cs` |
+| Query | Language | Return Type | File |
+|-------|----------|-------------|------|
+| **isAuthenticated** | unknown | `Observable<boolean>` | `Src\WebUI\ClientApp\src\api-authorization\authorize.service.ts.backup` |
+| **getUser** | unknown | `Observable<IUser | null>` | `Src\WebUI\ClientApp\src\api-authorization\authorize.service.ts.backup` |
+| **getAccessToken** | unknown | `Observable<string>` | `Src\WebUI\ClientApp\src\api-authorization\authorize.service.ts.backup` |
+| **GetEmployeesListQueryHandler** | csharp | `EmployeesListVm` | `Src\Application\Employees\Queries\GetEmployeesList\GetEmployeesListQuery.cs` |
+| **GetProductsListQueryHandler** | csharp | `ProductsListVm` | `Src\Application\Products\Queries\GetProductsList\GetProductsListQueryHandler.cs` |
+| **GetCustomerDetailQueryHandler** | csharp | `CustomerDetailVm` | `Src\Application\Customers\Queries\GetCustomerDetail\GetCustomerDetailQueryHandler.cs` |
+| **GetCustomersListQueryHandler** | csharp | `CustomersListVm` | `Tests\Application.UnitTests\Customers\Queries\GetCustomersListQueryHandlerTests.cs` |
+| **GetProductDetailQuery** | csharp | `ProductDetailVm` | `Src\Application\Products\Queries\GetProductDetail\GetProductDetailQuery.cs` |
+| **GetProductsListQuery** | csharp | `ProductsListVm` | `Src\Application\Products\Queries\GetProductsList\GetProductsListQuery.cs` |
+| **GetProductsFileQueryHandler** | csharp | `ProductsFileVm` | `Src\Application\Products\Queries\GetProductsFile\GetProductsFileQueryHandler.cs` |
+| **GetEmployeeDetailQueryHandler** | csharp | `EmployeeDetailVm` | `Src\Application\Employees\Queries\GetEmployeeDetail\GetEmployeeDetailQuery.cs` |
+| **GetCategoriesListQueryHandler** | csharp | `CategoriesListVm` | `Src\Application\Categories\Queries\GetCategoriesList\GetCategoriesListQueryHandler.cs` |
+| **GetCustomersListQueryHandler** | csharp | `CustomersListVm` | `Src\Application\Customers\Queries\GetCustomersList\GetCustomersListQueryHandler.cs` |
+| **GetCustomerDetailQuery** | csharp | `CustomerDetailVm` | `Src\Application\Customers\Queries\GetCustomerDetail\GetCustomerDetailQuery.cs` |
+| **GetCategoriesListQuery** | csharp | `CategoriesListVm` | `Src\Application\Categories\Queries\GetCategoriesList\GetCategoriesListQuery.cs` |
 
-### ✅ Validators
+### Validators
 
-Total validators: **4**
+Total: **3**
 
-| Validator | Validates | Rules | File |
-|-----------|-----------|-------|------|
-| **GetCustomerDetailQueryValidator** | `GetCustomerDetailQuery` | Id | `Src\Application\Customers\Queries\GetCustomerDetail\GetCustomerDetailQueryValidator.cs` |
-| **CreateCustomerCommandValidator** | `CreateCustomerCommand` | Id, Address, City | `Src\Application\Customers\Commands\CreateCustomer\CreateCustomerCommandValidator.cs` |
-| **DeleteCustomerCommandValidator** | `DeleteCustomerCommand` | Id | `Src\Application\Customers\Commands\DeleteCustomer\DeleteCustomerCommandValidator.cs` |
-| **UpdateCustomerCommandValidator** | `UpdateCustomerCommand` | Id, Address, City | `Src\Application\Customers\Commands\UpdateCustomer\UpdateCustomerCommandValidator.cs` |
-
-### 🌐 API Controllers
-
-Total controllers: **5**
-
-| Controller | Base Route | Endpoints | File |
-|------------|------------|-----------|------|
-| **AuthController** | `api/[controller]` | 2 | `Src\WebUI\Controllers\AuthController.cs` |
-| **CategoriesController** | `api/categories` | 3 | `Src\WebUI\Controllers\CategoriesController.cs` |
-| **CustomersController** | `api/customers` | 5 | `Src\WebUI\Controllers\CustomersController.cs` |
-| **EmployeesController** | `api/employees` | 4 | `Src\WebUI\Controllers\EmployeesController.cs` |
-| **ProductsController** | `api/products` | 5 | `Src\WebUI\Controllers\ProductsController.cs` |
-
-
----
-
-## Data Flow & Process Maps
-
-
-### Customer Management Flow
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI as Frontend
-    participant API as CustomersController
-    participant MediatR
-    participant Handler as CommandHandler
-    participant Validator as FluentValidator
-    participant Repo as Repository
-    participant DB as Database
-
-    User->>+UI: Create New Customer
-    UI->>+API: POST /api/customers
-    Note over API: CustomerDto in request body
-    API->>+MediatR: Send CreateCustomerCommand
-    MediatR->>+Validator: Validate Command
-    Validator-->>-MediatR: Validation Result
-    alt Validation Failed
-        MediatR-->>API: ValidationException
-        API-->>UI: 400 Bad Request
-        UI-->>User: Show Validation Errors
-    else Validation Passed
-        MediatR->>+Handler: Handle(CreateCustomerCommand)
-        Handler->>Handler: Map to Domain Entity
-        Handler->>+Repo: Add Customer
-        Repo->>+DB: INSERT INTO Customers
-        DB-->>-Repo: Customer ID
-        Repo-->>-Handler: Customer Created
-        Handler-->>-MediatR: Success Result
-        MediatR-->>-API: Customer ID
-        API-->>-UI: 201 Created
-        UI-->>-User: Success Message
-    end
-```
-
-
-### Product Catalog Flow
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant UI as Frontend
-    participant API as ProductsController
-    participant MediatR
-    participant Handler as QueryHandler
-    participant Repo as Repository
-    participant DB as Database
-    participant Cache as Cache Layer
-
-    User->>+UI: Browse Products
-    UI->>+API: GET /api/products
-    Note over API: Include filters/pagination
-    API->>+MediatR: Send GetProductsQuery
-    MediatR->>+Handler: Handle Query
-    Handler->>+Cache: Check Cache
-    alt Cache Hit
-        Cache-->>Handler: Cached Products
-    else Cache Miss
-        Handler->>+Repo: GetProducts(filters)
-        Repo->>+DB: SELECT * FROM Products
-        DB-->>-Repo: Product Data
-        Repo-->>-Handler: Domain Entities
-        Handler->>Cache: Update Cache
-    end
-    Handler->>Handler: Map to DTOs
-    Handler-->>-MediatR: ProductDto List
-    MediatR-->>-API: Result
-    API-->>-UI: 200 OK + Products
-    UI-->>-User: Display Products
-```
-
-
-### Request Processing Pipeline
-
-```mermaid
-flowchart TD
-    A[HTTP Request] --> B{Route Match?}
-    B -->|No| C[404 Not Found]
-    B -->|Yes| D[Controller Action]
-    D --> E[Send to MediatR]
-    E --> F{Validation}
-    F -->|Invalid| G[400 Bad Request]
-    F -->|Valid| H[Handler Execution]
-    H --> I{Business Logic}
-    I -->|Error| J[Exception Handler]
-    I -->|Success| K[Map to DTO]
-    K --> L[Return Result]
-    L --> M[HTTP Response]
-    J --> N[Error Response]
-
-    style A fill:#e1f5fe
-    style D fill:#fff3e0
-    style H fill:#f3e5f5
-    style K fill:#e8f5e9
-    style M fill:#c8e6c9
-    style N fill:#ffcdd2
-```
-
-
-
----
-
-## Integration Points
-
-### 🗄️ Database Integration
-
-- **ORM**: Entity Framework Core 8.0.0
-- **Pattern**: Repository Pattern with Unit of Work
-- **Configuration**: Code-first approach with Fluent API
-
-**Connection String** (from appsettings.json):
-```json
-{
-  "ConnectionStrings": {
-    "DefaultConnection": "Server=(localdb)\mssqllocaldb;Database=NorthwindDb;Trusted_Connection=true;MultipleActiveResultSets=true"
-  }
-}
-```
-
-### 🔐 Identity & Authentication
-
-- **Framework**: ASP.NET Core Identity
-- **Tokens**: JWT Bearer authentication
-- **Configuration**: Configured in Startup.cs/Program.cs
-
-**Authentication Flow**:
-```csharp
-// JWT Token Generation
-services.AddAuthentication(options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-})
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
-    {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true
-    };
-});
-```
-
-### 🌐 API Layer
-
-- **Protocol**: REST over HTTP/HTTPS
-- **Serialization**: System.Text.Json
-- **Documentation**: Swagger/OpenAPI (NSwag)
-- **Versioning**: API versioning support
-
-### 📦 External Services
-
-Integration points for external services are typically found in:
-- **Location**: `Infrastructure/Services/`
-- **Pattern**: Interface-based with dependency injection
-- **Examples**: Email services, file storage, third-party APIs
-
-
+| Validator | Language | Validates | File |
+|-----------|----------|-----------|------|
+| **DeleteCustomerCommandValidator** | csharp | `DeleteCustomerCommand` | `Src\Application\Customers\Commands\DeleteCustomer\DeleteCustomerCommandValidator.cs` |
+| **GetCustomerDetailQueryValidator** | csharp | `GetCustomerDetailQuery` | `Src\Application\Customers\Queries\GetCustomerDetail\GetCustomerDetailQueryValidator.cs` |
+| **CreateCustomerCommandValidator** | csharp | `CreateCustomerCommand` | `Src\Application\Customers\Commands\CreateCustomer\CreateCustomerCommandValidator.cs` |
 
 ---
 
 ## API Specifications
 
-### REST API Endpoints
+### API Endpoints
+
+Total endpoints: **50**
+
+
+#### Create
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **POST** | `/api/customers/create` | NotAvailable | csharp |
+
+#### Delete
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **DELETE** | `/api/products/delete/{id}` | Not provided | csharp |
+| **DELETE** | `/api/customers/delete/{id}` | Not provided | csharp |
+
+#### specification
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **GET** | `/api/Categories/GetAll` | Categories_GetAll | unknown |
+| **POST** | `/api/Categories/Upsert` | Categories_Upsert | unknown |
+| **DELETE** | `/api/Categories/Delete/{id}` | Categories_Delete | unknown |
+| **GET** | `/api/Customers/GetAll` | Customers_GetAll | unknown |
+| **GET** | `/api/Customers/Get/{id}` | Customers_Get | unknown |
+| **POST** | `/api/Customers/Create` | Customers_Create | unknown |
+| **PUT** | `/api/Customers/Update/{id}` | Customers_Update | unknown |
+| **DELETE** | `/api/Customers/Delete/{id}` | Customers_Delete | unknown |
+| **GET** | `/api/Employees/GetAll` | Employees_GetAll | unknown |
+| **GET** | `/api/Employees/Get/{id}` | Employees_Get | unknown |
+| **POST** | `/api/Employees/Upsert` | Employees_Upsert | unknown |
+| **DELETE** | `/api/Employees/Delete/{id}` | Employees_Delete | unknown |
+| **GET** | `/api/Products/GetAll` | Products_GetAll | unknown |
+| **GET** | `/api/Products/Get/{id}` | Products_Get | unknown |
+| **POST** | `/api/Products/Create` | Products_Create | unknown |
+| **PUT** | `/api/Products/Update` | Products_Update | unknown |
+| **DELETE** | `/api/Products/Delete/{id}` | Products_Delete | unknown |
+| **GET** | `/api/Products/Download` | Products_Download | unknown |
+
+#### ProductsController
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **GET** | `/` | GetAll | csharp |
+| **GET** | `/{id}` | Get | csharp |
+| **POST** | `/` | Create | csharp |
+| **PUT** | `/` | Update | csharp |
+| **DELETE** | `/{id}` | Delete | csharp |
+| **GET** | `/download` | Download | csharp |
+
+#### EmployeesController
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **GET** | `/` | GetAll | csharp |
+| **GET** | `/{id}` | Get | csharp |
+| **POST** | `/` | Upsert | csharp |
+| **DELETE** | `/{id}` | Delete | csharp |
+
+#### CategoriesController
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **GET** | `/` | GetAll | csharp |
+| **POST** | `/` | Upsert | csharp |
+| **DELETE** | `/{id}` | Delete | csharp |
+
+#### GetAll
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **GET** | `/api/products/getall` | Not provided | csharp |
+| **GET** | `/api/customers/getall` | ReturnsCustomersListViewModel | csharp |
+
+#### northwind-traders-api
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **GET** | `/api/Categories/GetAll` | getAll | typescript |
+| **POST** | `/api/Categories/Upsert` | upsert | typescript |
+| **DELETE** | `/api/Categories/Delete/{id}` | delete | typescript |
+| **GET** | `/api/Customers/GetAll` | getAll | typescript |
+| **GET** | `/api/Customers/Get/{id}` | get | typescript |
+| **POST** | `/api/Customers/Create` | create | typescript |
+
+#### CustomersController
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **GET** | `/` | GetAll | csharp |
+| **GET** | `/{id}` | Get | csharp |
+| **POST** | `/` | Create | csharp |
+| **PUT** | `/{id}` | Update | csharp |
+| **DELETE** | `/{id}` | Delete | csharp |
+
+#### GetById
+
+| Method | Route | Handler | Language |
+|--------|-------|---------|----------|
+| **GET** | `/api/customers/get/{id}` | Unknown | csharp |
+| **GET** | `/api/products/get/{id}` | Not specified | csharp |
+
+---
+
+## Data Models
+
+### Entity Relationships
+
+
+#### SyncBailHook
+
+**Language:** unknown
+**File:** `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\dfc7a7386069bcb03c6eab436370145cbe3b483a5877dc7f004de50b6ae6a829.json`
+
+**Properties:**
+
+- `function call`
+
+
+#### WebpackLogger
+
+**Language:** unknown
+**File:** `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\dfc7a7386069bcb03c6eab436370145cbe3b483a5877dc7f004de50b6ae6a829.json`
+
+**Properties:**
+
+- `function error`
+- `function warn`
+- `function info`
+- `function log`
+- `function debug`
+- `function assert`
+- `function trace`
+- `function clear`
+- `function status`
+- `function group`
+
+
+#### AnimationFrameAction
+
+**Language:** unknown
+**File:** `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\bdf5d127b9c5e9802126a0034c59ebad24c9a14c06c2c0d4ffb429b74d70108d.json`
+**Inherits From:** `AsyncAction`
+
+**Properties:**
+
+- `any scheduler`
+- `any work`
+
+
+#### CamelCaseToText
+
+**Language:** unknown
+**File:** `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\005fae0beb985540531127ea06396eb1ad8dbb73a243a74d6bdd48a7038d5676.json`
+
+**Properties:**
+
+- `function transform`
+- `function upFirstLetter`
+- `static function ɵfac`
+- `static object ɵpipe`
+
+
+#### AsapScheduler
+
+**Language:** unknown
+**File:** `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\4240595bbd32d339c3fe03051f2c214e1ac54d16dd2577e905f51b90d02ba755.json`
+**Inherits From:** `AsyncScheduler`
+
+**Properties:**
+
+- `boolean _active`
+- `any _scheduled`
+- `array actions`
+
+
+#### CustomerDetailComponent
+
+**Language:** unknown
+**File:** `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\ff5983563113e1edd985067af6275fd39334de2a378cbd4d55eb0b165176e82d.json`
+
+**Properties:**
+
+- `CustomerDetailVm customer`
+- `string[] detailKeys`
+
+
+#### BehaviorSubject
+
+**Language:** unknown
+**File:** `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\f7a5b848258f3e4ce12a962a33cda064d75de78fc4e403112ea54ea27c5aad4c.json`
+**Inherits From:** `Subject`
+
+**Properties:**
+
+- `unknown _value`
+
+
+#### TimeInterval
+
+**Language:** unknown
+**File:** `Src\WebUI\ClientApp\.angular\cache\18.2.21\babel-webpack\4472324ca1ea680909fa044762105899e9480bf8cc505b86ce0e1523bcd4556e.json`
+
+**Properties:**
+
+- `unknown value`
+- `unknown interval`
+
+
+#### TokenService
+
+**Language:** csharp
+**File:** `Src\Infrastructure\Identity\TokenService.cs`
+
+**Properties:**
+
+- `IConfiguration _configuration`
 
 
 #### AuthController
 
-**Base Route**: `api/[controller]`
-
-| Method | Endpoint | Action | Return Type |
-|--------|----------|--------|-------------|
-| **POST** | `api/[controller]/login` | Login | `void` |
-| **POST** | `api/[controller]/register` | Register | `void` |
-
-#### CategoriesController
-
-**Base Route**: `api/categories`
-
-| Method | Endpoint | Action | Return Type |
-|--------|----------|--------|-------------|
-| **GET** | `api/categories/` | GetAll | `CategoriesListVm` |
-| **POST** | `api/categories/` | Upsert | `void` |
-| **DELETE** | `api/categories/{id}` | Delete | `void` |
-
-#### CustomersController
-
-**Base Route**: `api/customers`
-
-| Method | Endpoint | Action | Return Type |
-|--------|----------|--------|-------------|
-| **GET** | `api/customers/` | GetAll | `CustomersListVm` |
-| **GET** | `api/customers/{id}` | Get | `CustomerDetailVm` |
-| **POST** | `api/customers/` | Create | `void` |
-| **PUT** | `api/customers/{id}` | Update | `void` |
-| **DELETE** | `api/customers/{id}` | Delete | `void` |
-
-#### EmployeesController
-
-**Base Route**: `api/employees`
-
-| Method | Endpoint | Action | Return Type |
-|--------|----------|--------|-------------|
-| **GET** | `api/employees/` | Get | `EmployeeDetailVm` |
-| **GET** | `api/employees/{id}` | Get | `EmployeeDetailVm` |
-| **POST** | `api/employees/` | Upsert | `void` |
-| **DELETE** | `api/employees/{id}` | Delete | `void` |
-
-#### ProductsController
-
-**Base Route**: `api/products`
-
-| Method | Endpoint | Action | Return Type |
-|--------|----------|--------|-------------|
-| **GET** | `api/products/` | GetAll | `ProductsListVm` |
-| **GET** | `api/products/{id}` | Get | `ProductDetailVm` |
-| **POST** | `api/products/` | Create | `int` |
-| **PUT** | `api/products/` | Update | `void` |
-| **DELETE** | `api/products/{id}` | Delete | `void` |
-
----
-
-## Data Models & Schemas
-
-### Domain Entities
-
-
-#### ValueObjectTests
-
-**File**: `Tests\Domain.UnitTests\Common\ValueObjectTests.cs`
-**Inherits**: None
-
-**Properties**:
-
-- `int X`
-- `int Y`
-
-
-#### AdAccountTests
-
-**File**: `Tests\Domain.UnitTests\ValueObjects\AdAccountTests.cs`
-**Inherits**: None
-
-**Properties**:
-
-
-
-#### AddingAuditableEntities
-
-**File**: `Src\Persistence\Migrations\20190916013737_AddingAuditableEntities.cs`
-**Inherits**: Migration
-
-**Properties**:
-
-
-
-#### AuditableEntity
-
-**File**: `Src\Domain\Common\AuditableEntity.cs`
-**Inherits**: None
-
-**Properties**:
-
-- `string CreatedBy`
-- `DateTime Created`
-- `string LastModifiedBy`
-
-
-#### Category
-
-**File**: `Src\Domain\Entities\Category.cs`
-**Inherits**: None
-
-**Properties**:
-
-- `int CategoryId`
-- `string CategoryName`
-- `string Description`
-- `ICollection<Product> Products`
-
-
-#### Customer
-
-**File**: `Src\Domain\Entities\Customer.cs`
-**Inherits**: None
-
-**Properties**:
-
-- `string CustomerId`
-- `string CompanyName`
-- `string ContactName`
-- `string ContactTitle`
-- `string Address`
-- `string City`
-- `string Region`
-- `string PostalCode`
-- `string Country`
-- `string Phone`
-- `string Fax`
-- `ICollection<Order> Orders`
-
-
-#### Employee
-
-**File**: `Src\Domain\Entities\Employee.cs`
-**Inherits**: AuditableEntity
-
-**Properties**:
-
-- `int EmployeeId`
-- `string UserId`
-- `string LastName`
-- `string FirstName`
-- `string Title`
-- `string TitleOfCourtesy`
-- `string Address`
-- `string City`
-- `string Region`
-- `string PostalCode`
-- `string Country`
-- `string HomePhone`
-- `string Extension`
-- `string Notes`
-- `string PhotoPath`
-
-
-#### EmployeeTerritory
-
-**File**: `Src\Domain\Entities\EmployeeTerritory.cs`
-**Inherits**: None
-
-**Properties**:
-
-- `int EmployeeId`
-- `string TerritoryId`
-- `Employee Employee`
-- `Territory Territory`
-
-
-#### Order
-
-**File**: `Src\Domain\Entities\Order.cs`
-**Inherits**: AuditableEntity
-
-**Properties**:
-
-- `int OrderId`
-- `string CustomerId`
-- `string ShipName`
-- `string ShipAddress`
-- `string ShipCity`
-- `string ShipRegion`
-- `string ShipPostalCode`
-- `string ShipCountry`
-- `Customer Customer`
-- `Employee Employee`
-- `Shipper Shipper`
-- `ICollection<OrderDetail> OrderDetails`
-
-
-#### OrderDetail
-
-**File**: `Src\Domain\Entities\OrderDetail.cs`
-**Inherits**: AuditableEntity
-
-**Properties**:
-
-- `int OrderId`
-- `int ProductId`
-- `decimal UnitPrice`
-- `short Quantity`
-- `float Discount`
-- `Order Order`
-- `Product Product`
+**Language:** csharp
+**File:** `Src\WebUI\Controllers\AuthController.cs`
+**Inherits From:** `ControllerBase`
+
+**Properties:**
+
+- `UserManager<ApplicationUser> _userManager`
+- `SignInManager<ApplicationUser> _signInManager`
+- `ITokenService _tokenService`
+- `ILogger<AuthController> _logger`
 
 
 ---
 
-## Business Logic & Rules
+## Business Logic
 
-### CQRS Implementation
+### Architecture Patterns Detected
 
-The application implements Command Query Responsibility Segregation (CQRS) using MediatR:
+- **CQRS Pattern**: Command Query Responsibility Segregation detected
+- **Validation Pattern**: Input validation layer detected
+- **REST API Pattern**: RESTful endpoints detected
 
 
-#### Command Handlers (3)
+### Request Flow
 
-Commands handle write operations that modify system state:
-
-- **CreateProductCommand**: Returns `int`
-- **UpsertEmployeeCommand**: Returns `int`
-- **UpsertCategoryCommand**: Returns `int`
-
-#### Query Handlers (8)
-
-Queries handle read operations without side effects:
-
-- **GetProductDetailQuery**: Returns `ProductDetailVm`
-- **GetProductsFileQuery**: Returns `ProductsFileVm`
-- **GetProductsListQuery**: Returns `ProductsListVm`
-- **GetEmployeeDetailQuery**: Returns `EmployeeDetailVm`
-- **GetEmployeesListQuery**: Returns `EmployeesListVm`
-- **GetCustomerDetailQuery**: Returns `CustomerDetailVm`
-- **GetCustomersListQuery**: Returns `CustomersListVm`
-- **GetCategoriesListQuery**: Returns `CategoriesListVm`
-
-### Validation Rules (4 Validators)
-
-FluentValidation rules ensure data integrity:
-
-- **GetCustomerDetailQueryValidator**: Validates `GetCustomerDetailQuery`
-- **CreateCustomerCommandValidator**: Validates `CreateCustomerCommand`
-- **DeleteCustomerCommandValidator**: Validates `DeleteCustomerCommand`
-- **UpdateCustomerCommandValidator**: Validates `UpdateCustomerCommand`
-
-### Pipeline Behaviors
-
-1. **Validation Behavior**: Validates all commands/queries before execution
-2. **Performance Behavior**: Logs slow-running operations
-3. **Unhandled Exception Behavior**: Global exception handling
-4. **Transaction Behavior**: Manages database transactions
+1. **API Layer** receives HTTP requests
+2. **Validation** checks input data
+3. **Business Logic** processes commands/queries
+4. **Domain Layer** applies business rules
+5. **Data Layer** persists/retrieves data
+6. **Response** returned to client
 
 ---
 
 ## Development Guide
 
-### 🚀 Prerequisites
+### Languages & Tools Required
 
-- **.NET 8.0 SDK** or later
-- **Visual Studio 2022** or VS Code with C# extension
-- **SQL Server** (LocalDB for development)
-- **Git** for version control
+- **.NET SDK 8.0+** for C# development
+- **Node.js 18+** with npm/yarn
+- **Node.js 18+** with npm/yarn
 
 ### Getting Started
 
 ```bash
 # Clone repository
 git clone <repository-url>
-cd <project-directory>
 
-# Restore NuGet packages
-dotnet restore
-
-# Update database
-dotnet ef database update --project Src/Infrastructure
+# Install dependencies
+# (command varies by language/framework)
 
 # Run application
-dotnet run --project Src/WebUI
+# (command varies by framework)
 
 # Run tests
-dotnet test
+# (command varies by test framework)
 ```
 
-### 📝 Adding a New Feature (CQRS Pattern)
+### Project Structure Patterns
 
-#### Step 1: Create Domain Entity
 
-```csharp
-// Src/Domain/Entities/Product.cs
-public class Product : AuditableEntity
-{
-    public int Id { get; set; }
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-    public int CategoryId { get; set; }
-    public Category Category { get; set; }
-}
-```
-
-#### Step 2: Create Command
-
-```csharp
-// Src/Application/Products/Commands/CreateProduct/CreateProductCommand.cs
-public record CreateProductCommand : IRequest<int>
-{
-    public string Name { get; set; }
-    public decimal Price { get; set; }
-    public int CategoryId { get; set; }
-}
-```
-
-#### Step 3: Create Command Handler
-
-```csharp
-// Src/Application/Products/Commands/CreateProduct/CreateProductCommandHandler.cs
-public class CreateProductCommandHandler : IRequestHandler<CreateProductCommand, int>
-{
-    private readonly IApplicationDbContext _context;
-
-    public CreateProductCommandHandler(IApplicationDbContext context)
-    {
-        _context = context;
-    }
-
-    public async Task<int> Handle(CreateProductCommand request, CancellationToken cancellationToken)
-    {
-        var entity = new Product
-        {
-            Name = request.Name,
-            Price = request.Price,
-            CategoryId = request.CategoryId
-        };
-
-        _context.Products.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return entity.Id;
-    }
-}
-```
-
-#### Step 4: Add Validation
-
-```csharp
-// Src/Application/Products/Commands/CreateProduct/CreateProductCommandValidator.cs
-public class CreateProductCommandValidator : AbstractValidator<CreateProductCommand>
-{
-    public CreateProductCommandValidator()
-    {
-        RuleFor(v => v.Name)
-            .NotEmpty().WithMessage("Name is required.")
-            .MaximumLength(200).WithMessage("Name must not exceed 200 characters.");
-
-        RuleFor(v => v.Price)
-            .GreaterThan(0).WithMessage("Price must be greater than 0.");
-
-        RuleFor(v => v.CategoryId)
-            .GreaterThan(0).WithMessage("Category is required.");
-    }
-}
-```
-
-#### Step 5: Create Controller Endpoint
-
-```csharp
-// Src/WebUI/Controllers/ProductsController.cs
-[ApiController]
-[Route("api/[controller]")]
-public class ProductsController : ControllerBase
-{
-    private readonly IMediator _mediator;
-
-    public ProductsController(IMediator mediator)
-    {
-        _mediator = mediator;
-    }
-
-    [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<int>> Create(CreateProductCommand command)
-    {
-        var id = await _mediator.Send(command);
-        return CreatedAtAction(nameof(GetById), new { id }, id);
-    }
-
-    [HttpGet("{id}")]
-    public async Task<ActionResult<ProductDto>> GetById(int id)
-    {
-        var query = new GetProductByIdQuery { Id = id };
-        var result = await _mediator.Send(query);
-        return Ok(result);
-    }
-}
-```
-
-### 🧪 Testing
-
-```bash
-# Run all tests
-dotnet test
-
-# Run unit tests only
-dotnet test --filter "FullyQualifiedName~UnitTests"
-
-# Run integration tests only
-dotnet test --filter "FullyQualifiedName~IntegrationTests"
-
-# Run with code coverage
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-```
-
-### 📂 Folder Conventions
-
-```
-Src/
-├── Domain/              # Core business logic (no dependencies)
-│   ├── Entities/       # Domain entities
-│   ├── Events/         # Domain events
-│   ├── Exceptions/     # Domain exceptions
-│   └── ValueObjects/   # Value objects
-├── Application/        # Use cases and business workflows
-│   ├── Common/         # Shared interfaces and models
-│   ├── [Entity]/       # Feature folders
-│   │   ├── Commands/   # Write operations
-│   │   └── Queries/    # Read operations
-│   └── Behaviors/      # MediatR pipeline behaviors
-├── Infrastructure/     # External concerns
-│   ├── Persistence/    # EF Core, migrations
-│   ├── Identity/       # Authentication
-│   └── Services/       # External services
-└── WebUI/             # API layer
-    ├── Controllers/    # API endpoints
-    ├── Filters/        # Action filters
-    └── Services/       # Presentation services
-
-Tests/
-├── Domain.UnitTests/
-├── Application.UnitTests/
-└── WebUI.IntegrationTests/
-```
+Common patterns detected:
+- Domain/Entity layer for business logic
+- API/Controller layer for HTTP endpoints
+- Service layer for business operations
+- Repository/Data layer for persistence
 
 ---
 
-## Conclusion
+## Analysis Metadata
 
-This ultra-comprehensive codebase analysis provides complete technical reference with:
+### Agent Execution
 
-✅ **Deep Code Analysis** - Extracted from actual source code
-✅ **Multiple Diagrams** - Architecture, ER, Sequence, Flowcharts
-✅ **Complete Component Catalog** - Commands, Queries, Validators, Controllers
-✅ **Detailed API Documentation** - All endpoints with methods and routes
-✅ **Technology Stack** - Extracted from project files
-✅ **Practical Examples** - Working C# code samples
-✅ **Development Guide** - Step-by-step feature implementation
+- **Agent 1**: Processed 181 files
+- **Agent 2**: Processed 182 files
+- **Agent 3**: Processed 187 files
+- **Agent 4**: Processed 181 files
+- **Agent 5**: Processed 182 files
+- **Agent 6**: Processed 187 files
+- **Agent 7**: Processed 181 files
+- **Agent 8**: Processed 182 files
+- **Agent 9**: Processed 187 files
+
+
+### Statistics
+
+- **Files Analyzed**: 550
+- **Total Size**: 1.98 MB
+- **Languages**: csharp, javascript, typescript
+- **Skipped (large)**: 23
+- **Skipped (errors)**: 0
 
 ---
 
-**Analysis Complete** - {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+**Analysis Complete** - 2026-01-20 21:27:47
 
-*Generated by Ultra-Comprehensive Analyzer with Deep Code Parsing*
-*Matching GitHub Copilot Codemapper Quality*
+*Generated by Multi-Agent Ultra-Comprehensive Analyzer*
+*Language-Agnostic | Scalable | Context-Window Managed*
