@@ -1,58 +1,54 @@
 graph TD
-    subgraph External_Consumer ["External Consumers"]
-        Client["External Clients / Partners"]
-    end
-
-    subgraph DMZ_Account ["DMZ Account (Security Hub)"]
-        direction TB
-        WAF["AWS WAF <br/>(IP Whitelisting, Rate Limiting, <br/>OWASP Top 10)"]
-        
-        subgraph APIGW_Layer ["Central API Gateway"]
-            RP["Resource Policy <br/>(Deny if not SourceIP)"]
-            Auth["Lambda Authorizer <br/>(JWT/mTLS Validation)"]
-            Routes["Path-based Router <br/>(/orders vs /users)"]
+    subgraph DMZ_Account_VPC ["DMZ Account VPC (Hub)"]
+        subgraph Public_Subnets ["Public Subnets (AZ1 & AZ2)"]
+            WAF["AWS WAF"]
+            APIGW["Central API Gateway"]
+            NAT["NAT Gateway (for Lambda Egress)"]
         end
 
-        VPCLink["VPC Link"]
-        
-        %% Interface Endpoints with Policies
-        EP_Orders["Interface Endpoint <br/>(with VPCE Policy)"]
-        EP_Users["Interface Endpoint <br/>(with VPCE Policy)"]
+        subgraph Private_Subnets_DMZ ["Private Subnets (AZ1 & AZ2)"]
+            Auth["Lambda Authorizer <br/>(Validates JWT/mTLS)"]
+            VPCLink["VPC Link"]
+            InterfaceVPC["Interface VPC Endpoints <br/>(for Backend A & B)"]
+        end
     end
 
-    subgraph Backend_Account_B ["Backend Account B (Orders)"]
-        EPS_B["VPC Endpoint Service"]
-        NLB_B["Private NLB"]
-        ALB_B["Private ALB <br/>(Strict SG: Allow DMZ ENIs)"]
+    subgraph Backend_Account_A ["Backend Account A (Spoke)"]
+        subgraph Private_Subnets_A ["Private Subnets"]
+            EPS_A["VPC Endpoint Service"]
+            NLB_A["Private NLB"]
+            ALB_A["Private ALB"]
+            App_A["Microservices / EC2"]
+        end
     end
 
-    subgraph Backend_Account_C ["Backend Account C (Users)"]
-        EPS_C["VPC Endpoint Service"]
-        NLB_C["Private NLB"]
-        ALB_C["Private ALB <br/>(Strict SG: Allow DMZ ENIs)"]
+    subgraph Backend_Account_B ["Backend Account B (Spoke)"]
+        subgraph Private_Subnets_B ["Private Subnets"]
+            EPS_B["VPC Endpoint Service"]
+            NLB_B["Private NLB"]
+            ALB_B["Private ALB"]
+            App_B["Microservices / EC2"]
+        end
     end
 
-    %% Flow Connections
-    Client -->|HTTPS| WAF
-    WAF --> RP
-    RP --> Auth
-    Auth -->|Validated| Routes
-    Routes -->|Path: /orders| VPCLink
-    Routes -->|Path: /users| VPCLink
+    %% Flow
+    Client["External Client"] -->|HTTPS| WAF
+    WAF --> APIGW
+    APIGW -.->|Trigger| Auth
+    Auth -->|IAM Policy Result| APIGW
+    APIGW --> VPCLink
+    VPCLink --> InterfaceVPC
     
-    VPCLink --> EP_Orders
-    VPCLink --> EP_Users
+    %% Cross-Account PrivateLink
+    InterfaceVPC -.->|PrivateLink A| EPS_A
+    InterfaceVPC -.->|PrivateLink B| EPS_B
 
-    %% Cross-Account Tunnels
-    EP_Orders -.->|PrivateLink| EPS_B
-    EP_Users -.->|PrivateLink| EPS_C
-
-    EPS_B --> NLB_B --> ALB_B
-    EPS_C --> NLB_C --> ALB_C
+    EPS_A --> NLB_A --> ALB_A --> App_A
+    EPS_B --> NLB_B --> ALB_B --> App_B
 
     %% Styling
-    style WAF fill:#ffccbc,stroke:#d84315
-    style APIGW_Layer fill:#e1f5fe,stroke:#0277bd
-    style Auth fill:#fff9c4,stroke:#fbc02d
-    style EP_Orders fill:#f3e5f5,stroke:#7b1fa2
-    style EP_Users fill:#f3e5f5,stroke:#7b1fa2
+    style DMZ_Account_VPC fill:#f5f5f5,stroke:#333
+    style Public_Subnets fill:#fff3e0,stroke:#ef6c00
+    style Private_Subnets_DMZ fill:#e1f5fe,stroke:#0277bd
+    style Backend_Account_A fill:#f3e5f5,stroke:#7b1fa2
+    style Backend_Account_B fill:#f1f8e9,stroke:#558b2f
