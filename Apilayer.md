@@ -1,66 +1,72 @@
 graph TD
-    subgraph External_Internet ["Public Internet"]
-        Client["External Client"]
+    subgraph Internet ["Public Internet"]
+        Client["External Clients"]
+        Cognito["Amazon Cognito <br/>(Managed IdP)"]
     end
 
-    subgraph AWS_Public_Service ["AWS Public Service Space"]
-        WAF["AWS WAF"]
-        APIGW["Central API Gateway"]
-        Cognito["Amazon Cognito <br/>(User Pool)"]
+    subgraph AWS_Managed ["AWS Public Service Space"]
+        WAF["AWS WAF <br/>- Bot Control <br/>- IP Rate Limiting <br/>- SQLi/XSS Filtering"]
+        
+        subgraph APIGW ["API Gateway (Public Hub)"]
+            RP["Resource Policy <br/>(IP Whitelisting)"]
+            Auth["Cognito Authorizer <br/>(JWT Claims Validation)"]
+            Router["Path-Based Routing <br/>(/accounts vs /customers)"]
+        end
     end
 
-    subgraph DMZ_Account_VPC ["DMZ Account VPC (Hub)"]
+    subgraph DMZ_VPC ["DMZ Hub VPC"]
         direction TB
-        subgraph Private_Subnets_DMZ ["Private Subnets"]
-            Auth["Lambda Authorizer <br/>(Verifies Cognito JWT)"]
-            VPCL_ENI["VPC Link ENIs"]
-            InterfaceVPC["Interface VPC Endpoints <br/>(Targeting Backends)"]
-            CognitoVPC_EP["Cognito VPC Endpoint <br/>(Optional)"]
+        subgraph Private_Subnets_DMZ ["Private Subnets (Dual AZ)"]
+            VPCL_ENI["VPC Link ENIs <br/>(Security Group: <br/>Inbound 443 from APIGW)"]
+            
+            EP_Accounts["VPC Endpoint (Accounts) <br/>+ EP Policy (Least Privilege)"]
+            EP_Customers["VPC Endpoint (Customers) <br/>+ EP Policy (Least Privilege)"]
         end
     end
 
-    subgraph Backend_Account_A ["Backend Account A (Spoke)"]
-        subgraph Private_Subnets_Back_A ["Private Subnet"]
-            EPS_A["VPC Endpoint Service"]
-            NLB_A["Private NLB"]
-            ALB_A["Private ALB"]
+    subgraph Backend_Account_1 ["Backend Account: Accounts"]
+        subgraph Private_Subnets_1 ["Private Subnets"]
+            EPS_1["VPC Endpoint Service <br/>(Whitelist DMZ Account ID)"]
+            NLB_1["Private NLB <br/>(Layer 4 Security)"]
+            ALB_1["Private ALB <br/>- TLS Termination <br/>- SG: Inbound only from NLB"]
+            Workload_1["Accounts Microservice"]
         end
     end
 
-    subgraph Backend_Account_B ["Backend Account B (Spoke)"]
-        subgraph Private_Subnets_Back_B ["Private Subnet"]
-            EPS_B["VPC Endpoint Service"]
-            NLB_B["Private NLB"]
-            ALB_B["Private ALB"]
+    subgraph Backend_Account_2 ["Backend Account: Customers"]
+        subgraph Private_Subnets_2 ["Private Subnets"]
+            EPS_2["VPC Endpoint Service <br/>(Whitelist DMZ Account ID)"]
+            NLB_2["Private NLB <br/>(Layer 4 Security)"]
+            ALB_2["Private ALB <br/>- TLS Termination <br/>- SG: Inbound only from NLB"]
+            Workload_2["Customers Microservice"]
         end
     end
 
-    %% Flow Step 1: Login
-    Client -->|1. Sign-in| Cognito
-    Cognito -->|2. JWT| Client
+    %% Auth Flow
+    Client -->|1. Authenticate| Cognito
+    Client -->|2. HTTPS + JWT| WAF
+    WAF --> RP
+    RP --> Auth
+    Auth --> Router
 
-    %% Flow Step 2: API Call
-    Client -->|3. HTTPS + JWT| WAF
-    WAF --> APIGW
+    %% Routing Flow
+    Router -->|Path: /accounts| VPCL_ENI
+    Router -->|Path: /customers| VPCL_ENI
     
-    %% Flow Step 3: Localized Auth
-    APIGW -.->|4. Trigger| Auth
-    Auth -.->|5. Verify Signature| CognitoVPC_EP
-    
-    %% Flow Step 4: Routing
-    Auth -->|6. Pass| APIGW
-    APIGW --> VPCL_ENI
-    VPCL_ENI --> InterfaceVPC
-    
-    %% Flow Step 5: Cross-Account Tunnel
-    InterfaceVPC -.->|7. PrivateLink| EPS_A
-    InterfaceVPC -.->|7. PrivateLink| EPS_B
-    
-    EPS_A --> NLB_A --> ALB_A
-    EPS_B --> NLB_B --> ALB_B
+    VPCL_ENI --> EP_Accounts
+    VPCL_ENI --> EP_Customers
+
+    %% Cross-Account PrivateLink
+    EP_Accounts -.->|PrivateLink| EPS_1
+    EP_Customers -.->|PrivateLink| EPS_2
+
+    %% Backend Flow
+    EPS_1 --> NLB_1 --> ALB_1 --> Workload_1
+    EPS_2 --> NLB_2 --> ALB_2 --> Workload_2
 
     %% Styling
-    style AWS_Public_Service fill:#fff,stroke:#333,stroke-dasharray: 5 5
-    style Private_Subnets_DMZ fill:#e3f2fd,stroke:#0d47a1
-    style Backend_Account_A fill:#f3e5f5,stroke:#7b1fa2
-    style Backend_Account_B fill:#f1f8e9,stroke:#558b2f
+    style WAF fill:#ffccbc,stroke:#d84315,stroke-width:2px
+    style APIGW fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
+    style Private_Subnets_DMZ fill:#fff9c4,stroke:#fbc02d,stroke-dasharray: 5 5
+    style ALB_1 fill:#f1f8e9,stroke:#558b2f
+    style ALB_2 fill:#f1f8e9,stroke:#558b2f
