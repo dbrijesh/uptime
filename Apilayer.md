@@ -1,34 +1,40 @@
 graph TD
-    subgraph External_Consumer ["External Consumer"]
-        User["Public Client"]
-    end
-
-    subgraph DMZ_Account ["DMZ Account (Public Face)"]
+    subgraph DMZ_Account ["DMZ Hub Account"]
         WAF["AWS WAF"]
-        APIGW["API Gateway (Public)"]
+        APIGW["Central API Gateway"]
         VPCLink["VPC Link"]
-        InterfaceVPC["Interface VPC Endpoint"]
         
-        User -->|HTTPS| WAF
+        %% Endpoints in DMZ for each backend
+        EP_Orders["Interface Endpoint (Orders)"]
+        EP_Users["Interface Endpoint (Users)"]
+        
         WAF --> APIGW
         APIGW --> VPCLink
-        VPCLink --> InterfaceVPC
+        VPCLink --> EP_Orders
+        VPCLink --> EP_Users
     end
 
-    subgraph Network_Boundary ["AWS PrivateLink (Cross-Account)"]
-        InterfaceVPC -.->|Secure Tunnel| EPService["VPC Endpoint Service"]
-    end
-
-    subgraph Backend_Account ["Backend Account (Workload)"]
-        EPService --> NLB["Network Load Balancer (Private)"]
-        NLB --> ALB["Application Load Balancer (Private)"]
+    subgraph Backend_B ["Backend Account B (Orders)"]
+        EPS_Orders["VPC Endpoint Service"]
+        NLB_B["Private NLB"]
+        ALB_B["Private ALB"]
         
-        subgraph Private_Subnet ["Private Subnet"]
-            ALB --> EC2["API Instances / Microservices"]
-        end
+        EPS_Orders --> NLB_B --> ALB_B
     end
+
+    subgraph Backend_C ["Backend Account C (Users)"]
+        EPS_Users["VPC Endpoint Service"]
+        NLB_C["Private NLB"]
+        ALB_C["Private ALB"]
+        
+        EPS_Users --> NLB_C --> ALB_C
+    end
+
+    %% Cross-Account PrivateLink Connections
+    EP_Orders -.->|PrivateLink| EPS_Orders
+    EP_Users -.->|PrivateLink| EPS_Users
 
     %% Styling
-    style DMZ_Account fill:#f9f,stroke:#333,stroke-width:2px
-    style Backend_Account fill:#bbf,stroke:#333,stroke-width:2px
-    style Private_Subnet fill:#eee,stroke:#999,stroke-dasharray: 5 5
+    style DMZ_Account fill:#f9f,stroke:#333
+    style Backend_B fill:#e1f5fe,stroke:#01579b
+    style Backend_C fill:#fff3e0,stroke:#e65100
