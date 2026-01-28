@@ -1,72 +1,70 @@
 graph TD
     subgraph Internet ["Public Internet"]
         Client["External Clients"]
-        Cognito["Amazon Cognito <br/>(Managed IdP)"]
+        Cognito["Amazon Cognito"]
     end
 
     subgraph AWS_Managed ["AWS Public Service Space"]
-        WAF["AWS WAF <br/>- Bot Control <br/>- IP Rate Limiting <br/>- SQLi/XSS Filtering"]
-        
-        subgraph APIGW ["API Gateway (Public Hub)"]
-            RP["Resource Policy <br/>(IP Whitelisting)"]
-            Auth["Cognito Authorizer <br/>(JWT Claims Validation)"]
-            Router["Path-Based Routing <br/>(/accounts vs /customers)"]
+        WAF["AWS WAF"]
+        APIGW["API Gateway (Hub)"]
+    end
+
+    subgraph DMZ_Account_VPC ["DMZ Account VPC (Consumer)"]
+        subgraph Private_Subnets_DMZ ["Private Subnets"]
+            VPCL_ENI["VPC Link ENIs"]
+            InterfaceVPC["Interface VPC Endpoint <br/>(Pointing to Network Account)"]
         end
     end
 
-    subgraph DMZ_VPC ["DMZ Hub VPC"]
+    subgraph Network_Account_VPC ["Network Account VPC (Inspection Zone)"]
         direction TB
-        subgraph Private_Subnets_DMZ ["Private Subnets (Dual AZ)"]
-            VPCL_ENI["VPC Link ENIs <br/>(Security Group: <br/>Inbound 443 from APIGW)"]
-            
-            EP_Accounts["VPC Endpoint (Accounts) <br/>+ EP Policy (Least Privilege)"]
-            EP_Customers["VPC Endpoint (Customers) <br/>+ EP Policy (Least Privilege)"]
+        subgraph Inspection_Subnets ["Inspection Subnets"]
+            EPS["VPC Endpoint Service <br/>(PrivateLink Provider)"]
+            NLB_Net["Private NLB"]
+            TGW_Attach_Net["TGW Attachment"]
         end
     end
 
-    subgraph Backend_Account_1 ["Backend Account: Accounts"]
-        subgraph Private_Subnets_1 ["Private Subnets"]
-            EPS_1["VPC Endpoint Service <br/>(Whitelist DMZ Account ID)"]
-            NLB_1["Private NLB <br/>(Layer 4 Security)"]
-            ALB_1["Private ALB <br/>- TLS Termination <br/>- SG: Inbound only from NLB"]
-            Workload_1["Accounts Microservice"]
+    subgraph TGW_Hub ["AWS Transit Gateway"]
+        TGW_Route["TGW Route Table <br/>(Appliance Mode Enabled)"]
+    end
+
+    subgraph Backend_Account_Accounts ["Backend: Accounts"]
+        subgraph Private_Subnets_Acc ["Private Subnet"]
+            TGW_Attach_Acc["TGW Attachment"]
+            ALB_Acc["Private ALB"]
+            App_Acc["Accounts API"]
         end
     end
 
-    subgraph Backend_Account_2 ["Backend Account: Customers"]
-        subgraph Private_Subnets_2 ["Private Subnets"]
-            EPS_2["VPC Endpoint Service <br/>(Whitelist DMZ Account ID)"]
-            NLB_2["Private NLB <br/>(Layer 4 Security)"]
-            ALB_2["Private ALB <br/>- TLS Termination <br/>- SG: Inbound only from NLB"]
-            Workload_2["Customers Microservice"]
+    subgraph Backend_Account_Cust ["Backend: Customers"]
+        subgraph Private_Subnets_Cust ["Private Subnet"]
+            TGW_Attach_Cust["TGW Attachment"]
+            ALB_Cust["Private ALB"]
+            App_Cust["Customers API"]
         end
     end
 
-    %% Auth Flow
-    Client -->|1. Authenticate| Cognito
-    Client -->|2. HTTPS + JWT| WAF
-    WAF --> RP
-    RP --> Auth
-    Auth --> Router
-
-    %% Routing Flow
-    Router -->|Path: /accounts| VPCL_ENI
-    Router -->|Path: /customers| VPCL_ENI
-    
-    VPCL_ENI --> EP_Accounts
-    VPCL_ENI --> EP_Customers
+    %% Flow
+    Client -->|HTTPS| WAF
+    WAF --> APIGW
+    APIGW --> VPCL_ENI
+    VPCL_ENI --> InterfaceVPC
 
     %% Cross-Account PrivateLink
-    EP_Accounts -.->|PrivateLink| EPS_1
-    EP_Customers -.->|PrivateLink| EPS_2
+    InterfaceVPC -.->|PrivateLink| EPS
+    EPS --> NLB_Net
+    NLB_Net --> TGW_Attach_Net
 
-    %% Backend Flow
-    EPS_1 --> NLB_1 --> ALB_1 --> Workload_1
-    EPS_2 --> NLB_2 --> ALB_2 --> Workload_2
+    %% Transit Gateway Routing
+    TGW_Attach_Net --> TGW_Route
+    TGW_Route -->|Route: /accounts| TGW_Attach_Acc
+    TGW_Route -->|Route: /customers| TGW_Attach_Cust
+
+    %% Final Delivery
+    TGW_Attach_Acc --> ALB_Acc --> App_Acc
+    TGW_Attach_Cust --> ALB_Cust --> App_Cust
 
     %% Styling
-    style WAF fill:#ffccbc,stroke:#d84315,stroke-width:2px
-    style APIGW fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    style Private_Subnets_DMZ fill:#fff9c4,stroke:#fbc02d,stroke-dasharray: 5 5
-    style ALB_1 fill:#f1f8e9,stroke:#558b2f
-    style ALB_2 fill:#f1f8e9,stroke:#558b2f
+    style Network_Account_VPC fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+    style TGW_Hub fill:#eceff1,stroke:#455a64,stroke-width:2px
